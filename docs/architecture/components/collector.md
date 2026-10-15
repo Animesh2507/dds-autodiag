@@ -11,7 +11,7 @@ flowchart LR
         env["Environment variables<br/>ROS_*, RMW_*, DDS XML paths"]
         net["ip -j addr<br/>interfaces + multicast"]
         ns["/proc/self/ns/*<br/>container detection"]
-        graph["ros2 node list<br/>ros2 topic list -t<br/>ros2 daemon status"]
+        rosgraph["ros2 node list<br/>ros2 topic list -t<br/>ros2 daemon status"]
     end
     probes --> snap[("Snapshot<br/>schema_version 2")]
     doctor["ros2 doctor --report<br/>(effective RMW, cached 60 s)"] --> overview
