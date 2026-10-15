@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rviz_autodiag_panel</name>
-  <version>1.1.0</version>
+  <version>0.1.0</version>
   <description>RViz2 panel for DDS AutoDiag: ROS 2 / DDS health findings, topic QoS inspection and a streamed AI assistant.</description>
   <maintainer email="asgunaki@gmail.com">Animesh Gunaki</maintainer>
   <license>MIT</license>
