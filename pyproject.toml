@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ros2-dds-autodiag"
+dynamic = ["version"]
+description = "Read-only ROS 2 / DDS communication diagnostics with a local web dashboard and CLI"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+dependencies = ["fastapi>=0.110,<1", "uvicorn>=0.27,<1"]
+keywords = ["ros2", "dds", "diagnostics", "fastdds", "cyclonedds", "robotics"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Web Environment",
+  "Intended Audience :: Developers",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: System :: Networking :: Monitoring",
+]
+
+[project.optional-dependencies]
+# starlette's TestClient needs httpx (or httpx2 on newer starlette releases).
+dev = ["pytest>=7", "httpx>=0.27"]
+# Claude explanations use the official Anthropic SDK; OpenAI/Gemini need no extra packages.
+cloud = ["anthropic>=1.13,<2"]
+
+[project.scripts]
+dds-autodiag = "autodiag.cli:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "autodiag.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["autodiag*"]
+
+[tool.setuptools.package-data]
+autodiag = ["index.html", "index_legacy.html", "kb/*.json", "static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

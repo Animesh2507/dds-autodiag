@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.egg-info/
+cpp/build/
+.pytest_cache/
+dist/
+build/
+*.json.bak
+ros2/build/
+ros2/install/
+ros2/log/
+# Local secrets and editor state (never commit)
+.env
+*.env
+!deploy/dds-autodiag.env.example
+ai-providers.json
+.vscode/
+.idea/
+*.log
