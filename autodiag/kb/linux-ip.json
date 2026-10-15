@@ -1,0 +1,8 @@
+{
+  "id": "linux-ip",
+  "title": "Linux network namespaces",
+  "url": "https://man7.org/linux/man-pages/man7/network_namespaces.7.html",
+  "text": "Network namespaces isolate routes, interfaces, IP configuration and port spaces. Inspect container-specific routing and interface choice for cross-container ROS 2 issues.",
+  "ros_distro": "Linux",
+  "keywords": "DDS ROS2 discovery multicast containers interfaces QoS troubleshooting"
+}

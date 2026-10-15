@@ -1,0 +1,8 @@
+{
+  "id": "ros-security",
+  "title": "ROS 2 security overview",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Advanced/Security/Introducing-ros2-security.html",
+  "text": "ROS 2 DDS Security and enclave permissions can affect discovered endpoints and allowed data flow. Check configured security and authorization without exposing private keys.",
+  "ros_distro": "jazzy",
+  "keywords": "DDS ROS2 discovery multicast containers interfaces QoS troubleshooting"
+}

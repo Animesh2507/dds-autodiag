@@ -1,0 +1,8 @@
+{
+  "id": "cyclone-config",
+  "title": "Cyclone DDS configuration",
+  "url": "https://cyclonedds.io/docs/cyclonedds/latest/config/index.html",
+  "text": "Cyclone DDS XML and CYCLONEDDS_URI can affect interfaces, multicast and participant discovery. Inspect the effective configuration from the running ROS process.",
+  "ros_distro": "Cyclone DDS",
+  "keywords": "DDS ROS2 discovery multicast containers interfaces QoS troubleshooting"
+}

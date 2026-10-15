@@ -1,0 +1,8 @@
+{
+  "id": "docker-ipc",
+  "title": "Docker IPC namespace",
+  "url": "https://docs.docker.com/reference/cli/docker/container/run/",
+  "text": "Docker IPC namespace policies govern shared-memory visibility. For Fast DDS shared-memory paths, inspect transport configuration and container IPC arrangements before attributing failure.",
+  "ros_distro": "Docker",
+  "keywords": "DDS ROS2 discovery multicast containers interfaces QoS troubleshooting"
+}

@@ -1,0 +1,7 @@
+{
+  "id": "ros-daemon",
+  "title": "ROS 2 command-line tools",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Basic/About-Command-Line-Tools.html",
+  "keywords": "daemon graph node ros2 node list CLI",
+  "text": "ROS 2 CLI graph introspection may use a background daemon. A CLI daemon problem does not by itself prove application DDS transport failure. Compare daemon and --no-daemon observations when supported."
+}

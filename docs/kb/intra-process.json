@@ -1,0 +1,7 @@
+{
+  "id": "intra-process",
+  "title": "ROS 2 intra-process communications",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Demos/Intra-Process-Communication.html",
+  "keywords": "intra process intra_process same process rclcpp composition",
+  "text": "ROS 2 intra-process communication is scoped to nodes inside a compatible process with intra-process enabled. It does not provide cross-process or cross-host transport; DDS shared memory and DDS over the network are separate mechanisms."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "ros-topic",
+  "title": "ROS 2 topics command reference",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Beginner-CLI-Tools/Understanding-ROS2-Topics/Understanding-ROS2-Topics.html",
+  "text": "Use ros2 topic list and ros2 topic info --verbose to inspect available endpoints. A discovered publisher is not proof a sample was received.",
+  "ros_distro": "jazzy",
+  "keywords": "DDS ROS2 discovery multicast containers interfaces QoS troubleshooting"
+}
