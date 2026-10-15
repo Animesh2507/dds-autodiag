@@ -64,6 +64,16 @@ def _qos_findings(endpoints):
                'evidence':{'publisher':p['node'],'subscriber':s['node'],'offered':a,'requested':b},
                'recommended_action':'Review requested/offered QoS policies. Do not change semantics blindly.',
                'confidence':'high','documentation':[{'label':'ROS 2 QoS','url':DOCS['qos']}]})
+        # Compatible, but a subscriber that starts after the publisher never gets latched data (e.g. /map).
+        pd=p['qos'].get('durability','').upper().replace(' ','_')
+        sd=s['qos'].get('durability','').upper().replace(' ','_')
+        if 'TRANSIENT_LOCAL' in pd and 'VOLATILE' in sd:
+            findings.append({'code':'LATCHED_DATA_VOLATILE_SUBSCRIBER','severity':'warning',
+               'summary':f'{s["node"]} requests Volatile from latched (Transient Local) publisher {p["node"]}',
+               'evidence':{'publisher':p['node'],'subscriber':s['node'],'offered':pd,'requested':sd},
+               'recommended_action':'Request Transient Local durability on the subscriber (e.g. RViz Map display: '
+                                    'Topic → Durability Policy) so it receives the last message even when it starts later.',
+               'confidence':'high','documentation':[{'label':'ROS 2 QoS','url':DOCS['qos']}]})
         if p.get('type') and s.get('type') and p['type']!=s['type']:
             findings.append({'code':'TYPE_MISMATCH','severity':'error','summary':'Different message types on this topic',
              'evidence':{'publisher':p.get('type'),'subscriber':s.get('type')},

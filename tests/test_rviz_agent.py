@@ -127,6 +127,15 @@ class QosDiagnosisTests(unittest.TestCase):
             out = rviz_agent._topic_qos(STATE)
         self.assertEqual(out['LaserScan']['fix'], [('Topic/Reliability Policy', 'Best Effort')])
 
+    def test_latched_map_vs_volatile_display(self):
+        state = {'displays': [{'name': 'Map', 'type': 'rviz_default_plugins/Map', 'topic': '/map',
+                               'properties': {'Topic/Durability Policy': 'Volatile'}}]}
+        report = {'state': 'ok', 'endpoints': [{'kind': 'publisher', 'node': 'map_server',
+                                                'qos': {'reliability': 'RELIABLE', 'durability': 'TRANSIENT_LOCAL'}}]}
+        with patch('autodiag.live.inspect_topic', return_value=report):
+            out = rviz_agent._topic_qos(state)
+        self.assertEqual(out['Map']['fix'], [('Topic/Durability Policy', 'Transient Local')])
+
 
 class EndpointTests(unittest.TestCase):
     def setUp(self):
