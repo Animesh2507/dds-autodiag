@@ -1,0 +1,5 @@
+.venv
+**/__pycache__
+cpp/build
+*.egg-info
+.git

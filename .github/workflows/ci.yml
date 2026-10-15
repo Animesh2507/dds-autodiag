@@ -1,0 +1,25 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    container: ros:jazzy-ros-base
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system packages
+        run: apt-get update && apt-get install -y --no-install-recommends python3-pip python3-venv iproute2 cmake g++ ros-jazzy-behaviortree-cpp
+      - name: Python tests
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          python3 -m venv --system-site-packages .venv
+          .venv/bin/pip install -e ".[dev]" httpx2 || .venv/bin/pip install -e ".[dev]"
+          .venv/bin/python -m pytest -q
+          .venv/bin/dds-autodiag selftest
+      - name: C++ core
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build cpp/build -j2
+          ctest --test-dir cpp/build --output-on-failure

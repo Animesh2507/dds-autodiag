@@ -1,0 +1,22 @@
+# systemd user service for the DDS AutoDiag dashboard.
+# Install:  cp deploy/dds-autodiag.service ~/.config/systemd/user/
+#           systemctl --user daemon-reload && systemctl --user enable --now dds-autodiag
+# Logs:     journalctl --user -u dds-autodiag -f
+[Unit]
+Description=DDS AutoDiag ROS 2 diagnostics dashboard
+After=network-online.target
+
+[Service]
+# Adjust the ROS distro and the path to your AutoDiag virtualenv.
+Environment=ROS_SETUP=/opt/ros/jazzy/setup.bash
+Environment=AUTODIAG_VENV=%h/.local/share/dds-autodiag/venv
+# Optional: ROS_DOMAIN_ID, RMW_IMPLEMENTATION, AUTODIAG_UI_TOKEN, AUTODIAG_ALLOWED_HOSTS ...
+EnvironmentFile=-%h/.config/dds-autodiag.env
+ExecStart=/bin/bash -c 'source "$ROS_SETUP" && exec "$AUTODIAG_VENV/bin/dds-autodiag" serve'
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target
