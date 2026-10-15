@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>rviz_autodiag_panel</name>
+  <version>1.1.0</version>
+  <description>RViz2 panel for DDS AutoDiag: ROS 2 / DDS health findings, topic QoS inspection and a streamed AI assistant.</description>
+  <maintainer email="asgunaki@gmail.com">Animesh Gunaki</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>qtbase5-dev</build_depend>
+  <depend>rviz_common</depend>
+  <depend>pluginlib</depend>
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-widgets</exec_depend>
+  <exec_depend>libqt5-network</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

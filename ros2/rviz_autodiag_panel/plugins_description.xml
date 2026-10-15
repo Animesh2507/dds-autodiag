@@ -1,0 +1,8 @@
+<library path="rviz_autodiag_panel">
+  <class name="rviz_autodiag_panel/AutoDiag"
+         type="rviz_autodiag_panel::AutoDiagPanel"
+         base_class_type="rviz_common::Panel">
+    <description>DDS AutoDiag: ROS 2 / DDS health findings, topic QoS inspection and an AI assistant.
+      Needs the AutoDiag server (dds-autodiag serve).</description>
+  </class>
+</library>
