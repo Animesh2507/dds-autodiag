@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import os
 import tempfile
@@ -6,6 +7,9 @@ from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
 from autodiag import llm, rviz_agent
 from autodiag.server import app
+
+# Claude tests need the optional Anthropic SDK (pip install ".[cloud]").
+needs_anthropic = unittest.skipUnless(importlib.util.find_spec('anthropic'), 'anthropic SDK not installed')
 
 TOPICS = {'/lidar/points': 'sensor_msgs/msg/PointCloud2', '/scan': 'sensor_msgs/msg/LaserScan',
           '/map': 'nav_msgs/msg/OccupancyGrid'}
@@ -172,6 +176,7 @@ class CompleteJsonTests(unittest.TestCase):
         self.assertEqual(post.call_args.args[1]['format'], rviz_agent.PLAN_SCHEMA)
         self.assertIs(post.call_args.args[1]['think'], False)
 
+    @needs_anthropic
     def test_claude_structured_output_with_fallbacks(self):
         llm.update_provider('anthropic', api_key='sk-ant-test-0000000000000000')
         response = MagicMock(stop_reason='end_turn', content=[MagicMock(type='text', text='{"summary":"ok","actions":[],"notes":[]}')])
