@@ -1,0 +1,59 @@
+name: Bug report
+description: Something in DDS AutoDiag doesn't work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! Please don't paste API keys, hostnames or IPs you don't want public; use `dds-autodiag collect --redact`.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. dds-autodiag ...
+        2. ...
+  - type: input
+    id: version
+    attributes:
+      label: AutoDiag version
+      description: Output of `dds-autodiag --version`
+    validations:
+      required: true
+  - type: dropdown
+    id: distro
+    attributes:
+      label: ROS 2 distribution
+      options: [Jazzy, Humble, Kilted, Rolling, Other]
+    validations:
+      required: true
+  - type: dropdown
+    id: rmw
+    attributes:
+      label: RMW implementation
+      options: [Fast DDS (rmw_fastrtps_cpp), Cyclone DDS (rmw_cyclonedds_cpp), Zenoh (rmw_zenoh_cpp), Connext, Other / unsure]
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS and setup
+      placeholder: Ubuntu 24.04, Docker / native, number of hosts
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part?
+      multiple: true
+      options: [CLI, Web dashboard, RViz panel, AI assistant, Configure RViz, Docs, Other]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or report
+      description: Server log lines, or attach `dds-autodiag check --report report.md`.
+      render: text

@@ -1,0 +1,21 @@
+name: Feature request
+description: Suggest a new check, display type, provider or improvement.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would it solve?
+      description: Describe the situation you ran into, not only the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Fits the project?
+      options:
+        - label: It keeps AutoDiag read-only (or is opt-in with user confirmation).
