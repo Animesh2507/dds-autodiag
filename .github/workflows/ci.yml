@@ -13,7 +13,7 @@ jobs:
         run: |
           source /opt/ros/jazzy/setup.bash
           python3 -m venv --system-site-packages .venv
-          .venv/bin/pip install -e ".[dev]" httpx2 || .venv/bin/pip install -e ".[dev]"
+          .venv/bin/pip install -e ".[dev,cloud]" httpx2 || .venv/bin/pip install -e ".[dev,cloud]"
           .venv/bin/python -m pytest -q
           .venv/bin/dds-autodiag selftest
       - name: C++ core

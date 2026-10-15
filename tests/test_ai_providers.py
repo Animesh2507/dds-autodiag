@@ -1,4 +1,5 @@
 import io
+import importlib.util
 import json
 import os
 import stat
@@ -10,6 +11,9 @@ from urllib.error import HTTPError
 from fastapi.testclient import TestClient
 from autodiag import llm, rag
 from autodiag.server import app
+
+# Claude tests need the optional Anthropic SDK (pip install ".[cloud]").
+needs_anthropic = unittest.skipUnless(importlib.util.find_spec('anthropic'), 'anthropic SDK not installed')
 
 KEY = 'sk-test-abcdefghijklmnop1234'
 
@@ -74,6 +78,7 @@ class KeyStorageTests(_TempConfig):
         ok = self.client.put('/api/ai/providers/openai_compatible', json={'base_url': 'https://api.groq.com/openai/v1/'})
         self.assertEqual(ok.json()['base_url'], 'https://api.groq.com/openai/v1')
 
+    @needs_anthropic
     def test_default_falls_back_to_ollama_when_not_ready(self):
         llm.update_provider('anthropic', make_default=True)  # no key linked
         self.assertEqual(llm.default_provider(), 'ollama')
@@ -215,6 +220,7 @@ class CloudProviderTests(_TempConfig):
         client.beta.messages.stream.side_effect = manager
         return client
 
+    @needs_anthropic
     def test_claude_opus_uses_fallbacks_and_low_effort(self):
         llm.update_provider('anthropic', api_key=KEY)
         client = self._fake_anthropic()
@@ -228,6 +234,7 @@ class CloudProviderTests(_TempConfig):
         self.assertEqual(self.anthropic_kwargs['output_config'], {'effort': 'low'})
         self.assertNotIn('thinking', self.anthropic_kwargs)
 
+    @needs_anthropic
     def test_claude_client_avoids_brotli(self):
         llm.update_provider('anthropic', api_key=KEY)
         client = self._fake_anthropic()
@@ -235,6 +242,7 @@ class CloudProviderTests(_TempConfig):
             ''.join(llm.stream_answer('anthropic', 'q'))
         self.assertEqual(ctor.call_args.kwargs['default_headers'], {'Accept-Encoding': 'gzip, deflate'})
 
+    @needs_anthropic
     def test_claude_connection_errors_are_specific(self):
         import anthropic
         request = MagicMock()
@@ -247,6 +255,7 @@ class CloudProviderTests(_TempConfig):
         network.__cause__ = ConnectionRefusedError()
         self.assertIn('cannot reach', str(llm._anthropic_connection_error(anthropic, network)))
 
+    @needs_anthropic
     def test_claude_haiku_has_no_fallbacks(self):
         llm.update_provider('anthropic', api_key=KEY, model='claude-haiku-5-5')
         client = self._fake_anthropic()
@@ -255,6 +264,7 @@ class CloudProviderTests(_TempConfig):
         self.assertNotIn('fallbacks', self.anthropic_kwargs)
         client.messages.stream.assert_called_once()
 
+    @needs_anthropic
     def test_claude_refusal(self):
         llm.update_provider('anthropic', api_key=KEY)
         with patch('anthropic.Anthropic', return_value=self._fake_anthropic('refusal')):
@@ -298,6 +308,7 @@ class ModelListTests(_TempConfig):
         with patch('autodiag.llm._get_json', return_value=data):
             self.assertEqual(llm.list_models('gemini')['models'], ['gemini-2.5-flash'])
 
+    @needs_anthropic
     def test_claude_live_list(self):
         llm.update_provider('anthropic', api_key=KEY)
         client = MagicMock()
