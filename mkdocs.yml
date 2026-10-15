@@ -63,10 +63,24 @@ nav:
       - AI providers: guides/ai-providers.md
       - Deployment: guides/deployment.md
   - How it works:
-      - Architecture: concepts/architecture.md
       - How diagnosis works: concepts/diagnosis.md
       - RAG & AI pipeline: concepts/rag.md
       - Security model: concepts/security.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - Containers: architecture/containers.md
+      - Components:
+          - Collector & probes: architecture/components/collector.md
+          - Rule engine: architecture/components/rule-engine.md
+          - AI layer: architecture/components/ai-layer.md
+          - RViz planner: architecture/components/rviz-planner.md
+          - Server & security: architecture/components/server.md
+          - RViz panel: architecture/components/rviz-panel.md
+      - Data model: architecture/data-model.md
+      - Runtime flows: architecture/flows.md
+      - Design decisions: architecture/decisions.md
+      - Extending: architecture/extending.md
+      - Quality & testing: architecture/quality.md
   - Reference:
       - Diagnostic rules: reference/rules.md
       - Configuration: reference/configuration.md

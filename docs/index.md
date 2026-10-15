@@ -12,7 +12,7 @@ hide:
 <p class="ad-tagline">Find out why your ROS 2 nodes can't talk to each other, and let AI set up RViz for you, with every change checked against your live system first.</p>
 
 [Get started :material-rocket-launch:](getting-started/installation.md){ .md-button .md-button--primary }
-[See how it works :material-graph:](concepts/architecture.md){ .md-button }
+[See how it works :material-graph:](architecture/index.md){ .md-button }
 
 <div class="ad-badges">
 <span class="ad-badge ad-badge--version">v0.1.0</span>
@@ -132,4 +132,4 @@ DDS AutoDiag checks all of them in seconds, explains what it found, and tells yo
 --8<-- "assets/diagrams/architecture.svg"
 
 All interfaces talk to one local server. It probes your system read-only, runs the rule engine, and only reaches out
-to an AI model when you ask it to. [Read the architecture](concepts/architecture.md)
+to an AI model when you ask it to. [Read the architecture](architecture/index.md)
