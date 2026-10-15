@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DDS AutoDiag</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1l7 7-7 7-7-7z' fill='%230b7fab'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<div class="layout">
+<aside class="side">
+  <div class="brand"><b>◇</b> DDS AutoDiag <small class="muted" id="version-tag"></small></div>
+  <nav class="nav" aria-label="Sections">
+    <a href="#overview" data-tab="overview" class="active"><span class="ico" aria-hidden="true">◎</span>Overview</a>
+    <a href="#topics" data-tab="topics"><span class="ico" aria-hidden="true">≋</span>Topics</a>
+    <a href="#environments" data-tab="environments"><span class="ico" aria-hidden="true">⇄</span>Compare hosts</a>
+    <a href="#diagnose" data-tab="diagnose"><span class="ico" aria-hidden="true">⚙</span>Transport</a>
+    <a href="#assistant" data-tab="assistant"><span class="ico" aria-hidden="true">?</span>Assistant</a>
+    <a href="#tools" data-tab="tools"><span class="ico" aria-hidden="true">✓</span>Tools &amp; self-test</a>
+    <a href="#about" data-tab="about"><span class="ico" aria-hidden="true">i</span>About &amp; settings</a>
+  </nav>
+  <div class="sidefoot">
+    <span>Read-only: never changes your ROS 2 or DDS configuration.</span>
+    <span><a href="/api/docs">REST API</a> · <a href="/legacy">Previous UI</a></span>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="top">
+    <div>
+      <div class="eyebrow">ROS 2 / DDS diagnostics</div>
+      <h1 id="page-title">System overview</h1>
+      <small id="scope">Local host · last checked <span id="checked-at">—</span></small>
+    </div>
+    <div class="actions tight">
+      <button type="button" data-action="theme" aria-label="Toggle colour theme" title="Toggle colour theme">◐ Theme</button>
+      <button type="button" data-action="export">Export snapshot</button>
+      <button type="button" data-action="report">Download report</button>
+      <button type="button" class="primary" data-action="refresh">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- Overview -->
+  <section class="panel active" id="overview" aria-labelledby="page-title">
+    <div class="card wide">
+      <div class="status" id="banner" role="status"><span class="dot"></span><div><b>Checking this machine…</b><span class="muted">Collecting ROS 2, network and container information (a few seconds).</span></div></div>
+      <div class="metrics" id="metrics"></div>
+    </div>
+    <div class="card wide">
+      <div class="card-head"><h2>Findings</h2><span class="muted" id="finding-count"></span></div>
+      <div id="overview-findings" class="skeleton">Waiting for results…</div>
+    </div>
+    <div class="card">
+      <h2>Middleware (RMW)</h2>
+      <div id="rmw" class="skeleton">Inspecting middleware…</div>
+    </div>
+    <div class="card">
+      <h2>Shared-memory prerequisites</h2>
+      <div id="shm-summary" class="skeleton">Checking local environment…</div>
+      <p class="muted">Actual SHM transport: <b>NOT VERIFIED</b>. These checks show prerequisites only.</p>
+    </div>
+    <div class="card">
+      <h2>What has been verified?</h2>
+      <p class="muted">A check stays “not verified” until it has actually been tested. A stopped ROS CLI daemon does not mean DDS is down.</p>
+      <div id="checks" class="checks"></div>
+    </div>
+    <div class="card">
+      <h2>Next steps</h2>
+      <ol class="muted">
+        <li>Open <a href="#topics" data-tab-link="topics">Topics</a>, pick a topic and check its publisher/subscriber QoS.</li>
+        <li>Read one live sample to confirm data actually arrives.</li>
+        <li>If another PC or container can't see your topics, use <a href="#environments" data-tab-link="environments">Compare hosts</a>.</li>
+        <li>Ask the <a href="#assistant" data-tab-link="assistant">Assistant</a> for matching official documentation.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Topics -->
+  <section class="panel" id="topics">
+    <div class="card wide">
+      <div class="card-head"><h2>Live topic discovery</h2><button type="button" class="primary" data-action="load-topics">↻ Discover topics</button></div>
+      <p class="muted">Lists topics visible in the ROS graph from this machine. Seeing a topic does not prove messages are delivered.</p>
+      <div class="actions"><input id="topic-filter" class="grow" type="search" placeholder="Filter topics or types…" aria-label="Filter topics"><span class="muted" id="topic-count"></span></div>
+      <div class="table-wrap scroll"><table><thead><tr><th>Topic</th><th>Message type</th></tr></thead><tbody id="topic-rows"><tr><td colspan="2" class="muted">Click “Discover topics” to list the ROS graph.</td></tr></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Endpoints &amp; QoS</h2><button type="button" data-action="inspect-topic">Inspect</button></div>
+      <p class="muted" id="selected-topic">Select a topic above.</p>
+      <div id="topic-findings"></div>
+      <div id="endpoint-table"></div>
+      <details><summary>Raw output</summary><pre id="topic-result">—</pre></details>
+    </div>
+    <div class="card">
+      <h2>Live message sample</h2>
+      <div class="form-grid">
+        <label class="field"><span>Subscriber reliability</span><select id="probe"><option value="auto">Auto</option><option value="best_effort">Best effort</option><option value="reliable">Reliable</option></select></label>
+        <label class="field"><span>Wait up to</span><select id="sample-timeout"><option value="3">3 s</option><option value="8" selected>8 s</option><option value="15">15 s</option></select></label>
+      </div>
+      <div class="actions"><button type="button" class="primary" data-action="sample">Read one sample</button><label class="check"><input id="auto-samples" type="checkbox"> Repeat every 3 s</label><button type="button" data-action="copy-sample">Copy</button></div>
+      <small>Output is capped at 16 KB. A received sample proves delivery to this probe, not which transport carried it.</small>
+      <pre id="sample-result">No sample requested.</pre>
+    </div>
+  </section>
+
+  <!-- Hosts & containers -->
+  <section class="panel" id="environments">
+    <div class="card wide">
+      <div class="card-head"><h2>Local Docker environments</h2><button type="button" data-action="load-docker">↻ Scan containers</button></div>
+      <p class="muted">Container metadata from the Docker CLI. To compare a container with this host, run the collector inside it and load the result below.</p>
+      <div id="docker-results">Not scanned yet.</div>
+    </div>
+    <div class="card">
+      <h2>Load a snapshot from another PC or container</h2>
+      <p class="muted">On the other system run <code>dds-autodiag collect --redact -o peer.json</code> with ROS 2 sourced, then load the file here.</p>
+      <div class="actions"><input id="snapshot-file" type="file" accept=".json,application/json" aria-label="Snapshot file"></div>
+      <details><summary>…or paste JSON</summary><textarea id="snapshot-input" rows="6" placeholder="Paste exported snapshot JSON"></textarea></details>
+      <div class="actions"><button type="button" class="primary" data-action="compare-snapshot">Compare</button></div>
+    </div>
+    <div class="card">
+      <h2>Connect to a live collector</h2>
+      <p class="muted">On the peer: <code>AUTODIAG_AGENT_TOKEN=&lt;secret&gt; dds-autodiag serve --port 8081</code>. Use a private IP or an SSH tunnel.</p>
+      <label class="field"><span>Collector URL</span><input id="remoteUrl" placeholder="http://127.0.0.1:8081" autocomplete="url"></label>
+      <label class="field"><span>Collector token</span><input id="remoteToken" type="password" autocomplete="off" placeholder="Token"></label>
+      <div class="actions"><button type="button" class="primary" data-action="compare-remote">Connect and compare</button></div>
+    </div>
+    <div class="card wide">
+      <div class="card-head"><h2>Comparison</h2><div class="actions tight"><button type="button" data-action="clear-peer">Clear peer</button></div></div>
+      <div id="remote-results" class="muted">No peer loaded. Findings that need two systems (domain, discovery range, RMW, distro) appear here.</div>
+    </div>
+  </section>
+
+  <!-- Transport -->
+  <section class="panel" id="diagnose">
+    <div class="card wide">
+      <h2>Transport diagnosis</h2>
+      <p class="muted">Pick the transport you expect your nodes to use. Checks combine this host with the peer loaded in “Compare hosts”, if any.</p>
+      <div class="actions">
+        <label class="field grow"><span>Transport to investigate</span><select id="mode"><option value="auto">Auto / not sure</option><option value="intra_process">ROS 2 intra-process (same process)</option><option value="dds_shm">DDS shared memory (same machine)</option><option value="dds_udp">DDS over UDP (network)</option><option value="dds_tcp">DDS over TCP</option></select></label>
+        <button type="button" class="primary" data-action="run-diagnostic">Run checks</button>
+      </div>
+      <div id="diagnostic-results" class="muted">Choose a transport and run checks.</div>
+    </div>
+    <div class="card wide">
+      <h2>What these checks can and cannot establish</h2>
+      <div class="split">
+        <div><h3>Supported</h3><ul class="muted"><li>Configuration mismatches (domain, discovery range, RMW, distro, DDS XML)</li><li>Advertised QoS incompatibilities</li><li>Local shared-memory prerequisites and IPC namespaces</li></ul></div>
+        <div><h3>Not verified</h3><ul class="muted"><li>Which DDS transport was actually selected</li><li>Packet-level reachability between hosts</li><li>Vendor-level shared-memory data delivery</li></ul></div>
+      </div>
+      <p class="muted">No findings does not mean the transport is healthy.</p>
+    </div>
+  </section>
+
+  <!-- Assistant -->
+  <section class="panel" id="assistant">
+    <div class="card wide">
+      <h2>Unified diagnostic assistant</h2>
+      <p class="muted">Looks up official ROS 2, DDS and Docker documentation for your current findings, and lets an AI model explain them. The answer streams in as it's written.</p>
+      <div id="ollama" class="hint">Checking AI providers…</div>
+      <label class="field"><span>What are you trying to fix?</span><input id="question" maxlength="2000" placeholder="e.g. Two Docker containers see each other's topics but receive no data"></label>
+      <div class="actions">
+        <label class="check">Provider <select id="ai-provider" aria-label="AI provider"><option value="ollama">Local Ollama</option></select></label>
+        <label class="check">Model <select id="ai-model" aria-label="AI model"><option value="">default</option></select></label>
+        <button type="button" class="primary" data-action="ask" data-ai="true" id="ask-ai">Explain with AI</button>
+        <button type="button" data-action="ask" data-ai="false">Documentation only</button>
+        <button type="button" data-action="stop-ai" id="stop-ai" hidden>Stop</button>
+        <label class="check"><input type="checkbox" id="semantic"> Semantic search (local embeddings)</label>
+      </div>
+      <p class="muted" id="ai-privacy"></p>
+      <div id="ai-answer"></div>
+      <div id="ai-results" class="muted">Ask a question, or press “Explain with AI” to explain your current findings.</div>
+    </div>
+  </section>
+
+  <!-- Tools -->
+  <section class="panel" id="tools">
+    <div class="card wide">
+      <div class="card-head"><h2>Rule self-test</h2><button type="button" class="primary" data-action="selftest">Run self-test</button></div>
+      <p class="muted">Runs every diagnostic rule against a synthetic fault to confirm this installation detects it. No ROS 2 traffic is involved.</p>
+      <div id="selftest-results"></div>
+    </div>
+    <div class="card wide">
+      <h2>Endpoint QoS checker</h2>
+      <p class="muted">Check a publisher/subscriber pair you describe by hand, for example from a design document. Uses the native C++ core when built, otherwise the Python rules.</p>
+      <div class="split">
+        <fieldset class="card"><legend>Publisher</legend>
+          <div class="form-grid">
+            <label class="field"><span>Domain</span><input data-ep="publisher" name="domain" value="0" inputmode="numeric"></label>
+            <label class="field"><span>Topic</span><input data-ep="publisher" name="topic" value="/chatter"></label>
+            <label class="field"><span>Type</span><input data-ep="publisher" name="type" value="std_msgs/msg/String"></label>
+            <label class="field"><span>Vendor / RMW</span><input data-ep="publisher" name="vendor" value="rmw_fastrtps_cpp"></label>
+            <label class="field"><span>Reliability</span><select data-ep="publisher" name="reliability"><option>reliable</option><option>best_effort</option></select></label>
+            <label class="field"><span>Durability</span><select data-ep="publisher" name="durability"><option>volatile</option><option>transient_local</option></select></label>
+          </div>
+        </fieldset>
+        <fieldset class="card"><legend>Subscriber</legend>
+          <div class="form-grid">
+            <label class="field"><span>Domain</span><input data-ep="subscriber" name="domain" value="0" inputmode="numeric"></label>
+            <label class="field"><span>Topic</span><input data-ep="subscriber" name="topic" value="/chatter"></label>
+            <label class="field"><span>Type</span><input data-ep="subscriber" name="type" value="std_msgs/msg/String"></label>
+            <label class="field"><span>Vendor / RMW</span><input data-ep="subscriber" name="vendor" value="rmw_fastrtps_cpp"></label>
+            <label class="field"><span>Reliability</span><select data-ep="subscriber" name="reliability"><option>reliable</option><option>best_effort</option></select></label>
+            <label class="field"><span>Durability</span><select data-ep="subscriber" name="durability"><option>volatile</option><option>transient_local</option></select></label>
+          </div>
+        </fieldset>
+      </div>
+      <div class="actions"><button type="button" class="primary" data-action="endpoint-check">Check pair</button></div>
+      <div id="endpoint-results"></div>
+    </div>
+    <div class="card wide">
+      <h2>Behavior Tree viewer</h2>
+      <p class="hint">Replays the diagnosis Behavior Tree. With BehaviorTree.CPP built, this is a native trace on sample data; otherwise it is a labelled simulation. <b>It is not a live ROS 2 stream.</b></p>
+      <div class="actions">
+        <button type="button" class="primary" data-action="bt" data-fault="false">Normal trace</button>
+        <button type="button" data-action="bt" data-fault="true">Inject QoS mismatch</button>
+        <button type="button" data-action="bt-pause" id="btPause">Pause</button>
+        <button type="button" data-action="bt-replay">Replay</button>
+        <label class="check">Speed <select id="btSpeed"><option value="650">Normal</option><option value="250">Fast</option><option value="1000">Slow</option></select></label>
+      </div>
+      <p id="bt-origin" class="muted">Not started</p>
+      <div class="bt-steps">
+        <div class="bt-step" id="bt-collect">Collect evidence<br><small>IDLE</small></div>
+        <div class="bt-step" id="bt-qos">Diagnose QoS<br><small>IDLE</small></div>
+        <div class="bt-step" id="bt-report">Generate report<br><small>IDLE</small></div>
+      </div>
+      <details><summary>Transition events</summary><pre id="log">No trace.</pre></details>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="panel" id="about">
+    <div class="card">
+      <h2>About this installation</h2>
+      <div id="about-info" class="skeleton">Loading…</div>
+    </div>
+    <div class="card wide">
+      <div class="card-head"><h2>AI providers</h2><span class="muted" id="ai-config-file"></span></div>
+      <p class="muted">Local Ollama works offline and needs no key. Link an API key to use Claude, ChatGPT, Gemini or any OpenAI-compatible service (Groq, OpenRouter, Mistral, LM Studio…). Keys are stored only on this server, in a file only your user can read, and are never shown again. Cloud providers receive only the finding codes and summaries, your question and documentation excerpts — never snapshots, hostnames or IP addresses.</p>
+      <div id="ai-providers" class="skeleton">Loading…</div>
+    </div>
+    <div class="card">
+      <h2>Security</h2>
+      <ul class="muted">
+        <li>All checks are read-only; nothing is restarted or reconfigured.</li>
+        <li>Keep the dashboard on <code>127.0.0.1</code>. To reach it from another PC, use an SSH tunnel or set <code>AUTODIAG_UI_TOKEN</code>.</li>
+        <li>Snapshots contain hostnames, IPs and paths. Use “Export snapshot” with redaction before sharing.</li>
+        <li>Docker access is privileged; the dashboard only runs <code>docker ps</code>.</li>
+      </ul>
+      <div class="actions"><label class="check"><input type="checkbox" id="redact-export" checked> Redact exported snapshots</label></div>
+      <form method="post" action="/logout" id="logout-form" hidden><button type="submit">Sign out</button></form>
+    </div>
+  </section>
+
+  <footer>DDS AutoDiag · read-only diagnostics · <a href="/api/docs">REST API</a> · <a href="/legacy">Previous interface</a></footer>
+</main>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+</body>
+</html>
