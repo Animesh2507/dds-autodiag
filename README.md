@@ -2,6 +2,8 @@
 
 Find out why your ROS 2 nodes can't talk to each other.
 
+**📖 Documentation:** run `pip install ".[docs]" && mkdocs serve`, or see the [docs/](docs/) folder. (Hosted docs will be linked here once published.)
+
 DDS AutoDiag is a **read-only** diagnostics tool for ROS 2 / DDS communication problems: nodes that don't see
 each other, topics that appear but never deliver data, containers that can't share memory, mismatched domains,
 discovery ranges, RMW implementations and QoS. It comes as a local web dashboard and a CLI, and never changes your

@@ -1,0 +1,83 @@
+# Command line
+
+Everything the dashboard does for diagnosis is also available as `dds-autodiag`, with readable output by default and
+`--json` for scripts.
+
+```text
+dds-autodiag doctor                          check prerequisites and print fixes
+dds-autodiag check   [--peer PEER.json]      diagnose this host
+                     [--snapshot FILE.json] [--transport MODE] [--report FILE.md] [--json]
+dds-autodiag collect [--redact] [--salt S] [-o FILE]   save a snapshot of this host
+dds-autodiag compare PEER.json [OTHER.json]  compare this host (or OTHER) with PEER
+dds-autodiag topics                          list topics visible in the ROS graph
+dds-autodiag inspect /topic                  endpoints, QoS and incompatibilities
+dds-autodiag sample  /topic [--timeout 1-15] [--reliability auto|best_effort|reliable]
+dds-autodiag selftest                        verify every diagnostic rule
+dds-autodiag serve   [--host H] [--port P] [--open]   start the dashboard
+```
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| `0` | No problem found |
+| `1` | At least one problem (error severity), a failed sample, or a failed self-test |
+| `2` | Usage or input error, e.g. a missing file or invalid topic name |
+
+That makes AutoDiag usable as a CI gate:
+
+```bash
+dds-autodiag check --peer robot.json --json > result.json || echo "Configuration problem found"
+```
+
+## Common tasks
+
+=== "Is this machine ready?"
+
+    ```bash
+    dds-autodiag doctor
+    ```
+
+=== "Why is a topic silent?"
+
+    ```bash
+    dds-autodiag inspect /scan
+    dds-autodiag sample /scan --reliability best_effort --timeout 5
+    ```
+
+=== "Expecting shared memory?"
+
+    ```bash
+    dds-autodiag check --transport dds_shm
+    ```
+
+=== "Write a report for a ticket"
+
+    ```bash
+    dds-autodiag check --peer robot.json --report report.md
+    ```
+
+## Transport modes
+
+`--transport` tells the rules what you *expect*, which enables mode-specific checks:
+
+| Mode | Use when |
+|---|---|
+| `auto` | Default, no assumption |
+| `intra_process` | Publisher and subscriber should share one process |
+| `dds_shm` | DDS shared memory between processes or containers on one host |
+| `dds_udp` / `dds_tcp` | Network transport between hosts |
+
+## Starting the server
+
+```bash
+dds-autodiag serve                         # 127.0.0.1:8080
+dds-autodiag serve --port 8090 --open
+AUTODIAG_UI_TOKEN=$(openssl rand -hex 24) dds-autodiag serve --host 0.0.0.0
+```
+
+`serve` refuses non-loopback addresses unless a dashboard token is set; see [Security model](../concepts/security.md).
+
+!!! note "Pre-1.0 flags"
+    The old flags (`--collect`, `--compare`, `--health`, `--transport`) still work, so existing scripts keep
+    running.

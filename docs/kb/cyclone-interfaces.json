@@ -1,7 +1,0 @@
-{
-  "id": "cyclone-interfaces",
-  "title": "Cyclone DDS network configuration",
-  "url": "https://cyclonedds.io/docs/cyclonedds/latest/config/network_interfaces.html",
-  "keywords": "cyclone dds interface multicast discovery peer network routing CYCLONEDDS_URI",
-  "text": "Cyclone DDS selects and advertises network interfaces based on its configuration. Investigate NetworkInterface selection, multicast and configured peers when network discovery fails. Confirm interface routing with ip addr and ip route."
-}

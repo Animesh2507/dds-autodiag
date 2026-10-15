@@ -26,6 +26,8 @@ classifiers = [
 dev = ["pytest>=7", "httpx>=0.27"]
 # Claude explanations use the official Anthropic SDK; OpenAI/Gemini need no extra packages.
 cloud = ["anthropic>=1.13,<2"]
+# Documentation site (mkdocs serve / mkdocs build).
+docs = ["mkdocs>=1.6,<2", "mkdocs-material>=9.7,<10"]
 
 [project.scripts]
 dds-autodiag = "autodiag.cli:main"
