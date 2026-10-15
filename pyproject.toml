@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ros2-dds-autodiag"
 dynamic = ["version"]
-description = "Read-only ROS 2 / DDS communication diagnostics with a local web dashboard and CLI"
+description = "Tells you why your ROS 2 nodes can't talk to each other, and fixes your RViz view for you"
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.10"

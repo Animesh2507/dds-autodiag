@@ -50,9 +50,9 @@ if you choose, a streamed AI explanation. Follow-up questions keep the conversat
 ## Tools & self-test
 
 - **Rule self-test:** runs every rule against a synthetic fault and shows pass/fail per rule.
-- **Endpoint QoS checker:** describe a publisher/subscriber pair by hand (e.g. from a design doc) and check it,
+- **Endpoint QoS checker** *(experimental)*: describe a publisher/subscriber pair by hand (e.g. from a design doc) and check it,
   using the native C++ core when built, else the Python rules.
-- **Behavior Tree viewer:** replays the diagnosis behavior tree (native BehaviorTree.CPP trace or a labelled
+- **Behavior Tree viewer** *(experimental)*: replays the diagnosis behavior tree (native BehaviorTree.CPP trace or a labelled
   simulation).
 
 ## About & settings
@@ -69,4 +69,4 @@ provider, and choose the default.
 | **Download report** | Markdown report of the current comparison, ready for a ticket |
 | **Refresh** | Re-collects everything |
 
-The previous interface is still available at `/legacy`, and the interactive API reference at `/api/docs`.
+The previous interface is still available at `/legacy` *(experimental, may be removed before 1.0)*, and the interactive API reference at `/api/docs`.
