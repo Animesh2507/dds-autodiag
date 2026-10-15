@@ -1,6 +1,6 @@
 """Local evidence-grounded RAG. No cloud dependency or document scraping.
 
-Curated documents are manually supplied in docs/kb. Retrieval works offline using
+Curated documents are manually supplied in autodiag/kb. Retrieval works offline using
 BM25; Ollama generation and optional local embeddings are opt-in.
 """
 from __future__ import annotations

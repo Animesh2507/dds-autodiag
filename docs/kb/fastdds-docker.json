@@ -1,7 +1,0 @@
-{
-  "id": "fastdds-docker",
-  "title": "Fast DDS and Docker shared-memory transport",
-  "url": "https://fast-dds.docs.eprosima.com/en/latest/docker/shm_docker.html",
-  "keywords": "fast dds shared memory shm ipc docker namespace transport",
-  "text": "Fast DDS shared-memory transport across containers depends on compatible IPC and shared-memory configuration. Containers can share a network yet have different IPC namespaces; inspect actual selected transport and ensure an appropriate network transport or fallback."
-}
