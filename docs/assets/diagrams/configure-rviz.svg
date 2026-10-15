@@ -1,0 +1,40 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" class="ad-diagram" viewBox="0 0 900 175" role="img" aria-label="Configure RViz: describe, AI plans, validate, auto-fix, review, apply or undo">
+<defs><marker id="ad-arr-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ad-arrow" d="M0 0L10 5L0 10z"/></marker></defs>
+<rect class="ad-box ad-step" style="animation-duration:7.2s;animation-delay:0.0s" x="15.0" y="30" width="126.7" height="80" rx="12"/>
+<text class="ad-label" x="78.3" y="20" text-anchor="middle">Step 1</text>
+<text class="ad-title" x="78.3" y="66" text-anchor="middle">Describe</text>
+<text class="ad-sub" x="78.3" y="86" text-anchor="middle">plain language</text>
+<text class="ad-sub" x="78.3" y="140" text-anchor="middle">"show the lidar…"</text>
+<path class="ad-line" d="M141.7 70 L163.7 70" marker-end="url(#ad-arr-c)"/>
+<rect class="ad-box ad-step" style="animation-duration:7.2s;animation-delay:1.2s" x="163.7" y="30" width="126.7" height="80" rx="12"/>
+<text class="ad-label" x="227.0" y="20" text-anchor="middle">Step 2</text>
+<text class="ad-title" x="227.0" y="66" text-anchor="middle">AI plans</text>
+<text class="ad-sub" x="227.0" y="86" text-anchor="middle">structured actions</text>
+<text class="ad-sub" x="227.0" y="140" text-anchor="middle">any provider</text>
+<path class="ad-line" d="M290.3 70 L312.3 70" marker-end="url(#ad-arr-c)"/>
+<rect class="ad-box ad-step" style="animation-duration:7.2s;animation-delay:2.4s" x="312.3" y="30" width="126.7" height="80" rx="12"/>
+<text class="ad-label" x="375.7" y="20" text-anchor="middle">Step 3</text>
+<text class="ad-title" x="375.7" y="66" text-anchor="middle">Validate</text>
+<text class="ad-sub" x="375.7" y="86" text-anchor="middle">topics · TF · types</text>
+<text class="ad-sub" x="375.7" y="140" text-anchor="middle">invalid steps dropped</text>
+<path class="ad-line" d="M439.0 70 L461.0 70" marker-end="url(#ad-arr-c)"/>
+<rect class="ad-box ad-step" style="animation-duration:7.2s;animation-delay:3.6s" x="461.0" y="30" width="126.7" height="80" rx="12"/>
+<text class="ad-label" x="524.3" y="20" text-anchor="middle">Step 4</text>
+<text class="ad-title" x="524.3" y="66" text-anchor="middle">Auto-fix</text>
+<text class="ad-sub" x="524.3" y="86" text-anchor="middle">QoS + dependencies</text>
+<text class="ad-sub" x="524.3" y="140" text-anchor="middle">from live diagnosis</text>
+<path class="ad-line" d="M587.7 70 L609.7 70" marker-end="url(#ad-arr-c)"/>
+<rect class="ad-box ad-step" style="animation-duration:7.2s;animation-delay:4.8s" x="609.7" y="30" width="126.7" height="80" rx="12"/>
+<text class="ad-label" x="673.0" y="20" text-anchor="middle">Step 5</text>
+<text class="ad-title" x="673.0" y="66" text-anchor="middle">Review</text>
+<text class="ad-sub" x="673.0" y="86" text-anchor="middle">checklist preview</text>
+<text class="ad-sub" x="673.0" y="140" text-anchor="middle">untick anything</text>
+<path class="ad-line" d="M736.3 70 L758.3 70" marker-end="url(#ad-arr-c)"/>
+<rect class="ad-box ad-step" style="animation-duration:7.2s;animation-delay:6.0s" x="758.3" y="30" width="126.7" height="80" rx="12"/>
+<text class="ad-label" x="821.7" y="20" text-anchor="middle">Step 6</text>
+<text class="ad-title" x="821.7" y="66" text-anchor="middle">Apply</text>
+<text class="ad-sub" x="821.7" y="86" text-anchor="middle">one click</text>
+<text class="ad-sub" x="821.7" y="140" text-anchor="middle">Undo restores all</text>
+<path id="ad-arr-c-track" class="ad-line" style="stroke:none" d="M15 118 L885 118"/>
+<circle class="ad-packet" r="4"><animateMotion dur="7.2s" repeatCount="indefinite"><mpath xlink:href="#ad-arr-c-track"/></animateMotion></circle>
+</svg>
