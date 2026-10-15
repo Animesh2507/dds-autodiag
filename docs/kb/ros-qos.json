@@ -1,7 +1,0 @@
-{
-  "id": "ros-qos",
-  "title": "ROS 2 Quality of Service",
-  "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html",
-  "keywords": "qos best_effort reliable volatile transient_local compatibility publisher subscriber",
-  "text": "Reliability is request/offered: a reliable publisher can serve best-effort and reliable subscribers; a best-effort publisher cannot serve a reliable subscriber. A transient-local subscriber requires transient-local durability from its publisher. Examine discovered endpoint QoS using ros2 topic info /topic --verbose. Discovery does not prove data delivery."
-}

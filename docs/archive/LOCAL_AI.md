@@ -1,6 +1,6 @@
 # Local RAG setup (v0.5)
 
-The dashboard's **Find official documentation** feature works offline, requires no credentials, and uses BM25 keyword retrieval over a small manually curated JSON knowledge base in `docs/kb/`. It is not an exhaustive document crawler or a trained model. The links point to official project documentation; verify against the version you use.
+The dashboard's **Find official documentation** feature works offline, requires no credentials, and uses BM25 keyword retrieval over a small manually curated JSON knowledge base in `autodiag/kb/`. It is not an exhaustive document crawler or a trained model. The links point to official project documentation; verify against the version you use.
 
 ## Optional local generative explanation
 
@@ -14,7 +14,7 @@ The Ollama URL defaults to `http://127.0.0.1:11434`. Only localhost loopback URL
 
 ## Extending documentation
 
-Create a JSON file in `docs/kb/` with `id`, `title`, `url` (official HTTPS reference), `keywords` and `text`. The material here is a brief manually written summary, not a downloaded or copied full documentation page. After editing a document, restart the server.
+Create a JSON file in `autodiag/kb/` with `id`, `title`, `url` (official HTTPS reference), `keywords` and `text`. The material here is a brief manually written summary, not a downloaded or copied full documentation page. After editing a document, restart the server.
 
 ## Safety and limitations
 

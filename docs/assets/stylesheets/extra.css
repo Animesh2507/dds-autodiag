@@ -1,0 +1,172 @@
+/* DDS AutoDiag documentation theme. */
+
+:root {
+  --md-primary-fg-color: #0b7fab;
+  --md-primary-fg-color--light: #2b9cc6;
+  --md-primary-fg-color--dark: #08627f;
+  --md-accent-fg-color: #0ea5a4;
+  --md-accent-fg-color--transparent: rgba(14, 165, 164, 0.14);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #4cc3ec;
+  --md-primary-fg-color--light: #7ad4f2;
+  --md-primary-fg-color--dark: #2b9cc6;
+  --md-primary-bg-color: #06121f;
+  --md-accent-fg-color: #4fd6ae;
+  --md-accent-fg-color--transparent: rgba(79, 214, 174, 0.16);
+  --md-default-bg-color: #0d1624;
+  --md-code-bg-color: #111c2e;
+}
+
+/* ---------- Home page hero ---------- */
+
+.ad-hero {
+  padding: 1.2rem 0 0.4rem;
+}
+
+.md-typeset .ad-hero h1 {
+  color: var(--md-default-fg-color);
+  font-size: 2.4rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.4rem;
+}
+
+.ad-hero .ad-tagline {
+  font-size: 1.15rem;
+  color: var(--md-default-fg-color--light);
+  max-width: 46rem;
+  margin-top: 0;
+}
+
+.ad-hero .md-button {
+  margin: 0.3rem 0.4rem 0.3rem 0;
+}
+
+.ad-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.8rem 0 0.2rem;
+}
+
+.ad-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 1rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  color: var(--md-default-fg-color--light);
+}
+
+.ad-badge--version {
+  color: var(--md-primary-fg-color);
+  border-color: var(--md-primary-fg-color);
+}
+
+/* ---------- Feature cards (Material grid cards) ---------- */
+
+.md-typeset .grid.cards > ul > li {
+  border-radius: 0.6rem;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.md-typeset .grid.cards > ul > li:hover {
+  transform: translateY(-2px);
+}
+
+/* ---------- Animated diagrams (inline SVG, theme-aware) ---------- */
+
+.ad-diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.2rem 0;
+  font-family: var(--md-text-font-family, sans-serif);
+}
+
+.ad-box {
+  fill: var(--md-code-bg-color);
+  stroke: var(--md-default-fg-color--lighter);
+  stroke-width: 1.5;
+}
+
+.ad-box--accent {
+  fill: var(--md-accent-fg-color--transparent);
+  stroke: var(--md-accent-fg-color);
+}
+
+.ad-box--primary {
+  fill: var(--md-code-bg-color);
+  stroke: var(--md-primary-fg-color);
+  stroke-width: 2;
+}
+
+.ad-title {
+  fill: var(--md-default-fg-color);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.ad-sub {
+  fill: var(--md-default-fg-color--light);
+  font-size: 12px;
+}
+
+.ad-label {
+  fill: var(--md-default-fg-color--light);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ad-line {
+  fill: none;
+  stroke: var(--md-default-fg-color--lighter);
+  stroke-width: 1.5;
+}
+
+.ad-arrow {
+  fill: var(--md-default-fg-color--lighter);
+}
+
+.ad-packet {
+  fill: var(--md-accent-fg-color);
+}
+
+/* Pipeline steps light up one after another. */
+.ad-step {
+  animation: ad-step 7.2s ease-in-out infinite;
+}
+
+@keyframes ad-step {
+  0%, 22%, 100% {
+    fill: var(--md-code-bg-color);
+    stroke: var(--md-default-fg-color--lighter);
+  }
+  6%, 16% {
+    fill: var(--md-accent-fg-color--transparent);
+    stroke: var(--md-accent-fg-color);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-packet {
+    display: none;
+  }
+  .ad-step {
+    animation: none;
+  }
+}
+
+/* ---------- Small polish ---------- */
+
+.md-typeset table:not([class]) th {
+  white-space: nowrap;
+}
+
+.md-typeset .ad-muted {
+  color: var(--md-default-fg-color--light);
+}
