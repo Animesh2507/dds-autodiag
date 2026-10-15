@@ -4,11 +4,9 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/). Versions below 1.0 may still change interfaces between minor releases.
 
-## [Unreleased]
+## 0.1.0 - Unreleased
 
-## [0.1.0] - 2026-10-15
-
-First public release.
+Upcoming first public release. Not tagged yet.
 
 ### Diagnostics
 - 22 read-only diagnostic rules for ROS 2 / DDS: domain IDs, discovery range and localhost-only settings, RMW
@@ -55,6 +53,3 @@ Before this first public release, the project went through several internal prot
 cross-host snapshot comparison and the live QoS inspector; the deterministic diagnostic assistant; offline
 documentation retrieval with optional local AI; hybrid retrieval and synthetic fault fixtures; the C++ core; the
 Behavior Tree viewer; and the task-oriented dashboard. Their notes are kept in `docs/archive/`.
-
-[Unreleased]: https://github.com/Animesh2507/dds-autodiag/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Animesh2507/dds-autodiag/releases/tag/v0.1.0
