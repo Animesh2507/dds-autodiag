@@ -9,7 +9,7 @@ hide:
 
 # DDS AutoDiag
 
-<p class="ad-tagline">Find out why your ROS 2 nodes can't talk to each other, and let AI set up RViz for you, with every change checked against your live system first.</p>
+<p class="ad-tagline">Tells you why your ROS 2 nodes can't talk to each other, and fixes your RViz view for you. Every AI change is checked against your live system first.</p>
 
 [Get started :material-rocket-launch:](getting-started/installation.md){ .md-button .md-button--primary }
 [See how it works :material-graph:](architecture/index.md){ .md-button }
@@ -95,6 +95,17 @@ DDS AutoDiag checks all of them in seconds, explains what it found, and tells yo
     [:octicons-arrow-right-24: Security model](concepts/security.md)
 
 </div>
+
+## What's included
+
+| | |
+|---|---|
+| **Core** | Diagnosis (CLI and dashboard) · live topic QoS inspection · RViz2 panel |
+| **AI add-ons** (optional) | Grounded assistant · Configure RViz with AI |
+| **Extras** | Host and container comparison · reports · redacted snapshots · Docker and systemd |
+| **Experimental** | Native C++ endpoint checker · BehaviorTree.CPP trace viewer · previous UI at `/legacy` |
+
+Experimental features may change or be removed before 1.0.
 
 ## Three ways to use it
 
