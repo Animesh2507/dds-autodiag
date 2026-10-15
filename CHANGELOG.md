@@ -1,59 +1,60 @@
 # Changelog
 
-## 1.1.0
+All notable changes to this project are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
+[Semantic Versioning](https://semver.org/). Versions below 1.0 may still change interfaces between minor releases.
 
-### Added
-- RViz panel **Configure RViz** tab: AI-planned display changes (`POST /api/rviz/plan`), validated against live topics, TF frames and a catalog of RViz2 display types; deterministic QoS fixes from AutoDiag's own topic inspection; checklist preview, apply on confirmation, retry for data-dependent settings, and one-step Undo.
-- RViz2 panel (`ros2/rviz_autodiag_panel`): health findings, topic QoS inspection (RViz display topics first) and the streamed AI assistant with topic context.
-- `/api/assistant/stream` accepts `topic` (adds that topic's live endpoints and QoS findings as context) and collects the local snapshot itself when `host_a` is omitted.
-- Streamed AI explanations (`POST /api/assistant/stream`, NDJSON): the first words appear within about a second instead of after the whole answer.
-- Linkable cloud providers: Claude (official Anthropic SDK, `[cloud]` extra), ChatGPT, Gemini, and any OpenAI-compatible API. Keys are stored server-side with mode 0600, never returned to the browser, and can be tested and removed from the dashboard (`/api/ai/providers`).
-- Model warm-up (`POST /api/ai/warmup`) keeps the local model loaded.
+## [Unreleased]
 
-### Fixed
-- Local AI took about 70 s per answer with `qwen3:4b`: its hidden reasoning was generated and then discarded. Answers now stream with thinking off. `qwen3:4b-instruct` is preferred when installed, and the thinking-only model is detected and shown with live reasoning progress instead of leaking its reasoning into the answer.
+## [0.1.0] - 2026-10-15
 
-## 1.0.0
+First public release.
 
-### Added
-- CLI subcommands `doctor`, `check`, `collect`, `compare`, `topics`, `inspect`, `sample`, `selftest` and `serve`, with readable output, `--json`, and exit codes 0/1/2. The pre-1.0 flags still work.
-- New rules: `ROS_ENV_NOT_SOURCED`, `INVALID_DOMAIN_ID`, `DOMAIN_ID_OUTSIDE_SAFE_RANGE`, `DISCOVERY_DISABLED`, `DISCOVERY_RANGE_RESTRICTED`, `ROS_LOCALHOST_ONLY_DEPRECATED`, `RMW_MISMATCH`, `DISTRO_MISMATCH`.
-- A synthetic fixture for every rule, plus a rule self-test (CLI, API `/api/selftest`, and the dashboard).
-- Markdown report (`/api/report`, `check --report`) and snapshot redaction (`collect --redact`, `/api/snapshot?redact=true`).
-- `/api/healthz`, `/api/version`, `/api/endpoint-check` (native C++ core with Python fallback).
-- Optional dashboard token (`AUTODIAG_UI_TOKEN`) with a sign-in page, Host-header allow-list, Origin check, strict CSP and security headers.
-- Dockerfile, systemd user unit, GitHub Actions CI.
+### Diagnostics
+- 22 read-only diagnostic rules for ROS 2 / DDS: domain IDs, discovery range and localhost-only settings, RMW
+  mismatches (including Zenoh vs DDS), distro mismatches, DDS XML files, QoS reliability/durability/type
+  incompatibilities, shared memory between containers (IPC namespaces), intra-process expectations, multicast, and
+  an unsourced ROS environment. Every finding has evidence, a next step and official documentation.
+- A synthetic fault fixture for every rule, plus a rule self-test (`dds-autodiag selftest`, `/api/selftest`).
+- Environment collector: ROS variables, effective RMW via `ros2 doctor`, network interfaces, container namespaces,
+  and ROS graph queries that wait for DDS discovery (`AUTODIAG_DISCOVERY_SECONDS`).
+- Live topic inspection (endpoints and QoS) and one-shot message sampling.
+- Host and container comparison from redacted snapshot files or a token-protected live collector.
+- Markdown reports and snapshot redaction for sharing.
 
-### Changed
-- Redesigned dashboard: light/dark themes, mobile layout, readable findings with evidence and documentation, endpoint QoS table, topic filter, side-by-side host comparison, snapshot file upload, error toasts that show the server's message, and remembered preferences. Scripts moved to `static/` (no inline JavaScript).
-- The overview runs its probes in parallel and caches the `ros2 doctor` result (about 3 s instead of about 6 s).
-- Remote collector errors now say what went wrong (refused, timed out, bad token).
+### Interfaces
+- CLI: `doctor`, `check`, `collect`, `compare`, `topics`, `inspect`, `sample`, `selftest`, `serve`, with `--json`
+  and exit codes 0/1/2.
+- Web dashboard: overview, topics, host comparison, transport checks, assistant, tools and settings; light/dark
+  themes and a mobile layout.
+- RViz2 panel (`ros2/rviz_autodiag_panel`) with Health, Topic, AI assistant and Configure RViz tabs.
+- REST API with OpenAPI docs at `/api/docs`.
 
-### Fixed
-- Graph queries returned partial node/topic lists because `--no-daemon` didn't wait for discovery. They now wait `AUTODIAG_DISCOVERY_SECONDS` (default 2).
-- RMW detection always returned "unknown" because the `ros2 doctor` output was cut off before its middleware section.
-- The C++ build failed whenever ROS 2's BehaviorTree.CPP package was installed (wrong CMake target name).
-- `index_legacy.html` was missing from the package data, so `/legacy` failed on non-editable installs.
-- A dead documentation link in the knowledge base (`ros-daemon`).
-- Inconsistent version numbers (0.1.0 / 0.7.0 / 0.9.0) unified to a single source.
+### AI
+- Grounded assistant: retrieval over a curated knowledge base of official ROS 2, DDS and Docker documentation
+  (BM25, optional local embeddings), cited answers, streamed responses and conversation memory.
+- Providers: local Ollama (offline), Claude (`[cloud]` extra), ChatGPT, Gemini and any OpenAI-compatible API, with
+  live model lists. Keys are stored server-side (mode 0600) and never returned to the browser.
+- Configure RViz with AI: plans display changes, validates them against live topics, message types, TF frames and a
+  display catalog, adds diagnosed QoS fixes, and applies only confirmed items, with Undo.
 
-## 0.9
-Task-oriented dashboard, RMW detection via `ros2 doctor`, `/dev/shm` prerequisite checks, Docker container listing, Ollama status.
+### Native
+- C++20 diagnostic core with CTest, and a BehaviorTree.CPP trace viewer.
 
-## 0.8
-Behavior Tree visualizer (native BehaviorTree.CPP trace or labelled simulation).
+### Security
+- Read-only by design. Loopback binding by default, optional token login, Host-header allow-list (DNS-rebinding
+  protection), Origin checks, strict Content-Security-Policy and security headers.
 
-## 0.7
-Portable C++20 core (observer, health state machine, strategy registry), CTest, Python bridge.
+### Deployment & documentation
+- Docker image, systemd user service and GitHub Actions CI.
+- Documentation site (MkDocs Material) with guides, concepts and reference.
 
-## 0.6
-Hybrid BM25 and local-embedding retrieval, version-annotated knowledge base, synthetic fault fixtures.
+### Development history
 
-## 0.5
-Offline documentation retrieval and optional local Ollama explanations.
+Before this first public release, the project went through several internal prototypes. They introduced, in order:
+cross-host snapshot comparison and the live QoS inspector; the deterministic diagnostic assistant; offline
+documentation retrieval with optional local AI; hybrid retrieval and synthetic fault fixtures; the C++ core; the
+Behavior Tree viewer; and the task-oriented dashboard. Their notes are kept in `docs/archive/`.
 
-## 0.4
-Deterministic diagnostic assistant with evidence and next tests.
-
-## 0.3
-Live endpoint/QoS inspector, authenticated remote collector, cross-host snapshot comparison.
+[Unreleased]: https://github.com/Animesh2507/dds-autodiag/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Animesh2507/dds-autodiag/releases/tag/v0.1.0
