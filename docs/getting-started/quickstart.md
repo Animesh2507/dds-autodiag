@@ -2,6 +2,10 @@
 
 Five minutes, no robot needed. You'll break a topic on purpose, then let AutoDiag find and explain the problem.
 
+!!! tip "In a hurry? One command"
+    `dds-autodiag demo` creates two broken demo topics and diagnoses them for you. The steps below do the same by
+    hand, so you see how each part works.
+
 ## 1. Create a broken topic
 
 Open two terminals with ROS 2 sourced. The first publishes **Best Effort**, the second subscribes **Reliable**, a

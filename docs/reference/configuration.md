@@ -38,7 +38,8 @@ All settings are environment variables, read when the server or CLI starts. For 
 
 ## RViz panel
 
-The panel stores its server URL, provider, model and topic in the `.rviz` file. It reads `AUTODIAG_UI_TOKEN` from the
+The panel stores its server URL, provider, model and topic in the `.rviz` file. Without a saved URL it uses
+`AUTODIAG_SERVER_URL` (set automatically by the launch file), else `http://127.0.0.1:8080`. It reads `AUTODIAG_UI_TOKEN` from the
 environment at startup; the token itself is never saved to the `.rviz` file.
 
 ## Example
