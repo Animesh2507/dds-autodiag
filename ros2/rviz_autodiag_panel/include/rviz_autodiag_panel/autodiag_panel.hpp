@@ -97,6 +97,7 @@ private:
   QLineEdit * token_edit_;
   QLabel * connection_label_;
   QTabWidget * tabs_;
+  int connect_attempts_{0};
 
   // Health tab
   QLabel * health_label_;
