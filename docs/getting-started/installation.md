@@ -3,6 +3,10 @@
 DDS AutoDiag is a Python package with an optional RViz2 plugin and an optional native C++ core. Start with the
 Python package; add the rest when you need it.
 
+!!! info "Version 0.1.0"
+    This documentation describes **DDS AutoDiag 0.1.0**, the upcoming first public release. Check your installed
+    version with `dds-autodiag --version`. See the [Changelog](../changelog.md) for what's included.
+
 ## Requirements
 
 | | Required | Notes |

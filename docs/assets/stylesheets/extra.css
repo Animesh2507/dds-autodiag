@@ -60,6 +60,11 @@
   color: var(--md-default-fg-color--light);
 }
 
+.ad-badge--version {
+  color: var(--md-primary-fg-color);
+  border-color: var(--md-primary-fg-color);
+}
+
 /* ---------- Feature cards (Material grid cards) ---------- */
 
 .md-typeset .grid.cards > ul > li {

@@ -15,6 +15,7 @@ hide:
 [See how it works :material-graph:](concepts/architecture.md){ .md-button }
 
 <div class="ad-badges">
+<span class="ad-badge ad-badge--version">v0.1.0</span>
 <span class="ad-badge">ROS 2 Jazzy</span>
 <span class="ad-badge">Fast DDS · Cyclone DDS · Zenoh-aware</span>
 <span class="ad-badge">Read-only by design</span>
