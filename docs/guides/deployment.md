@@ -23,10 +23,18 @@ A systemd *user* service starts when you log in. To start it at boot without a l
 
 ## Docker
 
+Released images are published to the GitHub Container Registry, so you don't need to install anything:
+
+```bash
+docker run --rm --net=host --ipc=host ghcr.io/animesh2507/dds-autodiag:0.1.0          # dashboard on 127.0.0.1:8080
+docker run --rm --net=host --ipc=host ghcr.io/animesh2507/dds-autodiag:0.1.0 check    # one-shot check
+```
+
+Tags: `X.Y.Z`, `X.Y` and `latest`. To build the image yourself instead:
+
 ```bash
 docker build -t ros2-dds-autodiag .
-docker run --rm --net=host --ipc=host ros2-dds-autodiag            # dashboard on 127.0.0.1:8080
-docker run --rm --net=host --ipc=host ros2-dds-autodiag check      # one-shot check
+docker run --rm --net=host --ipc=host ros2-dds-autodiag
 ```
 
 !!! info "Why `--net=host --ipc=host`?"

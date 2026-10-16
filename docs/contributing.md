@@ -65,5 +65,7 @@ pip install -e ".[dev,cloud,docs]"
 3. In `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` and start a new empty `## [Unreleased]`.
 4. Run a clean install from a fresh clone, then `dds-autodiag doctor`, `dds-autodiag selftest` and
    `dds-autodiag demo --no-wait`.
-5. Merge, then tag: `git tag -a vX.Y.Z -m "vX.Y.Z"` and `git push origin vX.Y.Z`.
+5. Merge, then tag: `git tag -a vX.Y.Z -m "vX.Y.Z"` and `git push origin vX.Y.Z`. The tag triggers the
+   *Container image* workflow, which publishes `ghcr.io/animesh2507/dds-autodiag:X.Y.Z` (the first time, set the
+   package's visibility to public under *Packages → dds-autodiag → Package settings*).
 6. Create the GitHub Release from the tag, with the changelog section as release notes.
