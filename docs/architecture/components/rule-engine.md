@@ -1,10 +1,12 @@
 # Rule engine
 
 **Modules:** `transport.py` (host and cross-host rules), `live.py` (QoS rules on live topics), `knowledge.py`
-(documentation links), `validation.py` (fixtures), `agent.py` (next-test hints)
+(documentation links), `validation.py` (fixtures), `report.py` (`sort_issues`, Markdown report), `agent.py` (next-test
+hints), `rules_doc.py` (generates [Diagnostic rules](../../reference/rules.md))
 
-The rule engine is a set of **pure functions**: snapshots in, findings out. No I/O, no global state, which makes every
-rule trivially testable.
+The rule functions (`transport_diagnose`, `_environment_rules`, `live._qos_findings`) are **pure**: snapshots or
+endpoints in, findings out. No I/O, no global state, which makes every rule trivially testable. Collecting the input
+(`ros2 topic info --verbose` for live rules) happens outside them.
 
 ```mermaid
 flowchart LR
@@ -55,12 +57,15 @@ The full list is in [Diagnostic rules](../../reference/rules.md).
 | `insufficient_evidence` | No errors, but something is unknown, unavailable, *not tested* or *not verified* |
 | `healthy` | Only when every check is positively confirmed |
 
-Because data flow and the selected transport can't be observed from configuration, a clean configuration normally
-ends in `insufficient_evidence`, not `healthy`. That's intentional: see
+Data flow (`topic_data_flow`, `application_nodes`) and the selected transport (`dds_transport`, `intra_process`) are
+never verified from configuration, so today a clean configuration always ends in `insufficient_evidence`; `healthy`
+is reserved for future positive checks. That's intentional: see
 [ADR-002](../decisions.md#adr-002-deterministic-rules-decide-ai-explains).
 
 ## Self-test fixtures
 
-Every rule has a synthetic fixture in `validation.py`: a minimal pair of snapshots that must trigger it (or, for the
-"same domain" fixture, must not). `run_all()` powers `dds-autodiag selftest`, `/api/selftest` and the dashboard's
-self-test, so any installation can prove its rules work without a robot.
+Every rule has at least one synthetic fixture in `validation.py` (27 fixtures for 23 rules): one or two snapshots run
+through `transport_diagnose()`, or a list of `endpoints` run through `_qos_findings()`, that must trigger it. Two
+negative fixtures (matching domains, compatible QoS) must not report a mismatch. `run_all()` powers
+`dds-autodiag selftest`, `/api/selftest` and the dashboard's self-test, so any installation can prove its rules work
+without a robot. `rules_doc.py` runs the same fixtures to generate the rules page; a test fails if the page drifts.

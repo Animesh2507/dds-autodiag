@@ -14,7 +14,8 @@ The landing page answers "is this machine set up correctly?":
 - **Status banner:** a configuration problem, or *"no confirmed problems, data flow not yet verified"*.
 - **Key facts:** host, ROS distro, domain ID, effective RMW (detected with `ros2 doctor`), discovery range, node and
   topic counts, and whether AutoDiag runs inside a container.
-- **Findings:** sorted by severity, each with evidence, the next step and links to official documentation.
+- **Findings:** sorted by severity, each with evidence, the next step and links to official documentation where one
+  applies.
 - **What has been verified?:** which checks passed and which are still *not tested* or *not verified*.
 
 ## Topics
@@ -49,11 +50,11 @@ if you choose, a streamed AI explanation. Follow-up questions keep the conversat
 
 ## Tools & self-test
 
-- **Rule self-test:** runs every rule against a synthetic fault and shows pass/fail per rule.
-- **Endpoint QoS checker** *(experimental)*: describe a publisher/subscriber pair by hand (e.g. from a design doc) and check it,
-  using the native C++ core when built, else the Python rules.
-- **Behavior Tree viewer** *(experimental)*: replays the diagnosis behavior tree (native BehaviorTree.CPP trace or a labelled
-  simulation).
+- **Rule self-test:** runs every rule against its synthetic faults (27 fixtures) and shows pass/fail per fixture.
+- **Endpoint QoS checker** *(experimental)*: describe a publisher/subscriber pair by hand (e.g. from a design doc)
+  and check it, using the native C++ core when built, else the Python rules. Both report the same rule codes.
+- **Behavior Tree viewer** *(experimental)*: replays the diagnosis behavior tree (native BehaviorTree.CPP trace or a
+  labeled simulation).
 
 ## About & settings
 
@@ -69,4 +70,5 @@ provider, and choose the default.
 | **Download report** | Markdown report of the current comparison, ready for a ticket |
 | **Refresh** | Re-collects everything |
 
-The previous interface is still available at `/legacy` *(experimental, may be removed before 1.0)*, and the interactive API reference at `/api/docs`.
+The previous interface is still available at `/legacy` *(experimental, may be removed before 1.0)*, and the
+interactive API reference at `/api/docs`.

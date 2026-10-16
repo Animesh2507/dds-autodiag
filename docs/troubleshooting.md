@@ -31,7 +31,7 @@
 ??? question "\"Host header not allowed\""
     Add the hostname you use to `AUTODIAG_ALLOWED_HOSTS`, for example `robot1.local`.
 
-??? question "Docker section says permission denied"
+??? question "\"Local Docker environments\" says permission denied"
     Add your user to the `docker` group, or ignore it: Docker is optional.
 
 ??? question "Local AI unreachable or slow"
@@ -44,9 +44,9 @@
     server log for the named error.
 
 ??? question "Configure RViz returns \"No changes proposed\""
-    Read the grey summary: it explains why, and lists rejected suggestions with reasons. Describe the result you
-    want concretely, for example *"Add a LaserScan display on /scan"*. Display types from extra plugins aren't
-    supported yet.
+    Read the summary under the plan: it explains why, and lists skipped suggestions with reasons. Describe the
+    result you want concretely, for example *"Add a LaserScan display on /scan"*. Display types from extra plugins
+    aren't supported yet.
 
 ## Still stuck?
 

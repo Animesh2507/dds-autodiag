@@ -34,7 +34,7 @@ RViz panel: build `ros2/rviz_autodiag_panel` with colcon, then start the server 
 
 | | Feature | |
 |---|---|---|
-| **Core** | **Diagnosis**: 23 rules with evidence, a next step and official docs; live topic QoS inspection; one-shot message sampling | CLI · dashboard |
+| **Core** | **Diagnosis**: 23 rules with evidence, a next step and official docs where one applies; live topic QoS inspection; one-shot message sampling | CLI · dashboard |
 | | **RViz2 panel**: health, topic QoS and AI, right next to your displays | `ros2/rviz_autodiag_panel` |
 | **AI add-ons** | **Assistant**: answers grounded in official ROS 2 / DDS docs, streamed, with follow-ups | Local Ollama or Claude, ChatGPT, Gemini |
 | | **Configure RViz**: describe the view; every change is validated against your live system, applied on confirmation, undoable | RViz panel |

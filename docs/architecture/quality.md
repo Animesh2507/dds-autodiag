@@ -5,8 +5,8 @@
 ```mermaid
 flowchart TB
     subgraph fast["Every change (CI)"]
-        unit["Python unit tests<br/>pytest · 137 tests"]
-        fixtures["Rule self-test<br/>synthetic faults for every rule"]
+        unit["Python unit tests<br/>pytest · 155 tests"]
+        fixtures["Rule self-test<br/>27 synthetic faults, all 23 rules"]
         cpp["C++ core<br/>CTest"]
         docs["Docs build<br/>mkdocs --strict"]
     end
@@ -21,9 +21,9 @@ flowchart TB
 
 | Level | What is covered | How |
 |---|---|---|
-| Unit | Rules, parsers, redaction, retrieval, provider request shapes, conversation building, planner validation | `pytest`, providers and subprocesses mocked |
+| Unit | Rules, generated rules page in sync with the code, parsers, redaction, retrieval, provider request shapes, conversation building, planner validation | `pytest`, providers and subprocesses mocked |
 | API | Every endpoint, security middleware, streaming format | FastAPI `TestClient` |
-| Rule fixtures | Each rule triggers on its synthetic fault | `dds-autodiag selftest` |
+| Rule fixtures | Every rule triggers on its synthetic fault (27 fixtures, incl. 2 negative cases) | `dds-autodiag selftest` |
 | Native | Endpoint strategy, health state machine | CTest |
 | UI | Dashboard flows, no JavaScript errors, no horizontal scroll on mobile | Playwright, headless Chrome |
 | RViz | Panel loaded by real RViz2: plan, apply, retry, undo; follow-up conversations | Xvfb virtual display with OpenGL |
@@ -45,8 +45,8 @@ Tests for the optional Claude SDK skip cleanly when it isn't installed.
 | Dashboard overview | ~3 s | Parallel probes; `ros2 doctor` cached 60 s |
 | Topic inspection | 2–4 s | 8 s + discovery wait |
 | AI first words | 1–2 s (warm local model) | Streaming |
-| AI full answer | ~10–15 s local CPU · ~3–7 s cloud | 300 s |
-| RViz plan | ~60–90 s local CPU · ~6–10 s cloud | 300 s |
+| AI full answer | ~10–15 s local CPU · ~3–7 s cloud | 300 s local · 90 s cloud |
+| RViz plan | ~60–90 s local CPU · ~6–10 s cloud | 300 s local · 120 s cloud |
 
 ## Known limitations
 
@@ -54,4 +54,4 @@ Tests for the optional Claude SDK skip cleanly when it isn't installed.
 - A snapshot describes the collector's own environment; nodes may override RMW or domain in their launch files.
 - The DDS transport selected at runtime and packet-level reachability aren't measured.
 - RViz planning covers `rviz_default_plugins` display types; plugin displays need catalog entries.
-- Local 4B models are slow on CPU and less reliable for complex plans; validation compensates, cloud models do better.
+- Local 4B models are slow on CPU and less reliable for complex plans; validation compensates; cloud models do better.

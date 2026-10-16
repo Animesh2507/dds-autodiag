@@ -16,7 +16,8 @@ sequenceDiagram
     S->>S: URL check: http(s), numeric private/loopback IP, no credentials
     S->>P: GET /api/agent/snapshot (X-Autodiag-Token, no proxy, no redirects)
     P->>P: Constant-time token check
-    P-->>S: Peer snapshot (≤ 300 kB, schema-checked)
+    P-->>S: Peer snapshot
+    S->>S: Size cap (300 kB) and schema check
     S->>S: transport_diagnose(local, peer)
     S-->>D: Findings + side-by-side summaries
 ```
@@ -38,6 +39,9 @@ sequenceDiagram
     S->>S: Snapshot (collected if not sent), findings, topic QoS
     S->>K: Retrieve (BM25 ± embeddings)
     S-->>C: context event (findings + sources)
+    opt cloud provider
+        S->>S: mask_for_cloud (node names, hostname, IPs, home paths)
+    end
     S->>M: System prompt + history + grounded prompt
     S-->>C: meta event
     loop streaming
@@ -67,9 +71,9 @@ sequenceDiagram
     P->>R: save() root group + Fixed Frame (undo point)
     loop each checked action
         P->>R: create display / set property / set frame
-        alt property not created yet
-            P->>P: Retry every 1 s, up to 30 s
-        end
+    end
+    opt some properties not created yet
+        P->>R: Retry pending actions every 1 s, up to 30 s
     end
     P->>P: Record results in history
     opt Undo

@@ -81,8 +81,9 @@ overview at about three seconds.
 
 **Context.** Free-text plans can't be applied safely, and complex nested schemas confuse small models.
 
-**Decision.** Seven actions, one flat schema, enforced through each provider's structured-output mode, followed by
-validation against live topics, types, frames and a display catalog.
+**Decision.** Seven actions, one flat schema, enforced through each provider's structured-output mode where
+available (otherwise the schema in the prompt plus a tolerant parser), followed by validation against live topics,
+types, frames and a display catalog.
 
 **Consequences.** Works with local and cloud models alike; every action can be explained, unticked and undone. New
 capabilities mean extending the vocabulary deliberately.

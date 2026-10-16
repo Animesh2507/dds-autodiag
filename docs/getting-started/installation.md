@@ -66,8 +66,8 @@ dds-autodiag doctor
 `doctor` lists every prerequisite with a fix for anything missing. Required items must pass; optional ones (Docker,
 Ollama, native core) only unlock extra features.
 
-!!! tip "Seeing `ROS_ENV_NOT_SOURCED`?"
-    The `ros2` command was found, but `ROS_DISTRO` is not set. Run `source /opt/ros/jazzy/setup.bash` in the same
+!!! tip "Seeing `✖ ROS 2 environment sourced`?"
+    `ROS_DISTRO` is not set in this shell. Run `source /opt/ros/jazzy/setup.bash` in the same
     terminal, then start AutoDiag again.
 
 ## 3. Optional components
@@ -81,7 +81,8 @@ Ollama, native core) only unlock extra features.
     rviz2
     ```
 
-    Then **Panels → Add New Panel → rviz_autodiag_panel → AutoDiag**. See the [RViz2 panel guide](../guides/rviz-panel.md).
+    Then **Panels → Add New Panel → rviz_autodiag_panel → AutoDiag**. See the
+    [RViz2 panel guide](../guides/rviz-panel.md).
 
 === "Local AI (Ollama)"
 

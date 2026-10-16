@@ -21,7 +21,7 @@ documentation. Each entry is a JSON document:
 }
 ```
 
-Only HTTPS links to official sources are accepted. To add knowledge, add a JSON file and restart the server.
+Only HTTPS links are accepted; entries are curated from official sources. To add knowledge, add a JSON file and restart the server.
 
 ## 2. Query
 
@@ -42,17 +42,18 @@ automatically.
 
 The top three excerpts go into the prompt, marked as **data, not instructions**, which guards against prompt
 injection from documents or findings. Excerpts are referenced by id (`[ros-qos]`) instead of URL, so small models
-can't garble the links.
+can't garble the links. For cloud providers, node names, the hostname, IP addresses and home paths in the findings
+are masked first; see [Security model](security.md#data-sent-to-ai-providers).
 
 ## 5. Generate
 
-Any configured provider streams the answer as NDJSON events (`context`, `meta`, `token`, `done`/`error`), so the
+Any configured provider streams the answer as NDJSON events (`context`, `meta`, `thinking`, `token`, `done`/`error`), so the
 first words appear within a second or two. Earlier turns of the conversation are included for follow-up questions.
 
 ## 6. Answer
 
 `[id]` citations in the answer become links to the real documentation pages, and the retrieved sources are listed
-under the answer. The rule-based findings stay the source of truth; the answer is labelled as advice.
+under the answer. The rule-based findings stay the source of truth; the answer is labeled as advice.
 
 ## Configure RViz: grounding without documents
 

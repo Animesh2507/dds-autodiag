@@ -5,7 +5,7 @@ or link a cloud provider.
 
 | Provider | Setup | Default model | Typical speed |
 |---|---|---|---|
-| **Local Ollama** | `ollama pull qwen3:4b-instruct` | `qwen3:4b-instruct` if installed, else `qwen3:4b` | First words in 1–2 s, answer in ~10–15 s on a CPU |
+| **Local Ollama** | `ollama pull qwen3:4b-instruct` | `qwen3:4b-instruct` (an installed `qwen3:4b` is used if the instruct build is missing) | First words in 1–2 s, answer in ~10–15 s on a CPU |
 | **Claude** | API key + `pip install ".[cloud]"` | `claude-opus-5-5` (low effort) | Answer in ~3–7 s |
 | **ChatGPT** | API key | `gpt-5-mini` | Seconds |
 | **Gemini** | API key (free tier available) | `gemini-2.5-flash` | Seconds |
@@ -21,6 +21,8 @@ or link a cloud provider.
 
 The **Model** dropdown lists the models your account actually offers (fetched live once a key is saved); **Other…**
 accepts any model name, and **↻ refresh** reloads the list.
+
+Base URLs for the OpenAI-compatible provider:
 
 === "Groq"
 
@@ -40,16 +42,21 @@ accepts any model name, and **↻ refresh** reloads the list.
 
 ## Keys and privacy
 
-- Keys are stored on the server in `~/.config/dds-autodiag/ai-providers.json` with file mode `0600` (only your user
-  can read it). They're never sent back to the browser; the UI shows only the last four characters.
+- Keys are stored on the server in `$XDG_CONFIG_HOME/dds-autodiag/ai-providers.json` (by default
+  `~/.config/dds-autodiag/ai-providers.json`) with file mode `0600` (only your user can read it). They're never sent
+  back to the browser; the UI shows only the last four characters.
 - Environment variables take precedence: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` /
   `GOOGLE_API_KEY`, `AUTODIAG_COMPAT_API_KEY`.
-- What a cloud provider receives:
+- What a model receives:
 
 | Feature | Sent | Never sent |
 |---|---|---|
-| Assistant | Finding codes and summaries, your question, documentation excerpts, earlier turns | Snapshots, hostnames, IPs, topic data |
-| Configure RViz | Your request, display settings, topic names and types, TF frame names | Snapshots, hostnames, IPs, message contents |
+| Assistant | Your question; earlier turns of the conversation (your questions and previous answers); code, severity and summary of each finding; the top three documentation excerpts; only with **Include the topic**: topic name, message type, endpoint counts and QoS | Snapshots, message contents, node names (to cloud providers), hostnames, IP addresses, home paths, API keys |
+| Configure RViz | Your request; earlier turns; display names, types, topics, properties and status; Fixed Frame; TF frame names; live topic names and types; diagnosed QoS facts | Snapshots, message contents, node names, hostnames, IP addresses, home paths, API keys |
+
+- For cloud providers, everything AutoDiag adds is masked first: node names become `publisher 1`, `subscriber 1`, …,
+  and this machine's hostname, IP addresses and home paths are replaced with tokens. Local Ollama gets the real names,
+  and the UI always shows the real names. In the assistant, your question is sent as you typed it.
 
 ## Fast local answers
 
@@ -61,10 +68,11 @@ ollama pull qwen3:4b-instruct
 ```
 
 AutoDiag prefers it automatically once installed and keeps the model loaded between questions. If you choose the
-thinking model anyway, its reasoning is shown as live progress and only the final answer is displayed. Run
+thinking model anyway, a live progress counter shows how many characters it has reasoned so far; the reasoning text
+itself isn't shown, only the final answer. Run
 `ollama ps` to see whether the model uses the CPU or the GPU.
 
 ## Advice, not authority
 
-The AI explains; it doesn't decide. Findings come from deterministic rules, every answer is labelled as advice, and
+The AI explains; it doesn't decide. Findings come from deterministic rules, every answer is labeled as advice, and
 in Configure RViz every proposed change is validated and shown to you before it's applied.

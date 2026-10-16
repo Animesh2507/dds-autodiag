@@ -7,11 +7,11 @@ and that can be saved, redacted and compared with another machine.
 
 ```mermaid
 flowchart LR
-    subgraph probes["Probes (parallel threads)"]
+    subgraph probes["Probes"]
         env["Environment variables<br/>ROS_*, RMW_*, DDS XML paths"]
         net["ip -j addr<br/>interfaces + multicast"]
         ns["/proc/self/ns/*<br/>container detection"]
-        rosgraph["ros2 node list<br/>ros2 topic list -t<br/>ros2 daemon status"]
+        rosgraph["ros2 node list<br/>ros2 topic list -t<br/>ros2 daemon status<br/>(parallel threads)"]
     end
     probes --> snap[("Snapshot<br/>schema_version 2")]
     doctor["ros2 doctor --report<br/>(effective RMW, cached 60 s)"] --> overview
@@ -21,6 +21,9 @@ flowchart LR
 ```
 
 ## Probes
+
+Only the three `ros2` graph probes run in parallel threads; the environment, network and namespace probes run
+sequentially (they are fast).
 
 | Probe | Command / source | Timeout | Notes |
 |---|---|---|---|
@@ -59,5 +62,9 @@ couple of seconds for consistent results; see [ADR-007](../decisions.md#adr-007-
 ## Redaction
 
 `redact.py` walks the snapshot and replaces hostnames, IPv4/IPv6 addresses and home paths with salted SHA-256
-tokens (`host-1a2b3c4d`). Loopback and multicast addresses are kept because they carry diagnostic meaning. The same
-salt on two machines produces the same tokens, so redacted snapshots still compare correctly.
+tokens (`host-1a2b3c4d`). Loopback and multicast addresses are kept because they carry diagnostic meaning.
+`collect --redact` uses a random salt unless `--salt` is given, and prints it to stderr. The same salt on two machines
+produces the same tokens, so redacted snapshots still compare correctly.
+
+`mask_for_cloud()` is the lighter variant for AI prompts: it masks node names (`publisher 1`), this machine's hostname,
+IP addresses and home paths, and keeps QoS, topic names and message types.
