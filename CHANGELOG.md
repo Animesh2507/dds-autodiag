@@ -39,7 +39,7 @@ Upcoming first public release, 0.1.0. Not tagged yet.
 - **Configure RViz with AI.** Plans display changes, validates them against live topics, message types, TF frames
   and a display catalog, adds diagnosed QoS fixes, and applies only confirmed items, with Undo.
 - **Native.** C++20 diagnostic core with CTest, and a BehaviorTree.CPP trace viewer.
-- **Deployment.** Docker image, systemd user service and GitHub Actions CI.
+- **Deployment.** Docker image (published to `ghcr.io` on release tags), systemd user service and GitHub Actions CI.
 - **Project.** Issue and pull request templates, a security policy, and a documentation site (MkDocs Material) with
   guides, concepts and reference.
 

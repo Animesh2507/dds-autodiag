@@ -1,0 +1,55 @@
+name: Container image
+# Builds the Docker image on every pull request (no push) and publishes it to
+# ghcr.io/<owner>/dds-autodiag when a release tag (v*) is pushed.
+on:
+  pull_request:
+    paths: [Dockerfile, pyproject.toml, autodiag/**, cpp/**, .github/workflows/container.yml]
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/dds-autodiag
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=ref,event=pr
+            type=ref,event=branch
+          labels: |
+            org.opencontainers.image.title=DDS AutoDiag
+            org.opencontainers.image.description=Read-only ROS 2 / DDS communication diagnostics
+      - name: Log in to GitHub Container Registry
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          load: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          image=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          docker run --rm "$image" --version
+          docker run --rm "$image" selftest
