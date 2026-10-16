@@ -9,14 +9,16 @@ All notable changes to this project are documented here. The format follows
 Upcoming first public release. Not tagged yet.
 
 ### Diagnostics
-- 22 read-only diagnostic rules for ROS 2 / DDS: domain IDs, discovery range and localhost-only settings, RMW
+- 23 read-only diagnostic rules for ROS 2 / DDS: domain IDs, discovery range and localhost-only settings, RMW
   mismatches (including Zenoh vs DDS), distro mismatches, DDS XML files, QoS reliability/durability/type
   incompatibilities, shared memory between containers (IPC namespaces), intra-process expectations, multicast, and
   an unsourced ROS environment. Every finding has evidence, a next step and official documentation.
 - A synthetic fault fixture for every rule, plus a rule self-test (`dds-autodiag selftest`, `/api/selftest`).
 - Environment collector: ROS variables, effective RMW via `ros2 doctor`, network interfaces, container namespaces,
   and ROS graph queries that wait for DDS discovery (`AUTODIAG_DISCOVERY_SECONDS`).
-- Live topic inspection (endpoints and QoS) and one-shot message sampling.
+- Live topic inspection (endpoints and QoS) and one-shot message sampling, including a warning when a subscriber
+  requests Volatile from latched (Transient Local) data, such as an RViz Map display that stays empty.
+- `dds-autodiag demo`: two deliberately broken demo topics, diagnosed in about a minute without a robot.
 - Host and container comparison from redacted snapshot files or a token-protected live collector.
 - Markdown reports and snapshot redaction for sharing.
 
@@ -25,7 +27,8 @@ Upcoming first public release. Not tagged yet.
   and exit codes 0/1/2.
 - Web dashboard: overview, topics, host comparison, transport checks, assistant, tools and settings; light/dark
   themes and a mobile layout.
-- RViz2 panel (`ros2/rviz_autodiag_panel`) with Health, Topic, AI assistant and Configure RViz tabs.
+- RViz2 panel (`ros2/rviz_autodiag_panel`) with Health, Topic, AI assistant and Configure RViz tabs, and a launch
+  file that starts the server and RViz with the panel together.
 - REST API with OpenAPI docs at `/api/docs`.
 
 ### AI
@@ -45,6 +48,7 @@ Upcoming first public release. Not tagged yet.
 
 ### Deployment & documentation
 - Docker image, systemd user service and GitHub Actions CI.
+- Issue and pull request templates, and a security policy.
 - Documentation site (MkDocs Material) with guides, concepts and reference.
 
 ### Development history

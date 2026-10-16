@@ -1,5 +1,11 @@
 # DDS AutoDiag
 
+[![CI](https://github.com/Animesh2507/dds-autodiag/actions/workflows/ci.yml/badge.svg)](https://github.com/Animesh2507/dds-autodiag/actions/workflows/ci.yml)
+[![Docs](https://github.com/Animesh2507/dds-autodiag/actions/workflows/docs.yml/badge.svg)](https://github.com/Animesh2507/dds-autodiag/actions/workflows/docs.yml)
+![ROS 2 Jazzy](https://img.shields.io/badge/ROS%202-Jazzy-22314E)
+![Version](https://img.shields.io/badge/version-0.1.0-0b7fab)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 **Tells you why your ROS 2 nodes can't talk to each other, and fixes your RViz view for you.**
 
 Topic visible in `ros2 topic list`, but no data arrives? RViz stays empty? DDS AutoDiag checks the usual causes in
@@ -16,15 +22,19 @@ python3 -m venv --system-site-packages .venv && source .venv/bin/activate
 pip install .
 
 dds-autodiag doctor            # is this machine ready?
+dds-autodiag demo              # see it work in a minute: two broken demo topics, diagnosed
 dds-autodiag inspect /scan     # why is this topic silent?
 dds-autodiag serve --open      # dashboard at http://127.0.0.1:8080
 ```
+
+RViz panel: build `ros2/rviz_autodiag_panel` with colcon, then start the server and RViz together with
+`ros2 launch rviz_autodiag_panel autodiag.launch.py`.
 
 ## What's included
 
 | | Feature | |
 |---|---|---|
-| **Core** | **Diagnosis**: 22 rules with evidence, a next step and official docs; live topic QoS inspection; one-shot message sampling | CLI · dashboard |
+| **Core** | **Diagnosis**: 23 rules with evidence, a next step and official docs; live topic QoS inspection; one-shot message sampling | CLI · dashboard |
 | | **RViz2 panel**: health, topic QoS and AI, right next to your displays | `ros2/rviz_autodiag_panel` |
 | **AI add-ons** | **Assistant**: answers grounded in official ROS 2 / DDS docs, streamed, with follow-ups | Local Ollama or Claude, ChatGPT, Gemini |
 | | **Configure RViz**: describe the view; every change is validated against your live system, applied on confirmation, undoable | RViz panel |

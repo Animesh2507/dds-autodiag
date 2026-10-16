@@ -46,3 +46,13 @@ pip install -e ".[dev,cloud,docs]"
 - Keep pull requests focused, with tests for behaviour changes.
 - AutoDiag is read-only by design. Features that change a robot's configuration or behaviour need an explicit
   opt-in and user confirmation.
+
+## Releasing
+
+1. Make sure `main` is green (CI and Docs).
+2. Set the version in `autodiag/__init__.py`, `ros2/rviz_autodiag_panel/package.xml` and `cpp/CMakeLists.txt`.
+3. In `CHANGELOG.md`, replace "Unreleased" with the release date.
+4. Run a clean install from a fresh clone, then `dds-autodiag doctor`, `dds-autodiag selftest` and
+   `dds-autodiag demo --no-wait`.
+5. Merge, then tag: `git tag -a vX.Y.Z -m "vX.Y.Z"` and `git push origin vX.Y.Z`.
+6. Create the GitHub Release from the tag, with the changelog section as release notes.

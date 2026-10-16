@@ -40,6 +40,8 @@ namespace
 {
 constexpr int kStreamTimeoutMs = 300000;  // local models on CPU can take a while
 constexpr int kAutoRefreshMs = 30000;
+constexpr int kConnectRetries = 15;       // with kConnectRetryMs: wait up to 30 s for the server
+constexpr int kConnectRetryMs = 2000;
 
 QJsonObject parseObject(const QByteArray & data)
 {
@@ -51,7 +53,7 @@ AutoDiagPanel::AutoDiagPanel(QWidget * parent)
 : rviz_common::Panel(parent), net_(new QNetworkAccessManager(this))
 {
   // --- connection row
-  server_edit_ = new QLineEdit(QStringLiteral("http://127.0.0.1:8080"));
+  server_edit_ = new QLineEdit(qEnvironmentVariable("AUTODIAG_SERVER_URL", QStringLiteral("http://127.0.0.1:8080")));
   server_edit_->setToolTip(tr("URL of the AutoDiag server (start it with: dds-autodiag serve)"));
   token_edit_ = new QLineEdit(qEnvironmentVariable("AUTODIAG_UI_TOKEN"));
   token_edit_->setEchoMode(QLineEdit::Password);
@@ -309,9 +311,19 @@ void AutoDiagPanel::connectToServer()
   connect(reply, &QNetworkReply::finished, this, [this, reply]() {
       reply->deleteLater();
       if (reply->error() != QNetworkReply::NoError) {
+        // RViz often starts before the server (e.g. from the launch file): keep trying for a short while.
+        if (reply->error() == QNetworkReply::ConnectionRefusedError && connect_attempts_ < kConnectRetries) {
+          ++connect_attempts_;
+          setConnection(tr("Waiting for the AutoDiag server to start… (%1/%2)").arg(connect_attempts_).arg(kConnectRetries),
+                        QStringLiteral("gray"));
+          QTimer::singleShot(kConnectRetryMs, this, &AutoDiagPanel::connectToServer);
+          return;
+        }
+        connect_attempts_ = 0;
         setConnection(errorText(reply), QStringLiteral("#c2304a"));
         return;
       }
+      connect_attempts_ = 0;
       const QJsonObject info = parseObject(reply->readAll());
       setConnection(tr("Connected to AutoDiag %1").arg(info.value(QStringLiteral("version")).toString()),
                     QStringLiteral("#0f8a64"));

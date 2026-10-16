@@ -14,14 +14,31 @@ rviz2
 
 In RViz: **Panels → Add New Panel → rviz_autodiag_panel → AutoDiag**.
 
+## One command: server + RViz
+
+```bash
+source .venv/bin/activate           # dds-autodiag must be on PATH
+ros2 launch rviz_autodiag_panel autodiag.launch.py
+```
+
+This starts the AutoDiag server and RViz with the panel already added and connected. Closing RViz stops the server
+again.
+
+| Argument | Default | Purpose |
+|---|---|---|
+| `port` | `8080` | Server port; the panel connects to it automatically |
+| `start_server` | `true` | Set `false` if a server is already running (e.g. the systemd service) |
+| `server_cmd` | `dds-autodiag` | Executable name or absolute path |
+| `rviz_config` | the package's `rviz/autodiag.rviz` | Use your own config; add the AutoDiag panel to it once and save |
+
 !!! important "The panel needs the AutoDiag server"
     The panel is a client of the server: diagnostics, documentation search and AI providers (including API keys)
     all stay there. Start it first with `dds-autodiag serve`. The browser dashboard doesn't need to be open.
 
 ## Connecting
 
-The top row holds the server URL (default `http://127.0.0.1:8080`), **Connect**, and **Dashboard**, which opens the
-web UI. If the server requires a token, enter it in the token field or start RViz with `AUTODIAG_UI_TOKEN` set.
+The top row holds the server URL (default `http://127.0.0.1:8080`, or `AUTODIAG_SERVER_URL` if set), **Connect**,
+and **Dashboard**, which opens the web UI. If the server isn't up yet, the panel keeps trying for about 30 seconds. If the server requires a token, enter it in the token field or start RViz with `AUTODIAG_UI_TOKEN` set.
 
 ## The four tabs
 

@@ -22,7 +22,10 @@ Durability: VOLATILE
   self.assertEqual(_qos_findings(e)[0]['code'],'RELIABILITY_MISMATCH')
  def test_compatible(self):
   e=[{'kind':'publisher','node':'p','qos':{'reliability':'RELIABLE','durability':'TRANSIENT_LOCAL'}},{'kind':'subscriber','node':'s','qos':{'reliability':'BEST_EFFORT','durability':'VOLATILE'}}]
-  self.assertEqual(_qos_findings(e),[])
+  # QoS-compatible (no errors); only the late-joiner warning for latched data remains.
+  f=_qos_findings(e)
+  self.assertEqual([x for x in f if x['severity']=='error'],[])
+  self.assertEqual([x['code'] for x in f],['LATCHED_DATA_VOLATILE_SUBSCRIBER'])
  def test_reject_bad_topic(self):self.assertEqual(inspect_topic('/abc;rm -rf /')['state'],'invalid')
  def test_topics_error(self):
   with patch('autodiag.live._call',return_value={'state':'unavailable','error':'no ros2'}):
@@ -35,4 +38,15 @@ Durability: VOLATILE
   with patch.dict('os.environ',{'AUTODIAG_AGENT_TOKEN':'safe-secret'}):
    check_agent_token('safe-secret')
    with self.assertRaises(HTTPException):check_agent_token('bad')
+
+ def test_latched_publisher_volatile_subscriber(self):
+  e=[{'kind':'publisher','node':'map_server','qos':{'reliability':'RELIABLE','durability':'TRANSIENT_LOCAL'}},
+     {'kind':'subscriber','node':'rviz','qos':{'reliability':'RELIABLE','durability':'VOLATILE'}}]
+  f=_qos_findings(e)
+  self.assertEqual([x['code'] for x in f],['LATCHED_DATA_VOLATILE_SUBSCRIBER'])
+  self.assertEqual(f[0]['severity'],'warning')
+ def test_latched_both_sides_is_clean(self):
+  e=[{'kind':'publisher','node':'map_server','qos':{'reliability':'RELIABLE','durability':'TRANSIENT_LOCAL'}},
+     {'kind':'subscriber','node':'rviz','qos':{'reliability':'RELIABLE','durability':'TRANSIENT_LOCAL'}}]
+  self.assertEqual(_qos_findings(e),[])
 if __name__=='__main__':unittest.main()

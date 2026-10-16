@@ -44,7 +44,7 @@ DDS AutoDiag checks all of them in seconds, explains what it found, and tells yo
 
     ---
 
-    22 checks for QoS, domains, discovery range, RMW and distro mismatches, DDS XML, shared memory between
+    23 checks for QoS, domains, discovery range, RMW and distro mismatches, DDS XML, shared memory between
     containers and more. Every finding comes with evidence, a next step and official documentation.
 
     [:octicons-arrow-right-24: Diagnostic rules](reference/rules.md)

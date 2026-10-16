@@ -153,10 +153,7 @@ def cmd_inspect(args):
     if result.get('state') != 'ok':
         return _usage_error(result.get('error') or result.get('state'))
     print(_c(args.topic, '1'), f"— {result['publisher_count']} publisher(s), {result['subscriber_count']} subscriber(s)\n")
-    for e in result['endpoints']:
-        q = e.get('qos', {})
-        print(f"  {e['kind']:<10} {e['node']:<34} reliability={q.get('reliability', '?'):<12} durability={q.get('durability', '?')}")
-    print()
+    _print_endpoints(result)
     _print_issues(result['findings'])
     return EXIT_ISSUES if result['findings'] else EXIT_OK
 
@@ -174,6 +171,70 @@ def cmd_sample(args):
     else:
         return _usage_error(result.get('error') or result['state'])
     return EXIT_OK if result['state'] == 'ok' else EXIT_ISSUES
+
+
+def _print_endpoints(result):
+    for e in result['endpoints']:
+        q = e.get('qos', {})
+        print(f"  {e['kind']:<10} {e['node']:<34} reliability={q.get('reliability', '?'):<12} durability={q.get('durability', '?')}")
+    print()
+
+
+def cmd_demo(args):
+    """Start deliberately broken demo topics and diagnose them: AutoDiag in one minute, no robot needed."""
+    import time
+    from . import demo
+    from .live import inspect_topic
+    reason = demo.available()
+    if reason:
+        return _usage_error(reason)
+    if not args.json:
+        print(_c('DDS AutoDiag demo', '1'), '— starting two deliberately broken topics under /autodiag_demo/ …\n')
+    results = []
+    with demo.Demo() as running:
+        for scenario in demo.SCENARIOS:
+            deadline = time.monotonic() + args.timeout
+            report = {}
+            while time.monotonic() < deadline:  # wait until both endpoints are discovered
+                report = inspect_topic(scenario.topic)
+                if report.get('state') == 'ok' and report['publisher_count'] and report['subscriber_count']:
+                    break
+                if not running.alive():
+                    return _usage_error('a demo process exited early; check that ROS 2 works with: ros2 topic list')
+                time.sleep(1)
+            codes = [f['code'] for f in report.get('findings', [])]
+            results.append({'topic': scenario.topic, 'expected': scenario.expected, 'found': scenario.expected in codes,
+                            'report': report})
+            if args.json:
+                continue
+            print(_c(f'▶ {scenario.title}', '1;36'), f'  {scenario.topic}')
+            print(f'  {scenario.explanation}\n')
+            if report.get('state') == 'ok':
+                _print_endpoints(report)
+                _print_issues(report['findings'])
+            else:
+                print('  ' + str(report.get('error') or report.get('state') or 'endpoints not discovered in time') + '\n')
+        ok = all(r['found'] for r in results)
+        if args.json:
+            print(json.dumps({'ok': ok, 'scenarios': [{k: v for k, v in r.items() if k != 'report'} for r in results]},
+                             indent=2))
+            return EXIT_OK if ok else EXIT_ISSUES
+        print(_c('✔ AutoDiag found both problems.', '32;1') if ok else
+              _c('✖ Not every expected problem was found; see above.', '31;1'))
+        if args.no_wait:
+            return EXIT_OK if ok else EXIT_ISSUES
+        print('\nThe demo topics keep running so you can explore them:')
+        print('  • Dashboard:  dds-autodiag serve --open   → Topics → filter "autodiag_demo"')
+        print('  • CLI:        dds-autodiag inspect /autodiag_demo/chatter')
+        print('  • Assistant:  ask "Why does my subscriber receive nothing on /autodiag_demo/chatter?"')
+        print('  • RViz:       AutoDiag panel → Topic tab → /autodiag_demo/map')
+        print(_c('\nPress Ctrl+C to stop the demo.', '2'))
+        try:
+            while running.alive():
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print('\nStopping the demo topics …')
+    return EXIT_OK if ok else EXIT_ISSUES
 
 
 def cmd_selftest(args):
@@ -331,6 +392,11 @@ def build_parser():
 
     p = common(sub.add_parser('selftest', help='verify every diagnostic rule against synthetic faults'))
     p.set_defaults(func=cmd_selftest)
+
+    p = common(sub.add_parser('demo', help='start two broken demo topics and diagnose them (no robot needed)'))
+    p.add_argument('--no-wait', action='store_true', help='exit after the diagnosis instead of keeping the topics running')
+    p.add_argument('--timeout', type=int, default=20, help='seconds to wait for each demo topic to be discovered')
+    p.set_defaults(func=cmd_demo)
 
     p = common(sub.add_parser('doctor', help='check that this machine is ready to run AutoDiag'))
     p.set_defaults(func=cmd_doctor)

@@ -1,0 +1,38 @@
+name: Missed problem or false alarm
+description: AutoDiag missed a real ROS 2 / DDS problem, or reported one that wasn't there.
+labels: [diagnosis]
+body:
+  - type: markdown
+    attributes:
+      value: These reports make the rules better. The more concrete the setup, the better.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind?
+      options: [Missed a real problem, False alarm (reported a problem that wasn't there), Wrong or unclear advice]
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: The real problem
+      description: What was actually wrong, and how did you find out?
+    validations:
+      required: true
+  - type: textarea
+    id: finding
+    attributes:
+      label: What AutoDiag reported
+      description: Finding codes and messages, or "nothing".
+  - type: input
+    id: setup
+    attributes:
+      label: Setup
+      placeholder: Jazzy + Cyclone DDS, 2 hosts over Wi-Fi, Docker on one side
+    validations:
+      required: true
+  - type: textarea
+    id: snapshots
+    attributes:
+      label: Redacted snapshots (optional)
+      description: "`dds-autodiag collect --redact --salt <same-on-both> -o host.json` from each host; attach the files."

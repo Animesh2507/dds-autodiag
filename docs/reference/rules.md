@@ -1,6 +1,6 @@
 # Diagnostic rules
 
-DDS AutoDiag has **22 rules**. Each finding includes its evidence, a next step and official documentation. `dds-autodiag selftest` verifies the rules against synthetic faults on any installation.
+DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step and official documentation. `dds-autodiag selftest` verifies the rules against synthetic faults on any installation.
 
 !!! info "Generated from the rule engine"
     Severity, summary, next step and documentation on this page are taken from the code.
@@ -23,6 +23,7 @@ DDS AutoDiag has **22 rules**. Each finding includes its evidence, a next step a
 | [`CYCLONE_CONFIG_RMW_MISMATCH`](#cyclone_config_rmw_mismatch) | :material-alert:{ style="color:#a86400" } warning | this host |
 | [`RELIABILITY_MISMATCH`](#reliability_mismatch) | :material-close-circle:{ style="color:#c2304a" } problem | topic inspection |
 | [`DURABILITY_MISMATCH`](#durability_mismatch) | :material-close-circle:{ style="color:#c2304a" } problem | topic inspection |
+| [`LATCHED_DATA_VOLATILE_SUBSCRIBER`](#latched_data_volatile_subscriber) | :material-alert:{ style="color:#a86400" } warning | topic inspection |
 | [`TYPE_MISMATCH`](#type_mismatch) | :material-close-circle:{ style="color:#c2304a" } problem | topic inspection |
 | [`SHM_IPC_NAMESPACE_DIFFERENCE`](#shm_ipc_namespace_difference) | :material-close-circle:{ style="color:#c2304a" } problem | two snapshots, `--transport dds_shm` |
 | [`SHM_NAMESPACE_UNVERIFIED`](#shm_namespace_unverified) | :material-alert:{ style="color:#a86400" } warning | in a container, `--transport dds_shm` |
@@ -225,9 +226,21 @@ DDS AutoDiag has **22 rules**. Each finding includes its evidence, a next step a
 | | |
 |---|---|
 | Severity | :material-close-circle:{ style="color:#c2304a" } problem (confidence: high) |
-| Symptom | A late-joining subscriber never receives the data it expects (e.g. a latched map). |
+| Symptom | The subscriber never receives anything: it requests Transient Local, but the publisher only offers Volatile. |
 | Runs with | topic inspection |
 | Next step | Review requested/offered QoS policies. Do not change semantics blindly. |
+| Documentation | [ROS 2 QoS](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html) |
+
+### `LATCHED_DATA_VOLATILE_SUBSCRIBER` {#latched_data_volatile_subscriber}
+
+**A subscriber requests Volatile from a latched (Transient Local) publisher**
+
+| | |
+|---|---|
+| Severity | :material-alert:{ style="color:#a86400" } warning (confidence: high) |
+| Symptom | Data published before the subscriber started never arrives; the classic empty map in RViz. The QoS is compatible, so ROS reports no error. |
+| Runs with | topic inspection |
+| Next step | Request Transient Local durability on the subscriber (e.g. RViz Map display: Topic → Durability Policy) so it receives the last message even when it starts later. |
 | Documentation | [ROS 2 QoS](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html) |
 
 ### `TYPE_MISMATCH` {#type_mismatch}

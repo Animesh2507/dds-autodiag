@@ -12,9 +12,21 @@ dds-autodiag compare PEER.json [OTHER.json]  compare this host (or OTHER) with P
 dds-autodiag topics                          list topics visible in the ROS graph
 dds-autodiag inspect /topic                  endpoints, QoS and incompatibilities
 dds-autodiag sample  /topic [--timeout 1-15] [--reliability auto|best_effort|reliable]
+dds-autodiag demo    [--no-wait]             start two broken demo topics and diagnose them
 dds-autodiag selftest                        verify every diagnostic rule
 dds-autodiag serve   [--host H] [--port P] [--open]   start the dashboard
 ```
+
+## Try it: `demo`
+
+```bash
+dds-autodiag demo
+```
+
+Starts two deliberately broken topics under `/autodiag_demo/` (a reliability mismatch and latched data with a
+volatile subscriber), diagnoses them, and keeps them running so you can explore them in the dashboard or RViz.
+Ctrl+C stops everything. `--no-wait` exits right after the diagnosis (exit code `0` when both problems are found),
+which also makes a quick smoke test for a new installation. The demo never touches your own topics.
 
 ## Exit codes
 

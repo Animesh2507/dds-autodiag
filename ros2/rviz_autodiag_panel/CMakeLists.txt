@@ -35,7 +35,7 @@ install(TARGETS ${PROJECT_NAME} EXPORT export_${PROJECT_NAME}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
-install(DIRECTORY icons DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY icons launch rviz DESTINATION share/${PROJECT_NAME})
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(rviz_common pluginlib Qt5)

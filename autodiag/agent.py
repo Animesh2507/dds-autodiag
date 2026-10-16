@@ -14,6 +14,7 @@ ISSUE_DOCS = {
     'DISCOVERY_DISABLED': ('discovery', 'Enable automatic discovery or configure ROS_STATIC_PEERS.'),
     'DISCOVERY_RANGE_RESTRICTED': ('discovery', 'Check ROS_AUTOMATIC_DISCOVERY_RANGE on both peers; SUBNET is required across hosts.'),
     'ROS_LOCALHOST_ONLY_DEPRECATED': ('discovery', 'Replace ROS_LOCALHOST_ONLY with ROS_AUTOMATIC_DISCOVERY_RANGE.'),
+    'LATCHED_DATA_VOLATILE_SUBSCRIBER': ('qos', 'Set the subscriber durability to Transient Local and restart it.'),
     'RMW_MISMATCH': ('rmw', 'Run both peers with the same RMW_IMPLEMENTATION and retest.'),
     'DISTRO_MISMATCH': ('distro', 'Retest with the same ROS 2 distribution on both peers.'),
     'LOCALHOST_ONLY': ('network', 'Inspect the discovery-range or localhost-only setting on both peers.'),

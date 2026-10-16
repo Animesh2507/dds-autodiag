@@ -228,6 +228,10 @@ def _topic_qos(state: dict) -> dict[str, dict]:
         if all('VOLATILE' in r for r in offered_dur) and str(props.get('Topic/Durability Policy', '')).lower() == 'transient local':
             fix.append(('Topic/Durability Policy', 'Volatile'))
             fact += f'; "{name}" requests Transient Local from a Volatile publisher -> set Topic/Durability Policy to Volatile'
+        if all('TRANSIENT_LOCAL' in r for r in offered_dur) and str(props.get('Topic/Durability Policy', '')).lower() == 'volatile':
+            fix.append(('Topic/Durability Policy', 'Transient Local'))
+            fact += (f'; "{name}" requests Volatile from a latched (Transient Local) publisher, so it misses data published '
+                     'before it started -> set Topic/Durability Policy to Transient Local')
         out[name] = {'fact': fact, 'fix': fix}
     return out
 
