@@ -20,6 +20,7 @@ from .core import diagnose
 from .transport import health, transport_diagnose
 from .knowledge import DOCS
 from .live import topic_list, inspect_topic, sample_topic
+from .graph import build_graph
 from .remote import fetch_snapshot
 from .agent import evidence_report, optional_model_explanation
 from .redact import mask_for_cloud, node_labels, redact_snapshot
@@ -159,6 +160,12 @@ def topic_inspect(topic: str):
 @app.get('/api/topic-sample', tags=['live'])
 def topic_sample(topic: str, timeout: int = 8, reliability: str = 'auto'):
     return sample_topic(topic, timeout, reliability)
+
+
+@app.get('/api/graph', tags=['live'])
+def graph(max_topics: int = 40, include_hidden: bool = False):
+    """Publisher -> subscriber graph of the visible topics, each connection checked by the QoS/type rules."""
+    return build_graph(max_topics, include_hidden)
 
 
 @app.get('/api/docs-links', tags=['knowledge'])

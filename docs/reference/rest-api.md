@@ -38,6 +38,7 @@ instead and answers 403 unless `AUTODIAG_AGENT_TOKEN` is set on the server.
 | `GET` | `/api/topics` | Topics and types |
 | `GET` | `/api/topic-inspect?topic=/x` | Endpoints, QoS and incompatibilities |
 | `GET` | `/api/topic-sample?topic=/x&timeout=8&reliability=auto` | Read one live message |
+| `GET` | `/api/graph?max_topics=40&include_hidden=false` | Publisher → subscriber graph; each connection checked by the QoS/type rules (`nodes`, `edges`, `waiting`, `counts`) |
 | `GET` | `/api/v09/environments` | Local Docker containers |
 | `GET` | `/api/v09/shm` | Shared-memory prerequisites |
 | `GET` | `/api/docs-links` | Curated official documentation links, by key |

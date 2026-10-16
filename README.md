@@ -23,7 +23,7 @@ The cause is usually one mismatched setting: QoS reliability or durability, `ROS
 links the official docs, and can fix your RViz view for you. It is **read-only**: it never touches your robot or
 ROS configuration.
 
-<!-- Demo GIF goes here: docs/assets/media/demo.gif -->
+![Diagnosis graph: every connection checked; the red /scan link from lidar_driver to rviz2 carries no data](docs/assets/media/diagnosis-graph.png)
 
 ## Quick start
 
@@ -51,7 +51,7 @@ RViz panel: build `ros2/rviz_autodiag_panel` with colcon, then start the server 
 | Where | What |
 |---|---|
 | `dds-autodiag …` | CLI: `doctor`, `demo`, `check`, `topics`, `inspect`, `sample`, `collect`, `compare`, `selftest` |
-| http://127.0.0.1:8080 | Dashboard: health, topics, AI assistant, compare hosts |
+| http://127.0.0.1:8080 | Dashboard: health, topics, diagnosis graph, AI assistant, compare hosts |
 | http://127.0.0.1:8080/api/docs | REST API (OpenAPI) |
 | RViz → Panels → AutoDiag | Health, topic QoS, AI and Configure RViz next to your displays |
 
@@ -60,6 +60,7 @@ RViz panel: build `ros2/rviz_autodiag_panel` with colcon, then start the server 
 | | Feature | |
 |---|---|---|
 | **Core** | **Diagnosis**: 23 rules with evidence, a next step and official docs where one applies; live topic QoS inspection; one-shot message sampling | CLI · dashboard |
+| | **Diagnosis graph**: every publisher → subscriber connection, broken ones in red, fix one click away | dashboard |
 | | **RViz2 panel**: health, topic QoS and AI, right next to your displays | `ros2/rviz_autodiag_panel` |
 | **AI add-ons** | **Assistant**: answers grounded in official ROS 2 / DDS docs, streamed, with follow-ups | Local Ollama or Claude, ChatGPT, Gemini |
 | | **Configure RViz**: describe the view; every change is validated against your live system, applied on confirmation, undoable | RViz panel |

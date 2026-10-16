@@ -160,3 +160,29 @@ body.login{display:grid;place-items:center;min-height:100vh;padding:16px}
 .provider h3{margin:0}
 .prov-result{margin:8px 0 0;font-size:13px}
 .field > span .link{font-size:12px;margin-left:6px}
+
+/* diagnosis graph */
+.graph-legend{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;font-size:13px;margin:10px 0}
+.graph-legend span{display:inline-flex;align-items:center;gap:6px}
+.swatch{display:inline-block;width:22px;height:0;border-top:4px solid var(--ok)}
+.swatch.error{border-color:var(--err)}.swatch.warning{border-color:var(--warn)}.swatch.waiting{border-top:3px dashed var(--dim)}
+.graph-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface2);min-height:120px;padding:4px}
+.graph-wrap>p{padding:16px}
+svg.graph{display:block;font:12px system-ui,sans-serif}
+svg.graph .gnode rect{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+svg.graph .gnode text{fill:var(--text);font-weight:600}
+svg.graph .gnode.ghost rect{fill:none;stroke:var(--dim);stroke-dasharray:5 4}
+svg.graph .gnode.ghost text{fill:var(--dim);font-weight:400;font-style:italic}
+svg.graph .edge{cursor:pointer;outline:none}
+svg.graph .edge .line{fill:none;stroke:var(--ok);stroke-width:2.5}
+svg.graph .edge .hit{fill:none;stroke:transparent;stroke-width:14}
+svg.graph .edge.error .line{stroke:var(--err);stroke-width:3.5}
+svg.graph .edge.warning .line{stroke:var(--warn);stroke-width:3}
+svg.graph .edge.waiting .line{stroke:var(--dim);stroke-dasharray:6 5}
+svg.graph .edge-label{fill:var(--dim);font-size:11px;paint-order:stroke;stroke:var(--surface2);stroke-width:4px}
+svg.graph .edge-label{pointer-events:none}
+svg.graph .edge-label.error{fill:var(--err);font-weight:700}
+svg.graph .edge-label.warning{fill:var(--warn);font-weight:700}
+svg.graph .edge:hover .line,svg.graph .edge:focus .line,svg.graph .edge.selected .line{stroke-width:5}
+.graph-topic{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.graph-topic h3{margin:0;font-size:15px}
