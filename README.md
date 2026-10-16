@@ -8,9 +8,20 @@
 
 **Tells you why your ROS 2 nodes can't talk to each other, and fixes your RViz view for you.**
 
-Topic visible in `ros2 topic list`, but no data arrives? RViz stays empty? DDS AutoDiag checks the usual causes in
-seconds (QoS, domain ID, discovery range, RMW, shared memory between containers) and tells you exactly what to
-change. It is **read-only**: it never touches your robot or ROS configuration.
+## The problem
+
+ROS 2 communication fails silently. The topic shows up in `ros2 topic list`, both nodes are running, and yet:
+
+- no message ever arrives, or RViz stays empty, with **no error and no warning**;
+- the robot and your laptop (or two containers) **never see each other**;
+- the map shows up only if RViz starts first, or never.
+
+The cause is usually one mismatched setting: QoS reliability or durability, `ROS_DOMAIN_ID`, discovery range, RMW
+(Zenoh vs DDS), shared memory between containers, a missing DDS XML file. Finding it takes hours.
+
+**DDS AutoDiag finds it in seconds.** It checks 23 known causes, shows the evidence, tells you exactly what to change,
+links the official docs, and can fix your RViz view for you. It is **read-only**: it never touches your robot or
+ROS configuration.
 
 <!-- Demo GIF goes here: docs/assets/media/demo.gif -->
 
@@ -27,8 +38,22 @@ dds-autodiag inspect /scan     # why is this topic silent?
 dds-autodiag serve --open      # dashboard at http://127.0.0.1:8080
 ```
 
+Or without installing anything, with Docker (host networking so it sees your ROS graph):
+
+```bash
+docker run --rm --net=host --ipc=host ghcr.io/animesh2507/dds-autodiag:0.1.0          # dashboard
+docker run --rm --net=host --ipc=host ghcr.io/animesh2507/dds-autodiag:0.1.0 check    # one-shot check
+```
+
 RViz panel: build `ros2/rviz_autodiag_panel` with colcon, then start the server and RViz together with
 `ros2 launch rviz_autodiag_panel autodiag.launch.py`.
+
+| Where | What |
+|---|---|
+| `dds-autodiag …` | CLI: `doctor`, `demo`, `check`, `topics`, `inspect`, `sample`, `collect`, `compare`, `selftest` |
+| http://127.0.0.1:8080 | Dashboard: health, topics, AI assistant, compare hosts |
+| http://127.0.0.1:8080/api/docs | REST API (OpenAPI) |
+| RViz → Panels → AutoDiag | Health, topic QoS, AI and Configure RViz next to your displays |
 
 ## What's included
 
@@ -60,8 +85,10 @@ Good starting points: [Quick start](docs/getting-started/quickstart.md) ·
 Version **0.1.0** (unreleased). Tested on ROS 2 Jazzy with Fast DDS on Ubuntu 24.04. Reports from other distros,
 RMWs and setups are very welcome; see [Contributing](docs/contributing.md).
 
-**Related work:** [greenwave_monitor](https://github.com/NVIDIA-ISAAC-ROS/greenwave_monitor) measures *how fast* data
-flows (topic rate and latency); DDS AutoDiag explains *why* it doesn't.
+**Related tools:** [greenwave_monitor](https://github.com/NVIDIA-ISAAC-ROS/greenwave_monitor),
+[ros2_pulse](https://github.com/TanayK07/ros2_pulse) and [ROSscope](https://github.com/jawad-glitch/ROSscope) monitor
+topic rates, latency and health over time; DDS AutoDiag explains *why* communication fails and how to fix it. They
+work well together.
 
 ## License
 
