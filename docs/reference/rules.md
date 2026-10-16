@@ -1,9 +1,10 @@
 # Diagnostic rules
 
-DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step and official documentation. `dds-autodiag selftest` verifies the rules against synthetic faults on any installation.
+DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step and, where one applies, official documentation. `dds-autodiag selftest` runs every rule against its synthetic faults (27 fixtures) on any installation.
 
 !!! info "Generated from the rule engine"
-    Severity, summary, next step and documentation on this page are taken from the code.
+    Severity, summary, next step and documentation on this page are produced by running each rule's self-test
+    fixture (`python -m autodiag.rules_doc`). A test fails if the page and the code disagree.
 
 | Code | Severity | Needs |
 |---|---|---|
@@ -17,7 +18,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | [`DISCOVERY_DISABLED`](#discovery_disabled) | :material-alert:{ style="color:#a86400" } warning | this host |
 | [`ROS_LOCALHOST_ONLY_DEPRECATED`](#ros_localhost_only_deprecated) | :material-information:{ style="color:#2f6fd0" } note | this host |
 | [`MULTICAST_CAPABILITY_ABSENT`](#multicast_capability_absent) | :material-alert:{ style="color:#a86400" } warning | two snapshots |
-| [`RMW_MISMATCH`](#rmw_mismatch) | :material-close-circle:{ style="color:#c2304a" } problem | two snapshots |
+| [`RMW_MISMATCH`](#rmw_mismatch) | :material-close-circle:{ style="color:#c2304a" } problem / :material-alert:{ style="color:#a86400" } warning | two snapshots |
 | [`DISTRO_MISMATCH`](#distro_mismatch) | :material-alert:{ style="color:#a86400" } warning | two snapshots |
 | [`DDS_CONFIG_FILE_MISSING`](#dds_config_file_missing) | :material-close-circle:{ style="color:#c2304a" } problem | this host |
 | [`CYCLONE_CONFIG_RMW_MISMATCH`](#cyclone_config_rmw_mismatch) | :material-alert:{ style="color:#a86400" } warning | this host |
@@ -43,7 +44,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Everything shows as unknown; `ros2` works in one terminal but not in the one running AutoDiag. |
 | Runs with | this host |
 | Next step | Run "source /opt/ros/<distro>/setup.bash" in the shell that starts AutoDiag (and your nodes), then restart it. |
-| Documentation | [network](https://docs.ros.org/en/jazzy/How-To-Guides/Installation-Troubleshooting.html) |
+| Documentation | [ROS 2 installation troubleshooting](https://docs.ros.org/en/jazzy/How-To-Guides/Installation-Troubleshooting.html) |
 
 ### `INVALID_DOMAIN_ID` {#invalid_domain_id}
 
@@ -55,7 +56,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Nodes fail to start or join an unexpected domain. |
 | Runs with | this host |
 | Next step | Use an integer from 0 to 101 (safe range on Linux). |
-| Documentation | [domain](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html) |
+| Documentation | [ROS 2 domain IDs](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html) |
 
 ### `DOMAIN_ID_OUTSIDE_SAFE_RANGE` {#domain_id_outside_safe_range}
 
@@ -67,7 +68,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Intermittent discovery failures or port conflicts on Linux. |
 | Runs with | this host |
 | Next step | Domain IDs above 101 may collide with ephemeral ports on Linux; prefer 0 to 101. |
-| Documentation | [domain](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html) |
+| Documentation | [ROS 2 domain IDs](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html) |
 
 ### `NO_NETWORK_INTERFACES` {#no_network_interfaces}
 
@@ -79,7 +80,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Network-related checks are skipped. |
 | Runs with | this host |
 | Next step | Run diagnostics on a Linux host with iproute2 available. |
-| Documentation | — |
+| Documentation | [ROS 2 installation troubleshooting](https://docs.ros.org/en/jazzy/How-To-Guides/Installation-Troubleshooting.html) |
 
 ## Discovery
 
@@ -93,7 +94,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Two machines or containers never see each other's nodes or topics. |
 | Runs with | two snapshots |
 | Next step | Use a consistent ROS_DOMAIN_ID across intended peers, then restart managed processes. |
-| Documentation | [domain](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html) |
+| Documentation | [ROS 2 domain IDs](https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html) |
 
 ### `LOCALHOST_ONLY` {#localhost_only}
 
@@ -105,7 +106,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Everything works on one machine, nothing across machines. |
 | Runs with | two snapshots |
 | Next step | Review ROS_LOCALHOST_ONLY and ROS_AUTOMATIC_DISCOVERY_RANGE; allow remote discovery when appropriate. |
-| Documentation | [network](https://docs.ros.org/en/jazzy/How-To-Guides/Installation-Troubleshooting.html) |
+| Documentation | [ROS 2 installation troubleshooting](https://docs.ros.org/en/jazzy/How-To-Guides/Installation-Troubleshooting.html) |
 
 ### `DISCOVERY_RANGE_RESTRICTED` {#discovery_range_restricted}
 
@@ -117,7 +118,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Everything works on one machine, nothing across machines (Jazzy and newer). |
 | Runs with | two snapshots |
 | Next step | Set ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET on both peers, or list peers in ROS_STATIC_PEERS. |
-| Documentation | [discovery](https://docs.ros.org/en/jazzy/Tutorials/Advanced/Improved-Dynamic-Discovery.html) |
+| Documentation | [ROS 2 improved dynamic discovery](https://docs.ros.org/en/jazzy/Tutorials/Advanced/Improved-Dynamic-Discovery.html) |
 
 ### `DISCOVERY_DISABLED` {#discovery_disabled}
 
@@ -129,7 +130,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | No other node is ever discovered. |
 | Runs with | this host |
 | Next step | Set ROS_AUTOMATIC_DISCOVERY_RANGE to LOCALHOST or SUBNET, or configure ROS_STATIC_PEERS. |
-| Documentation | [discovery](https://docs.ros.org/en/jazzy/Tutorials/Advanced/Improved-Dynamic-Discovery.html) |
+| Documentation | [ROS 2 improved dynamic discovery](https://docs.ros.org/en/jazzy/Tutorials/Advanced/Improved-Dynamic-Discovery.html) |
 
 ### `ROS_LOCALHOST_ONLY_DEPRECATED` {#ros_localhost_only_deprecated}
 
@@ -141,7 +142,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | A legacy variable is still set; behaviour may differ from what you expect. |
 | Runs with | this host |
 | Next step | Use ROS_AUTOMATIC_DISCOVERY_RANGE (LOCALHOST, SUBNET or OFF) instead. |
-| Documentation | [discovery](https://docs.ros.org/en/jazzy/Tutorials/Advanced/Improved-Dynamic-Discovery.html) |
+| Documentation | [ROS 2 improved dynamic discovery](https://docs.ros.org/en/jazzy/Tutorials/Advanced/Improved-Dynamic-Discovery.html) |
 
 ### `MULTICAST_CAPABILITY_ABSENT` {#multicast_capability_absent}
 
@@ -153,7 +154,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Discovery across hosts fails on networks or VPNs without multicast. |
 | Runs with | two snapshots |
 | Next step | Check whether discovery uses static unicast peers or discovery server; multicast flags alone do not prove network delivery. |
-| Documentation | [cyclone_discovery](https://cyclonedds.io/docs/cyclonedds/latest/config/discovery-config.html) |
+| Documentation | [Cyclone DDS discovery](https://cyclonedds.io/docs/cyclonedds/latest/config/discovery-config.html) |
 
 ## Middleware & versions
 
@@ -163,11 +164,11 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 
 | | |
 |---|---|
-| Severity | :material-close-circle:{ style="color:#c2304a" } problem (confidence: high) |
+| Severity | :material-close-circle:{ style="color:#c2304a" } problem (confidence: high): Zenoh RMW peer talking to a DDS RMW peer<br>:material-alert:{ style="color:#a86400" } warning (confidence: medium): Two different DDS RMWs (usually interoperable) |
 | Symptom | Peers don't see each other at all (Zenoh vs DDS), or behave inconsistently across DDS vendors. |
 | Runs with | two snapshots |
-| Next step | Use the same RMW_IMPLEMENTATION on all peers. |
-| Documentation | [rmw](https://docs.ros.org/en/jazzy/How-To-Guides/Working-with-multiple-RMW-implementations.html) |
+| Next step | Use the same RMW_IMPLEMENTATION on all peers.<br>Cross-vendor DDS interoperability usually works, but use the same RMW_IMPLEMENTATION where possible to rule it out. |
+| Documentation | [Working with multiple RMW implementations](https://docs.ros.org/en/jazzy/How-To-Guides/Working-with-multiple-RMW-implementations.html) |
 
 ### `DISTRO_MISMATCH` {#distro_mismatch}
 
@@ -179,7 +180,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Some topics or services fail between machines, often with type or QoS-default differences. |
 | Runs with | two snapshots |
 | Next step | Communication across ROS 2 distributions is not officially supported; message definitions and defaults can differ. |
-| Documentation | [distro](https://docs.ros.org/en/jazzy/Releases.html) |
+| Documentation | [ROS 2 distributions](https://docs.ros.org/en/jazzy/Releases.html) |
 
 ### `DDS_CONFIG_FILE_MISSING` {#dds_config_file_missing}
 
@@ -191,7 +192,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Your DDS tuning (interfaces, peers, SHM) silently doesn't apply. |
 | Runs with | this host |
 | Next step | Correct the path or ensure the file is mounted inside the container. |
-| Documentation | [cyclone_interfaces](https://cyclonedds.io/docs/cyclonedds/latest/config/network_interfaces.html) |
+| Documentation | [Cyclone DDS network interfaces](https://cyclonedds.io/docs/cyclonedds/latest/config/network_interfaces.html) · [Fast DDS shared memory transport](https://fast-dds.docs.eprosima.com/en/stable/fastdds/transport/shared_memory/shared_memory.html) |
 
 ### `CYCLONE_CONFIG_RMW_MISMATCH` {#cyclone_config_rmw_mismatch}
 
@@ -203,13 +204,13 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Cyclone DDS settings have no effect because another RMW is active. |
 | Runs with | this host |
 | Next step | Check RMW_IMPLEMENTATION and remove or correct unused DDS configuration. |
-| Documentation | [cyclone_interfaces](https://cyclonedds.io/docs/cyclonedds/latest/config/network_interfaces.html) |
+| Documentation | [Cyclone DDS network interfaces](https://cyclonedds.io/docs/cyclonedds/latest/config/network_interfaces.html) |
 
 ## QoS & types (live topics)
 
 ### `RELIABILITY_MISMATCH` {#reliability_mismatch}
 
-**Incompatible reliability: pub → sub**
+**Incompatible reliability: publisher_node → subscriber_node**
 
 | | |
 |---|---|
@@ -221,7 +222,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 
 ### `DURABILITY_MISMATCH` {#durability_mismatch}
 
-**Incompatible durability: pub → sub**
+**Incompatible durability: publisher_node → subscriber_node**
 
 | | |
 |---|---|
@@ -233,7 +234,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 
 ### `LATCHED_DATA_VOLATILE_SUBSCRIBER` {#latched_data_volatile_subscriber}
 
-**A subscriber requests Volatile from a latched (Transient Local) publisher**
+**subscriber_node requests Volatile from latched (Transient Local) publisher publisher_node**
 
 | | |
 |---|---|
@@ -253,7 +254,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Endpoints never match, or tools report type errors on the topic. |
 | Runs with | topic inspection |
 | Next step | Use matching interface types and type definitions. |
-| Documentation | — |
+| Documentation | [ROS 2 interfaces](https://docs.ros.org/en/jazzy/Concepts/Basic/About-Interfaces.html) |
 
 ## Transport
 
@@ -267,7 +268,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Containers on one host discover each other but large messages never arrive. |
 | Runs with | two snapshots, `--transport dds_shm` |
 | Next step | Use supported shared IPC configuration only if needed and approved; otherwise prefer UDP transport. |
-| Documentation | [fastdds_docker](https://fast-dds.docs.eprosima.com/en/stable/docker/shm_docker.html) |
+| Documentation | [Fast DDS shared memory in Docker](https://fast-dds.docs.eprosima.com/en/stable/docker/shm_docker.html) |
 
 ### `SHM_NAMESPACE_UNVERIFIED` {#shm_namespace_unverified}
 
@@ -279,7 +280,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Shared memory may silently fall back to UDP, or fail inside containers. |
 | Runs with | in a container, `--transport dds_shm` |
 | Next step | Check actual IPC namespace sharing between the two containers and vendor SHM settings; do not assume SHM is available. |
-| Documentation | [fastdds_docker](https://fast-dds.docs.eprosima.com/en/stable/docker/shm_docker.html) |
+| Documentation | [Fast DDS shared memory in Docker](https://fast-dds.docs.eprosima.com/en/stable/docker/shm_docker.html) |
 
 ### `INTRA_PROCESS_SEPARATE_PROCESSES` {#intra_process_separate_processes}
 
@@ -291,7 +292,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | Zero-copy intra-process delivery is expected but the nodes run in different processes. |
 | Runs with | two snapshots, `--transport intra_process` |
 | Next step | Use DDS shared memory or UDP/TCP for cross-process communications. |
-| Documentation | [intraprocess](https://docs.ros.org/en/jazzy/Tutorials/Demos/Intra-Process-Communication.html) |
+| Documentation | [ROS 2 intra-process communication](https://docs.ros.org/en/jazzy/Tutorials/Demos/Intra-Process-Communication.html) |
 
 ### `INTRA_PROCESS_NOT_AUTODETECTABLE` {#intra_process_not_autodetectable}
 
@@ -303,7 +304,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Symptom | You expect intra-process communication; this can't be confirmed from outside. |
 | Runs with | `--transport intra_process` |
 | Next step | Confirm publisher/subscriber are in the same process and intra-process communication is enabled in node options; DDS transport cannot prove this. |
-| Documentation | [intraprocess](https://docs.ros.org/en/jazzy/Tutorials/Demos/Intra-Process-Communication.html) |
+| Documentation | [ROS 2 intra-process communication](https://docs.ros.org/en/jazzy/Tutorials/Demos/Intra-Process-Communication.html) |
 
 ### `UNKNOWN_TRANSPORT_MODE` {#unknown_transport_mode}
 
@@ -316,3 +317,20 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 | Runs with | this host |
 | Next step | Use auto, intra_process, dds_shm, dds_udp or dds_tcp. |
 | Documentation | — |
+
+## Endpoint check
+
+**Check endpoint** in the dashboard (`POST /api/endpoint-check`) compares a publisher and a subscriber that you
+describe by hand, without a running ROS graph. It uses the native C++ core when it is built, otherwise a Python
+fallback, and reports a smaller set of codes:
+
+| Code | Severity | Meaning |
+|---|---|---|
+| [`DOMAIN_MISMATCH`](#domain_mismatch) | :material-close-circle:{ style="color:#c2304a" } problem | The two domain IDs differ. |
+| `TOPIC_MISMATCH` | :material-close-circle:{ style="color:#c2304a" } problem | The topic names differ (check namespaces and remapping). |
+| [`TYPE_MISMATCH`](#type_mismatch) | :material-close-circle:{ style="color:#c2304a" } problem | The message types differ. |
+| [`RELIABILITY_MISMATCH`](#reliability_mismatch) | :material-close-circle:{ style="color:#c2304a" } problem | Best-effort publisher, reliable subscriber. |
+| [`DURABILITY_MISMATCH`](#durability_mismatch) | :material-close-circle:{ style="color:#c2304a" } problem | Volatile publisher, transient-local subscriber. |
+
+These are not counted separately in the rules above: `TOPIC_MISMATCH` only exists here, because a live topic
+inspection always looks at one topic name.

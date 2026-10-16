@@ -118,7 +118,14 @@ def cmd_collect(args):
     snapshot = collect()
     snapshot['transport']['requested_mode'] = args.transport
     if args.redact:
-        snapshot = redact_snapshot(snapshot, salt=args.salt or '')
+        salt = args.salt
+        if not salt:
+            # Unsalted 8-hex hashes of IPs could be reversed by brute force.
+            import secrets
+            salt = secrets.token_hex(8)
+            print(f'Redacted with a random salt. To compare with another host, collect there with --salt {salt}',
+                  file=sys.stderr)
+        snapshot = redact_snapshot(snapshot, salt=salt)
     _write_or_print(json.dumps(snapshot, indent=2), args.output)
     return EXIT_OK
 
@@ -246,7 +253,7 @@ def cmd_selftest(args):
         for r in result['results']:
             mark = _c('PASS', '32;1') if r['passed'] else _c('FAIL', '31;1')
             print(f"{mark}  {r['fixture']:<32} {r['description']}")
-        print(f"\n{result['passed']}/{result['total']} rules passed")
+        print(f"\n{result['passed']}/{result['total']} fixtures passed")
     return EXIT_OK if result['ok'] else EXIT_ISSUES
 
 
@@ -278,7 +285,7 @@ def cmd_doctor(args):
         'Install Docker and add your user to the "docker" group to list containers.')
     ollama = ollama_status()
     add('Local AI via Ollama (optional)', ollama['state'] == 'ready', ollama['message'],
-        f"ollama serve && ollama pull {ollama.get('expected_model', 'qwen3:4b')}")
+        f"ollama serve && ollama pull {ollama.get('expected_model', 'qwen3:4b-instruct')}")
     add('Native C++ core (optional)', binary_path().is_file(), str(binary_path()),
         'cmake -S cpp -B cpp/build && cmake --build cpp/build')
     add('BehaviorTree.CPP runner (optional)', _binary() is not None, 'built' if _binary() else 'not built',
@@ -366,7 +373,7 @@ def build_parser():
     p = sub.add_parser('collect', help='print or save a snapshot of this host for comparison elsewhere')
     p.add_argument('-o', '--output', metavar='FILE', help='write to FILE instead of stdout')
     p.add_argument('--redact', action='store_true', help='hash hostnames, IPs and home paths before sharing')
-    p.add_argument('--salt', help='redaction salt; use the same value on both hosts to keep them comparable')
+    p.add_argument('--salt', help='redaction salt (default: random); use the same value on both hosts to keep them comparable')
     p.add_argument('--transport', choices=MODES, default='auto')
     p.set_defaults(func=cmd_collect)
 
@@ -390,7 +397,7 @@ def build_parser():
     p.add_argument('--reliability', choices=('auto', 'best_effort', 'reliable'), default='auto')
     p.set_defaults(func=cmd_sample)
 
-    p = common(sub.add_parser('selftest', help='verify every diagnostic rule against synthetic faults'))
+    p = common(sub.add_parser('selftest', help='run every diagnostic rule against its synthetic faults'))
     p.set_defaults(func=cmd_selftest)
 
     p = common(sub.add_parser('demo', help='start two broken demo topics and diagnose them (no robot needed)'))

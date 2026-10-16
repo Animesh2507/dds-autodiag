@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 dependencies = ["fastapi>=0.110,<1", "uvicorn>=0.27,<1"]
 keywords = ["ros2", "dds", "diagnostics", "fastdds", "cyclonedds", "robotics"]
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
+  "Development Status :: 3 - Alpha",
   "Environment :: Web Environment",
   "Intended Audience :: Developers",
   "Operating System :: POSIX :: Linux",

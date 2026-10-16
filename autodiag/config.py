@@ -21,7 +21,7 @@ class Settings:
     agent_token: str = ''
     allowed_hosts: tuple[str, ...] = field(default_factory=tuple)
     ollama_url: str = 'http://127.0.0.1:11434'
-    ollama_model: str = 'qwen3:4b'
+    ollama_model: str = 'qwen3:4b-instruct'
     embed_model: str = 'nomic-embed-text'
     embed_cache: Path = Path.home() / '.cache' / 'dds-autodiag' / 'embeddings'
     log_level: str = 'INFO'
@@ -47,7 +47,7 @@ def settings() -> Settings:
         agent_token=env.get('AUTODIAG_AGENT_TOKEN', ''),
         allowed_hosts=_csv(env.get('AUTODIAG_ALLOWED_HOSTS')),
         ollama_url=env.get('AUTODIAG_OLLAMA_URL', 'http://127.0.0.1:11434'),
-        ollama_model=env.get('AUTODIAG_OLLAMA_MODEL', 'qwen3:4b'),
+        ollama_model=env.get('AUTODIAG_OLLAMA_MODEL', 'qwen3:4b-instruct'),
         embed_model=env.get('AUTODIAG_EMBED_MODEL', 'nomic-embed-text'),
         embed_cache=Path(env.get('AUTODIAG_EMBED_CACHE', str(Path.home() / '.cache' / 'dds-autodiag' / 'embeddings'))),
         log_level=env.get('AUTODIAG_LOG_LEVEL', 'INFO').upper(),

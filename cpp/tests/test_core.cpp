@@ -11,6 +11,6 @@ int main(){
  autodiag::EventBus bus;autodiag::HealthMonitor health(bus);int n=0;bus.subscribe([&](const autodiag::Event&){++n;});
  health.update(false,false,false);assert(n==0);health.update(true,false,false);assert(n==1);health.update(true,false,false);assert(n==1);
  health.update(true,true,false);assert(n==2);
- auto json=autodiag::json_report(a,b,f,autodiag::Health::Degraded);assert(json.find("QOS_RELIABILITY")!=std::string::npos);
+ auto json=autodiag::json_report(a,b,f,autodiag::Health::Degraded);assert(json.find("RELIABILITY_MISMATCH")!=std::string::npos);
  std::cout<<"C++ core tests passed\n";
 }

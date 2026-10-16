@@ -12,8 +12,8 @@ std::vector<Finding> GenericStrategy::inspect(const Endpoint& a,const Endpoint& 
  if(!a.domain.empty()&&!b.domain.empty()&&a.domain!=b.domain) add("DOMAIN_MISMATCH",a.domain+" != "+b.domain,"Check the ROS_DOMAIN_ID used by each process; compare from independently collected host snapshots.");
  if(!a.topic.empty()&&!b.topic.empty()&&a.topic!=b.topic)add("TOPIC_MISMATCH",a.topic+" != "+b.topic,"Confirm both endpoint topic names, including namespace and remapping.");
  if(!a.type.empty()&&!b.type.empty()&&a.type!=b.type)add("TYPE_MISMATCH",a.type+" != "+b.type,"Check publisher and subscriber ROS interface types.");
- if(a.reliability=="best_effort"&&b.reliability=="reliable")add("QOS_RELIABILITY", "best_effort publisher cannot satisfy reliable subscriber", "Change the subscriber request if best-effort delivery is acceptable.");
- if(a.durability=="volatile"&&b.durability=="transient_local")add("QOS_DURABILITY","volatile publisher cannot satisfy transient_local subscriber","Use a volatile subscription or an appropriate durable publisher.");
+ if(a.reliability=="best_effort"&&b.reliability=="reliable")add("RELIABILITY_MISMATCH", "best_effort publisher cannot satisfy reliable subscriber", "Change the subscriber request if best-effort delivery is acceptable.");
+ if(a.durability=="volatile"&&b.durability=="transient_local")add("DURABILITY_MISMATCH","volatile publisher cannot satisfy transient_local subscriber","Use a volatile subscription or an appropriate durable publisher.");
  return out;
 }
 void StrategyRegistry::add(std::unique_ptr<DiagnosticStrategy> strategy){strategies_.push_back(std::move(strategy));}
