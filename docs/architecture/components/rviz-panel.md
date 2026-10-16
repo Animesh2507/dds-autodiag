@@ -28,8 +28,9 @@ flowchart LR
 ## Reading RViz state
 
 `rvizState()` walks the display tree (including nested groups) and collects each display's name, class, enabled
-flag, status level and up to 40 properties (two levels deep, e.g. `Topic/Reliability Policy`), plus the Fixed Frame and the TF frames from the frame manager. Properties
-are found by name without `subProp()`, which would log "Undefined property" errors for missing ones.
+flag, status level and up to 40 properties (two levels deep, e.g. `Topic/Reliability Policy`), plus the Fixed Frame
+and the TF frames from the frame manager. Properties are found by name without `subProp()`, which would log
+"Undefined property" errors for missing ones.
 
 ## Applying a plan
 
@@ -47,7 +48,7 @@ stateDiagram-v2
 ```
 
 - **Add display:** `DisplayGroup::createDisplay(class_id)`, then name, topic and enable.
-- **Set property:** string values are converted to the property's type (bool, number, colour as `r; g; b`, enum
+- **Set property:** string values are converted to the property's type (bool, number, color as `r; g; b`, enum
   text). A value RViz already has counts as success.
 - **Pending:** some properties (for example point-cloud `Axis`) only exist once data arrives, so they are retried.
 - **Undo:** the root display group and Fixed Frame saved before Apply are restored with `load()`.
@@ -58,7 +59,7 @@ Every request is non-blocking, so RViz keeps rendering while plans and answers a
 
 | Request | Timeout |
 |---|---|
-| Status, providers, models | 5–20 s |
+| Status, overview, topics, topic inspection, providers, models | 5–30 s (overview 30 s, topic inspection 25 s) |
 | AI answer stream | 300 s (local CPU models) |
 | RViz plan | 300 s |
 
@@ -68,7 +69,7 @@ The AI stream is parsed line by line as NDJSON and rendered as Markdown, with `[
 
 | State | Where | Lifetime |
 |---|---|---|
-| Server URL, provider, model, topic, toggles | `.rviz` config | Saved with the RViz config |
+| Server URL, provider, model, topic, "Include the topic", "every 30 s" | `.rviz` config | Saved with the RViz config; a saved URL overrides `AUTODIAG_SERVER_URL` |
 | Access token | Field or `AUTODIAG_UI_TOKEN` | Never saved |
 | Conversation history (both AI tabs) | Panel memory | Session only |
 | Provider / model selection | Shared by the AI and Configure tabs | Kept in sync both ways |

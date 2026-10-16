@@ -205,7 +205,7 @@ class CliTests(unittest.TestCase):
     def test_selftest(self):
         code, out, _ = self.run_cli('selftest')
         self.assertEqual(code, 0)
-        self.assertIn('rules passed', out)
+        self.assertIn('fixtures passed', out)
 
     def test_check_saved_snapshots_exit_code_and_report(self):
         with tempfile.TemporaryDirectory() as tmp:

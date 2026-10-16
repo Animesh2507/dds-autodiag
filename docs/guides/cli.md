@@ -7,14 +7,15 @@ Everything the dashboard does for diagnosis is also available as `dds-autodiag`,
 dds-autodiag doctor                          check prerequisites and print fixes
 dds-autodiag check   [--peer PEER.json]      diagnose this host
                      [--snapshot FILE.json] [--transport MODE] [--report FILE.md] [--json]
-dds-autodiag collect [--redact] [--salt S] [-o FILE]   save a snapshot of this host
+dds-autodiag collect [--redact] [--salt S] [-o FILE]   save a snapshot of this host (salt default: random)
 dds-autodiag compare PEER.json [OTHER.json]  compare this host (or OTHER) with PEER
 dds-autodiag topics                          list topics visible in the ROS graph
 dds-autodiag inspect /topic                  endpoints, QoS and incompatibilities
 dds-autodiag sample  /topic [--timeout 1-15] [--reliability auto|best_effort|reliable]
 dds-autodiag demo    [--no-wait]             start two broken demo topics and diagnose them
-dds-autodiag selftest                        verify every diagnostic rule
+dds-autodiag selftest                        run every rule against its synthetic faults
 dds-autodiag serve   [--host H] [--port P] [--open]   start the dashboard
+                     [--log-level LEVEL] [--insecure-no-auth]
 ```
 
 ## Try it: `demo`
@@ -33,7 +34,7 @@ which also makes a quick smoke test for a new installation. The demo never touch
 | Code | Meaning |
 |---|---|
 | `0` | No problem found |
-| `1` | At least one problem (error severity), a failed sample, or a failed self-test |
+| `1` | At least one problem (error severity; for `inspect`: any finding), a failed sample or self-test, or `doctor` not ready |
 | `2` | Usage or input error, e.g. a missing file or invalid topic name |
 
 That makes AutoDiag usable as a CI gate:
@@ -85,10 +86,13 @@ dds-autodiag check --peer robot.json --json > result.json || echo "Configuration
 ```bash
 dds-autodiag serve                         # 127.0.0.1:8080
 dds-autodiag serve --port 8090 --open
-AUTODIAG_UI_TOKEN=$(openssl rand -hex 24) dds-autodiag serve --host 0.0.0.0
+AUTODIAG_UI_TOKEN=$(openssl rand -hex 24) AUTODIAG_ALLOWED_HOSTS=<hostname-or-ip> \
+  dds-autodiag serve --host 0.0.0.0
 ```
 
-`serve` refuses non-loopback addresses unless a dashboard token is set; see [Security model](../concepts/security.md).
+On a non-loopback address the dashboard token is mandatory: `serve` refuses to start without `AUTODIAG_UI_TOKEN`
+unless you pass `--insecure-no-auth` (isolated networks only). `AUTODIAG_ALLOWED_HOSTS` lists the hostnames or IPs
+clients use; other `Host` headers are rejected. See [Security model](../concepts/security.md).
 
 !!! note "Pre-1.0 flags"
     The old flags (`--collect`, `--compare`, `--health`, `--transport`) still work, so existing scripts keep

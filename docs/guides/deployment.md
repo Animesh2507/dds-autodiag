@@ -5,6 +5,7 @@ For daily use you'll want the server running in the background, so the RViz pane
 ## systemd user service
 
 ```bash
+mkdir -p ~/.config/systemd/user
 cp deploy/dds-autodiag.service ~/.config/systemd/user/
 cp deploy/dds-autodiag.env.example ~/.config/dds-autodiag.env      # then edit
 systemctl --user daemon-reload
@@ -12,8 +13,13 @@ systemctl --user enable --now dds-autodiag
 journalctl --user -u dds-autodiag -f                               # logs
 ```
 
-The unit sources ROS 2 before starting. Adjust `ROS_SETUP` and `AUTODIAG_VENV` in the unit if your paths differ, and
-put settings such as `ROS_DOMAIN_ID` or `AUTODIAG_UI_TOKEN` in `~/.config/dds-autodiag.env`.
+The unit sources ROS 2 before starting. `AUTODIAG_VENV` defaults to `%h/dds-autodiag/.venv`, the `.venv` from the
+[installation guide](../getting-started/installation.md) when the repository is cloned into your home directory; set
+it in the unit if you cloned elsewhere, and adjust `ROS_SETUP` for your distro. Put settings such as `ROS_DOMAIN_ID` or
+`AUTODIAG_UI_TOKEN` in `~/.config/dds-autodiag.env`.
+
+A systemd *user* service starts when you log in. To start it at boot without a login, run
+`loginctl enable-linger $USER` once.
 
 ## Docker
 
@@ -38,7 +44,8 @@ Keep the server on `127.0.0.1` and use an SSH tunnel:
 ssh -L 8080:127.0.0.1:8080 robot
 ```
 
-To listen on the network instead, a token is mandatory:
+To listen on the network instead, a token is mandatory (`serve` refuses to start without one unless you pass
+`--insecure-no-auth`, for isolated networks only):
 
 ```bash
 AUTODIAG_UI_TOKEN=$(openssl rand -hex 24) \
@@ -54,4 +61,4 @@ AutoDiag has no TLS of its own; put a TLS reverse proxy in front of it for anyth
 |---|---|
 | `GET /api/healthz` | Liveness probe (no diagnostics run) |
 | `GET /api/version` | Version and enabled features |
-| `GET /api/selftest` | All rules against synthetic faults |
+| `GET /api/selftest` | Every rule against its synthetic faults (27 fixtures) |

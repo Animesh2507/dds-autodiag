@@ -247,6 +247,11 @@ def provider_status(provider: str) -> dict:
             'needs_base_url': bool(info.get('needs_base_url')), 'key_url': info.get('key_url')}
 
 
+def is_cloud(provider: str) -> bool:
+    """True when requests leave this machine (unknown providers count as cloud)."""
+    return PROVIDERS.get(provider, {}).get('cloud', True)
+
+
 def list_providers() -> dict:
     return {'default': default_provider(), 'config_file': str(config_path()),
             'providers': [provider_status(p) for p in PROVIDERS]}

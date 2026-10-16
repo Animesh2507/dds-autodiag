@@ -7,8 +7,9 @@
 The collector records facts about the environment it runs in:
 
 - ROS environment variables: `ROS_DISTRO`, `ROS_DOMAIN_ID`, `RMW_IMPLEMENTATION`, discovery settings, DDS XML paths
-  (and whether those files exist).
-- The effective RMW, detected with `ros2 doctor`.
+  (and whether those files exist). `RMW_MISMATCH` compares `RMW_IMPLEMENTATION` (unset means the Fast DDS default);
+  the snapshot doesn't run `ros2 doctor`. The dashboard overview additionally detects the effective RMW with
+  `ros2 doctor --report`.
 - Network interfaces with multicast flags (`ip -j addr`).
 - Container detection and the network, IPC and PID namespaces.
 - Nodes and topics visible in the ROS graph. Queries wait `AUTODIAG_DISCOVERY_SECONDS` (default 2) for DDS
@@ -31,7 +32,7 @@ Each rule is a small, testable function that produces a finding:
   "summary": "Different ROS_DOMAIN_ID values",
   "evidence": {"host_a": "0", "host_b": "7"},
   "recommended_action": "Use a consistent ROS_DOMAIN_ID across intended peers, then restart managed processes.",
-  "documentation": [{"label": "domain", "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html"}]
+  "documentation": [{"label": "ROS 2 domain IDs", "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html"}]
 }
 ```
 
@@ -41,11 +42,12 @@ Each rule is a small, testable function that produces a finding:
 | **warning** | Likely to cause problems, or unsupported |
 | **info** (note) | Worth knowing; not a fault |
 
-`dds-autodiag selftest` runs every rule against a synthetic fault, so you can verify the rules on any installation.
+`dds-autodiag selftest` runs every rule against its synthetic faults (27 fixtures covering all 23 rules), so you can
+verify the rules on any installation.
 
 ## 4. Explain
 
-Every finding links to official documentation. On request, the AI assistant explains the findings in context; see
+Findings link to official documentation where one applies. On request, the AI assistant explains the findings in context; see
 [RAG & AI pipeline](rag.md).
 
 ## 5. Verify

@@ -7,7 +7,7 @@ flowchart LR
     S[("Snapshot")] -- "rule engine" --> F[("Finding")]
     F -- "AI layer" --> E[("Stream event")]
     St[("RViz state")] -- "planner" --> A[("Plan action")]
-    F -. "QoS facts" .-> A
+    Q["Live topic inspection"] -. "QoS facts" .-> A
 ```
 
 ## Snapshot

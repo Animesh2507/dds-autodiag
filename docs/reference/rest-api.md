@@ -3,7 +3,9 @@
 Everything the dashboard and RViz panel do goes through this API. The interactive reference with request and
 response schemas is built into the server at **`/api/docs`**.
 
-When `AUTODIAG_UI_TOKEN` is set, send `Authorization: Bearer <token>`.
+When `AUTODIAG_UI_TOKEN` is set, send `Authorization: Bearer <token>`; the session cookie set by `POST /login` works
+too. `/api/healthz` and `/api/agent/snapshot` are exempt from the UI token; `/api/agent/snapshot` has its own token
+instead and answers 403 unless `AUTODIAG_AGENT_TOKEN` is set on the server.
 
 ## Service
 
@@ -11,21 +13,23 @@ When `AUTODIAG_UI_TOKEN` is set, send `Authorization: Bearer <token>`.
 |---|---|---|
 | `GET` | `/api/healthz` | Liveness probe; runs no diagnostics |
 | `GET` | `/api/version` | Version, settings (without secrets), native components |
+| `POST` | `/login` | Sign in with the form field `token`; sets an HttpOnly session cookie |
+| `POST` | `/logout` | Clear the session cookie |
 
 ## Snapshots & diagnosis
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/v09/overview` | Snapshot, summary, health, findings and capabilities in one call |
+| `GET` | `/api/v09/overview` | Snapshot, summary, health, `issues` and capabilities in one call |
 | `GET` | `/api/snapshot` | This host's snapshot; `?redact=true` for sharing |
 | `POST` | `/api/snapshot/redact` | Redact one or two snapshots with a shared salt |
-| `GET` | `/api/health` | Health and findings for this host |
-| `POST` | `/api/compare` | Findings for `host_a` (and optional `host_b`) |
+| `GET` | `/api/health` | Health and `issues` for this host |
+| `POST` | `/api/compare` | `issues` for `host_a` (and optional `host_b`) |
 | `POST` | `/api/remote-compare` | Fetch a live collector and compare |
 | `POST` | `/api/report` | Markdown report |
-| `POST` | `/api/endpoint-check` | Check a hand-described publisher/subscriber pair |
-| `GET` | `/api/selftest` | Run every rule against its synthetic fault |
-| `GET` | `/api/agent/snapshot` | Collector endpoint for peers (requires `X-Autodiag-Token`) |
+| `POST` | `/api/endpoint-check` | Check a hand-described publisher/subscriber pair ([codes](rules.md#endpoint-check)) |
+| `GET` | `/api/selftest` | Run every rule against its synthetic faults (27 fixtures) |
+| `GET` | `/api/agent/snapshot` | Collector endpoint for peers (requires `X-Autodiag-Token`; 403 unless `AUTODIAG_AGENT_TOKEN` is set) |
 
 ## Live ROS graph
 
@@ -36,12 +40,14 @@ When `AUTODIAG_UI_TOKEN` is set, send `Authorization: Bearer <token>`.
 | `GET` | `/api/topic-sample?topic=/x&timeout=8&reliability=auto` | Read one live message |
 | `GET` | `/api/v09/environments` | Local Docker containers |
 | `GET` | `/api/v09/shm` | Shared-memory prerequisites |
+| `GET` | `/api/docs-links` | Curated official documentation links, by key |
 
 ## AI
 
 | Method | Path | Description |
 |---|---|---|
 | `POST` | `/api/assistant/stream` | Streamed, grounded explanation (NDJSON) |
+| `POST` | `/api/assistant/diagnose` | Deterministic evidence report (`explain_with_ai` adds an optional model explanation) |
 | `POST` | `/api/v06/explain` | Documentation retrieval without streaming |
 | `POST` | `/api/rviz/plan` | Validated RViz configuration plan |
 | `GET` | `/api/rviz/catalog` | Display types and properties the planner knows |
@@ -64,16 +70,18 @@ When `AUTODIAG_UI_TOKEN` is set, send `Authorization: Bearer <token>`.
 {"type": "done", "seconds": 12.4, "first_token_seconds": 1.8}
 ```
 
-`thinking` events report progress of reasoning models, and `error` replaces `done` on failure.
+`thinking` events (`{"type": "thinking", "chars": 450}`) report progress of reasoning models, and `error` replaces
+`done` on failure.
+
+Request body fields, all optional: `question`, `provider`, `model`, `topic`, `host_a`, `host_b`, `history` and
+`semantic_search`. `host_a` defaults to a fresh local snapshot; `topic` adds that topic's live endpoints and QoS.
+`history` carries earlier turns (`[{"role": "user"|"assistant", "content": "..."}]`).
 
 ```bash title="Example"
 curl -N -X POST http://127.0.0.1:8080/api/assistant/stream \
   -H 'Content-Type: application/json' \
   -d '{"question": "Why is /scan empty?", "topic": "/scan", "provider": "ollama"}'
 ```
-
-`host_a` is optional; without it the server collects the local snapshot itself. `history` carries earlier turns
-(`[{"role": "user"|"assistant", "content": "..."}]`).
 
 ## Compatibility endpoints
 

@@ -13,4 +13,23 @@ DOCS = {
  'discovery_server': 'https://docs.ros.org/en/jazzy/Tutorials/Advanced/Discovery-Server/Discovery-Server.html',
  'rmw': 'https://docs.ros.org/en/jazzy/How-To-Guides/Working-with-multiple-RMW-implementations.html',
  'distro': 'https://docs.ros.org/en/jazzy/Releases.html',
+ 'interfaces': 'https://docs.ros.org/en/jazzy/Concepts/Basic/About-Interfaces.html',
+}
+
+# Human-readable link titles shown next to findings.
+TITLES = {
+ 'daemon': 'ROS 2 command line tools',
+ 'qos': 'ROS 2 QoS',
+ 'intraprocess': 'ROS 2 intra-process communication',
+ 'fastdds_docker': 'Fast DDS shared memory in Docker',
+ 'fastdds_shm': 'Fast DDS shared memory transport',
+ 'cyclone_interfaces': 'Cyclone DDS network interfaces',
+ 'cyclone_discovery': 'Cyclone DDS discovery',
+ 'network': 'ROS 2 installation troubleshooting',
+ 'domain': 'ROS 2 domain IDs',
+ 'discovery': 'ROS 2 improved dynamic discovery',
+ 'discovery_server': 'ROS 2 discovery server',
+ 'rmw': 'Working with multiple RMW implementations',
+ 'distro': 'ROS 2 distributions',
+ 'interfaces': 'ROS 2 interfaces',
 }

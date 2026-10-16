@@ -58,7 +58,7 @@ sequenceDiagram
 | Add a display | PointCloud2 on `/points`, Map on `/map`, TF |
 | Remove a display | "remove the old laser scan" |
 | Set the topic | "use `/front/scan` instead" |
-| Set a property | Style, Size, Color Transformer, Axis, Decay Time, Alpha, QoS (`Topic/Reliability Policy`, `Topic/Depth`…) |
+| Set a property | Style, `Size (m)` / `Size (Pixels)`, Color Transformer, Axis, Decay Time, Alpha, QoS (`Topic/Reliability Policy`, `Topic/Depth`…) |
 | Enable or disable | "hide the map" |
 | Rename | "call it Front Lidar" |
 | Set the Fixed Frame | "view everything in `base_link`" |
@@ -77,11 +77,13 @@ Small models in particular make mistakes. AutoDiag doesn't trust the plan blindl
 
 !!! success "Completed"
     Dependent settings the model forgot are added (for example `Color Transformer: AxisColor` when it only set
-    `Axis`). A frame named in your request is applied even if the model skipped it.
+    `Axis`). If your request mentions "frame" and names exactly one TF frame from the tree (other than the current
+    Fixed Frame), that frame is applied even if the model skipped it.
 
 !!! success "Diagnosed"
-    AutoDiag inspects each display's topic itself. If the publisher offers Best Effort but the display requests
-    Reliable, the QoS fix is added, regardless of what the model proposed.
+    AutoDiag inspects the topics of up to six displays itself. If the publisher offers Best Effort but the display
+    requests Reliable, or durability doesn't match (including a Volatile display on a latched Transient Local
+    publisher), the QoS fix is added, regardless of what the model proposed.
 
 !!! success "Reversible"
     Every Apply takes a snapshot first. **Undo** restores all displays and the Fixed Frame from before the last
@@ -108,7 +110,14 @@ Pick **Provider** and **Model** at the top of the tab. It's the same selection a
 | Local `qwen3:4b-instruct` | about 1–2 min on a CPU | Offline; fine for simple requests |
 | Claude, ChatGPT, Gemini | a few seconds | Better at complex, multi-part requests |
 
-With a cloud model, the request, display settings, topic names/types and TF frame names are sent to that provider.
+What the model receives:
+
+| Sent | Never sent |
+|---|---|
+| Your request; earlier turns; display names, types, topics, properties and status; Fixed Frame; TF frame names; live topic names and types; diagnosed QoS facts | Snapshots, message contents, node names, hostnames, IP addresses, home paths, API keys |
+
+For a cloud model, this machine's hostname, IP addresses and home paths in that text are replaced with tokens first.
+See [AI providers](ai-providers.md#keys-and-privacy).
 
 ## Limits
 

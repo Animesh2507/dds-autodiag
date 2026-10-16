@@ -37,7 +37,7 @@ body:
     id: rmw
     attributes:
       label: RMW implementation
-      options: [Fast DDS (rmw_fastrtps_cpp), Cyclone DDS (rmw_cyclonedds_cpp), Zenoh (rmw_zenoh_cpp), Connext, Other / unsure]
+      options: [Fast DDS (rmw_fastrtps_cpp), Cyclone DDS (rmw_cyclonedds_cpp), Zenoh (rmw_zenoh_cpp), Connext (rmw_connextdds), Other / unsure]
     validations:
       required: true
   - type: input

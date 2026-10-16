@@ -77,7 +77,8 @@ def _qos_findings(endpoints):
         if p.get('type') and s.get('type') and p['type']!=s['type']:
             findings.append({'code':'TYPE_MISMATCH','severity':'error','summary':'Different message types on this topic',
              'evidence':{'publisher':p.get('type'),'subscriber':s.get('type')},
-             'recommended_action':'Use matching interface types and type definitions.', 'confidence':'high','documentation':[]})
+             'recommended_action':'Use matching interface types and type definitions.', 'confidence':'high',
+             'documentation':[{'label':'ROS 2 interfaces','url':DOCS['interfaces']}]})
     return findings
 
 def inspect_topic(topic):

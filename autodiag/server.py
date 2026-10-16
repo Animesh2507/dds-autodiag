@@ -22,7 +22,7 @@ from .knowledge import DOCS
 from .live import topic_list, inspect_topic, sample_topic
 from .remote import fetch_snapshot
 from .agent import evidence_report, optional_model_explanation
-from .redact import redact_snapshot
+from .redact import mask_for_cloud, node_labels, redact_snapshot
 from .report import markdown_report, sort_issues
 from .validation import run_fixture, list_fixtures, run_all
 
@@ -308,19 +308,20 @@ class StreamRequest(BaseModel):
     semantic_search: bool = False
 
 
-def _topic_context(topic: str) -> list:
-    """Live findings for one topic plus a one-line endpoint summary, as AI context."""
+def _topic_context(topic: str) -> tuple[list, dict]:
+    """Live findings for one topic plus a one-line endpoint summary, as AI context, and the node-name labels."""
     report = inspect_topic(topic)
     if report.get('state') != 'ok':
         return [{'code': 'TOPIC_NOT_INSPECTED', 'severity': 'info',
-                 'summary': f'Topic {topic} could not be inspected: {report.get("error") or report.get("state")}'[:240]}]
+                 'summary': f'Topic {topic} could not be inspected: {report.get("error") or report.get("state")}'[:240]}], {}
     endpoints = report.get('endpoints', [])
     kinds = ', '.join(f"{e['kind']} {e['node']} ({e['qos'].get('reliability', '?')}/{e['qos'].get('durability', '?')})"
                       for e in endpoints[:6])
     types = sorted({e.get('type') for e in endpoints if e.get('type')})
     summary = (f"Topic {topic} [{', '.join(types) or 'type unknown'}]: {report['publisher_count']} publisher(s), "
                f"{report['subscriber_count']} subscriber(s). {kinds}")
-    return report.get('findings', []) + [{'code': 'TOPIC_CONTEXT', 'severity': 'info', 'summary': summary[:240]}]
+    return (report.get('findings', []) + [{'code': 'TOPIC_CONTEXT', 'severity': 'info', 'summary': summary[:240]}],
+            node_labels(endpoints))
 
 
 @app.post('/api/assistant/stream', tags=['assistant'])
@@ -328,20 +329,24 @@ def assistant_stream(payload: StreamRequest):
     """NDJSON stream: one `context` event (findings + documentation), then `meta`, `token`… and `done`/`error`.
 
     `host_a` defaults to a fresh local snapshot; `topic` adds that topic's live endpoints and QoS findings.
-    Only sanitized findings, the question and documentation excerpts reach the model.
+    Only sanitized findings, the question and documentation excerpts reach the model. For cloud providers node
+    names, the hostname, IP addresses and home paths are masked first (the UI still sees the real values).
     """
     host_a = payload.host_a or collect()
     issues = sort_issues(transport_diagnose(host_a, payload.host_b))
+    labels = {}
     if payload.topic:
-        issues = sort_issues(_topic_context(payload.topic)) + issues
+        topic_issues, labels = _topic_context(payload.topic)
+        issues = sort_issues(topic_issues) + issues
     query = ' '.join([payload.question[:400]] + [f"{i.get('code', '')} {i.get('summary', '')}" for i in issues[:16]])
     retrieved = hybrid_retrieve(query, semantic=payload.semantic_search)
     provider = payload.provider or llm.default_provider()
+    for_model = mask_for_cloud(issues, labels) if llm.is_cloud(provider) else issues
 
     def events():
         yield json.dumps({'type': 'context', 'issues': issues, 'sources': retrieved['sources'],
                           'retrieval_mode': retrieved['mode'], 'health': health(host_a, issues)}) + '\n'
-        for event in llm.explain_events(provider, issues, payload.question, retrieved['sources'], payload.model,
+        for event in llm.explain_events(provider, for_model, payload.question, retrieved['sources'], payload.model,
                                         payload.history):
             yield json.dumps(event) + '\n'
 

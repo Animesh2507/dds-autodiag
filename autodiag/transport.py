@@ -1,12 +1,12 @@
 """Pure, testable read-only diagnostics. Unsupported inferences are explicitly marked."""
-from .knowledge import DOCS
+from .knowledge import DOCS, TITLES
 
 DEFAULT_RMW='rmw_fastrtps_cpp'
 
 def _issue(code, severity, summary, evidence, action, doc=None, confidence='medium'):
     return {'code':code,'severity':severity,'summary':summary,'evidence':evidence,
             'recommended_action':action,'confidence':confidence,
-            'documentation':([{'label':doc,'url':DOCS[doc]}] if doc in DOCS else [])}
+            'documentation':([{'label':TITLES.get(doc,doc),'url':DOCS[doc]}] if doc in DOCS else [])}
 
 def transport_diagnose(a, b=None):
     """Evaluate two host/namespace snapshots; no networking or mutation is performed."""
@@ -24,7 +24,7 @@ def transport_diagnose(a, b=None):
     if container.get('detected') and mode=='dds_shm' and container.get('ipc_mode') not in ('host','container_shared'):
         issues.append(_issue('SHM_NAMESPACE_UNVERIFIED','warning','Container shared-memory namespace compatibility is unverified',{'ipc_mode':container.get('ipc_mode'),'network_mode':container.get('network_mode')},'Check actual IPC namespace sharing between the two containers and vendor SHM settings; do not assume SHM is available.','fastdds_docker'))
     if net.get('interfaces')==[]:
-        issues.append(_issue('NO_NETWORK_INTERFACES','warning','No network interface information obtained',{},'Run diagnostics on a Linux host with iproute2 available.'))
+        issues.append(_issue('NO_NETWORK_INTERFACES','warning','No network interface information obtained',{},'Run diagnostics on a Linux host with iproute2 available.','network'))
     for k,v in [('CYCLONEDDS_URI','cyclone_interfaces'),('FASTDDS_DEFAULT_PROFILES_FILE','fastdds_shm')]:
         if env.get(k) and a.get('config_files',{}).get(k,{}).get('status')=='missing':
             issues.append(_issue('DDS_CONFIG_FILE_MISSING','error','DDS configuration file could not be found',{'variable':k,'value':env.get(k)},'Correct the path or ensure the file is mounted inside the container.',v,'high'))

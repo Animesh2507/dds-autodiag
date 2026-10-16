@@ -538,6 +538,10 @@ void AutoDiagPanel::loadProviders()
       provider_combo_->setCurrentIndex(index >= 0 ? index : 0);
       if (provider_combo_->count() == 0) {
         answer_status_->setText(tr("No AI provider is ready. Start Ollama or link an API key in the dashboard."));
+      } else if (provider_combo_->currentData().toString() == QLatin1String("ollama")) {
+        // Preload the local model so the first answer starts fast; the reply carries nothing we need.
+        QNetworkReply * warm = post(QStringLiteral("/api/ai/warmup"), QJsonObject{}, 5000);
+        connect(warm, &QNetworkReply::finished, warm, &QObject::deleteLater);
       }
       loadModels();
       syncConfigureCombos();

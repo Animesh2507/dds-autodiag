@@ -62,7 +62,8 @@ See [ADR-003](decisions.md#adr-003-a-local-server-shared-by-all-clients).
 
 === "Robot (systemd)"
 
-    The user unit sources ROS 2 and starts the server on boot. Access via SSH tunnel, or token + allowed hosts.
+    The user unit sources ROS 2 and starts the server on login (or on boot with `loginctl enable-linger`). Access
+    via SSH tunnel, or token + allowed hosts.
 
 === "Docker"
 

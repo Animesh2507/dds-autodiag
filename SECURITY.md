@@ -19,6 +19,7 @@ DDS AutoDiag runs local commands and can hold AI provider keys, so these are esp
 - bypassing the Host-header, Origin or token checks of the dashboard and API;
 - reading stored API keys or making them reach the browser or logs;
 - making AutoDiag run commands other than its read-only probes, or change the ROS / DDS configuration;
-- sending snapshot data, hostnames or IPs to cloud AI providers.
+- sending snapshots, message contents, API keys, or unmasked node names, hostnames, IP addresses or home paths to
+  cloud AI providers (see [data sent to AI providers](docs/concepts/security.md#data-sent-to-ai-providers)).
 
 The design is described in the [security model](docs/concepts/security.md).

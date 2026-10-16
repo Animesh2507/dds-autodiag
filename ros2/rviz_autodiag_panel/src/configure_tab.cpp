@@ -96,7 +96,7 @@ QWidget * AutoDiagPanel::buildConfigureTab()
   rviz_request_ = new QPlainTextEdit;
   rviz_request_->setObjectName(QStringLiteral("rvizRequest"));
   rviz_request_->setPlaceholderText(
-    tr("What should RViz show? e.g. Show the lidar point cloud coloured by height in base_link, "
+    tr("What should RViz show? e.g. Show the lidar point cloud colored by height in base_link, "
        "keep it light-weight. My LaserScan shows nothing."));
   rviz_request_->setMaximumHeight(80);
   plan_button_ = new QPushButton(tr("Plan changes"));
@@ -658,7 +658,7 @@ void AutoDiagPanel::newRvizConversation()
   plan_actions_ = QJsonArray();
   apply_button_->setEnabled(false);
   rviz_request_->setPlaceholderText(
-    tr("What should RViz show? e.g. Show the lidar point cloud coloured by height in base_link."));
+    tr("What should RViz show? e.g. Show the lidar point cloud colored by height in base_link."));
   plan_status_->setText(tr("New conversation. Earlier requests are forgotten; the current RViz state is still used."));
 }
 

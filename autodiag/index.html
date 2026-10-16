@@ -120,7 +120,7 @@
     </div>
     <div class="card">
       <h2>Connect to a live collector</h2>
-      <p class="muted">On the peer: <code>AUTODIAG_AGENT_TOKEN=&lt;secret&gt; dds-autodiag serve --port 8081</code>. Use a private IP or an SSH tunnel.</p>
+      <p class="muted">On the peer: <code>AUTODIAG_AGENT_TOKEN=&lt;secret&gt; AUTODIAG_UI_TOKEN=&lt;secret2&gt; AUTODIAG_ALLOWED_HOSTS=&lt;private-ip&gt; dds-autodiag serve --host 0.0.0.0 --port 8081</code>, then enter <code>http://&lt;private-ip&gt;:8081</code>. With an SSH tunnel (<code>ssh -L 8081:127.0.0.1:8081 robot</code>) the peer can stay on 127.0.0.1 (<code>AUTODIAG_AGENT_TOKEN=&lt;secret&gt; dds-autodiag serve --port 8081</code>) and you enter <code>http://127.0.0.1:8081</code>.</p>
       <label class="field"><span>Collector URL</span><input id="remoteUrl" placeholder="http://127.0.0.1:8081" autocomplete="url"></label>
       <label class="field"><span>Collector token</span><input id="remoteToken" type="password" autocomplete="off" placeholder="Token"></label>
       <div class="actions"><button type="button" class="primary" data-action="compare-remote">Connect and compare</button></div>

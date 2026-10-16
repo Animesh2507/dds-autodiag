@@ -18,7 +18,8 @@ classDiagram
         +complete_json(provider, system, prompt, schema, model) dict
         +list_models(provider, refresh) dict
         +test_provider(provider) dict
-        +update_provider(...) / remove_key(provider)
+        +update_provider(...) dict
+        +remove_key(provider) dict
     }
     class Ollama {
         HTTP /api/chat, NDJSON
@@ -28,7 +29,7 @@ classDiagram
     class Anthropic {
         official SDK, messages.stream
         effort low, server-side fallbacks
-        gzip-only replies
+        gzip/deflate (no Brotli)
     }
     class OpenAICompatible {
         /chat/completions, SSE
@@ -52,8 +53,9 @@ Every provider is reduced to two operations:
 | **Structured JSON** (`complete_json`) | RViz planner | One JSON object matching a schema |
 
 Structured output uses each provider's strongest mechanism: Ollama's `format` schema, Claude's
-`output_config.format`, OpenAI's strict `json_schema`, Gemini's JSON MIME type. Providers without one get the schema
-in the prompt, and a tolerant parser extracts the first JSON object.
+`output_config.format`, OpenAI's strict `json_schema`, Gemini's JSON MIME type plus the schema in the prompt.
+Providers without one (OpenAI-compatible) get the schema in the prompt, and a tolerant parser extracts the first JSON
+object.
 
 ## Streaming events
 
@@ -66,7 +68,10 @@ stateDiagram-v2
     meta --> thinking: reasoning model only
     thinking --> thinking
     thinking --> token
+    thinking --> done
+    thinking --> error
     meta --> token
+    meta --> done
     token --> token
     token --> done
     meta --> error
@@ -91,6 +96,13 @@ appends the new prompt. Gemini's `model` role is mapped automatically.
   progress. A `<think>` filter removes inline reasoning from models that emit it anyway.
 - **Warm-up:** the dashboard and panel call `/api/ai/warmup`, which loads the model in the background.
 - **Caching:** installed-model lists for 30 s, thinking detection for 5 min, cloud model lists for 10 min.
+
+## Cloud masking
+
+When `llm.is_cloud(provider)` is true, the server passes findings (assistant) or the planner prompt (RViz) through
+`redact.mask_for_cloud()` first: node names become `publisher 1`, `subscriber 1`, …, and this machine's hostname, IP
+addresses and home paths are replaced with tokens. QoS, topic names, message types and rule codes are kept. Local
+Ollama gets the real names, and the UI always shows them. See [Security model](../../concepts/security.md).
 
 ## Keys
 

@@ -38,7 +38,9 @@ dds-autodiag inspect /demo
   subscriber _ros2cli_12647    reliability=RELIABLE     durability=VOLATILE
 
 ✖ problem  RELIABILITY_MISMATCH  Incompatible reliability: _ros2cli_12446 → _ros2cli_12647
+    evidence: publisher=_ros2cli_12446, subscriber=_ros2cli_12647, offered=BEST_EFFORT, requested=RELIABLE
     next:     Review requested/offered QoS policies. Do not change semantics blindly.
+    docs:     https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html
 ```
 
 The exit code is `1` because a problem was found, so the same command works in scripts and CI.
@@ -74,6 +76,7 @@ This host
   ...
 ✔ No configured rule detected a problem. This does not prove messages are delivered;
   use `dds-autodiag sample <topic>` to confirm.
+Status: No confirmed critical issue; full-stack health NOT established
 ```
 
 !!! info "Why \"does not prove\"?"

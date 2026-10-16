@@ -45,7 +45,8 @@ DDS AutoDiag checks all of them in seconds, explains what it found, and tells yo
     ---
 
     23 checks for QoS, domains, discovery range, RMW and distro mismatches, DDS XML, shared memory between
-    containers and more. Every finding comes with evidence, a next step and official documentation.
+    containers and more. Every finding comes with evidence, a next step and official documentation where one
+    applies.
 
     [:octicons-arrow-right-24: Diagnostic rules](reference/rules.md)
 
@@ -89,8 +90,9 @@ DDS AutoDiag checks all of them in seconds, explains what it found, and tells yo
 
     ---
 
-    Never restarts, reconfigures or publishes anything. Loopback by default, token login, DNS-rebinding
-    protection, strict CSP, and keys that never reach the browser.
+    Never restarts, reconfigures or publishes anything on its own; only the `demo` you start publishes, on
+    `/autodiag_demo/*`. Loopback by default, token login, DNS-rebinding protection, strict CSP, and keys that never
+    reach the browser.
 
     [:octicons-arrow-right-24: Security model](concepts/security.md)
 
@@ -135,8 +137,8 @@ Experimental features may change or be removed before 1.0.
     source install/setup.bash && rviz2
     ```
 
-    Panels → Add New Panel → **AutoDiag**. Health, topic QoS, AI assistant and Configure RViz, right next to your
-    visualization. [RViz2 panel guide](guides/rviz-panel.md)
+    Panels → Add New Panel → rviz_autodiag_panel → **AutoDiag**. Health, topic QoS, AI assistant and
+    Configure RViz, right next to your visualization. [RViz2 panel guide](guides/rviz-panel.md)
 
 ## How it fits together
 

@@ -29,16 +29,19 @@ again.
 | `port` | `8080` | Server port; the panel connects to it automatically |
 | `start_server` | `true` | Set `false` if a server is already running (e.g. the systemd service) |
 | `server_cmd` | `dds-autodiag` | Executable name or absolute path |
-| `rviz_config` | the package's `rviz/autodiag.rviz` | Use your own config; add the AutoDiag panel to it once and save |
+| `rviz_config` | the package's `rviz/autodiag.rviz` | Use your own config; add the AutoDiag panel to it once and save (see [Saved settings](#saved-settings) about `port`) |
 
-!!! important "The panel needs the AutoDiag server"
+!!! warning "The panel needs the AutoDiag server"
     The panel is a client of the server: diagnostics, documentation search and AI providers (including API keys)
-    all stay there. Start it first with `dds-autodiag serve`. The browser dashboard doesn't need to be open.
+    all stay there. Start it first with `dds-autodiag serve` (or use the launch file above). The browser dashboard
+    doesn't need to be open.
 
 ## Connecting
 
-The top row holds the server URL (default `http://127.0.0.1:8080`, or `AUTODIAG_SERVER_URL` if set), **Connect**,
-and **Dashboard**, which opens the web UI. If the server isn't up yet, the panel keeps trying for about 30 seconds. If the server requires a token, enter it in the token field or start RViz with `AUTODIAG_UI_TOKEN` set.
+The top row holds the server URL (default `http://127.0.0.1:8080`, or `AUTODIAG_SERVER_URL` if set; a URL saved in
+the `.rviz` file overrides both), **Connect**, and **Dashboard**, which opens the web UI. If the server isn't up yet,
+the panel keeps trying for about 30 seconds. If the server requires a token, enter it in the token field or start
+RViz with `AUTODIAG_UI_TOKEN` set.
 
 ## The four tabs
 
@@ -75,5 +78,8 @@ RViz panels are dock widgets:
 
 ## Saved settings
 
-The server URL, provider, model and selected topic are stored in your `.rviz` file. The access token is deliberately
-**not** saved, because `.rviz` files are often shared.
+The server URL, provider, model, selected topic, **Include the topic** and **every 30 s** are stored in your `.rviz`
+file. The access token is deliberately **not** saved, because `.rviz` files are often shared.
+
+A saved server URL overrides `AUTODIAG_SERVER_URL`, so once you've saved your own config, the launch file's `port:=`
+no longer reaches the panel; change the URL in the panel (and save again) instead.
