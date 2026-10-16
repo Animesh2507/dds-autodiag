@@ -91,7 +91,7 @@ function setBanner(health) {
 }
 
 // ---------- navigation ----------
-const TITLES = {overview: 'System overview', topics: 'Topic inspector', environments: 'Compare hosts & containers',
+const TITLES = {overview: 'System overview', topics: 'Topic inspector', graph: 'Diagnosis graph', environments: 'Compare hosts & containers',
   diagnose: 'Transport diagnosis', assistant: 'Diagnostic assistant', tools: 'Tools & self-test', about: 'About & settings'};
 const loaded = new Set();
 
@@ -108,6 +108,7 @@ function showTab(tab) {
   if (!loaded.has(tab)) {
     loaded.add(tab);
     if (tab === 'topics') loadTopics();
+    if (tab === 'graph') loadGraph();
     if (tab === 'environments') loadDocker();
     if (tab === 'about') { loadAbout(); loadProviders(); }
   }
@@ -667,10 +668,170 @@ function toggleTheme() {
   store.set('theme', next);
 }
 
+// ---------- diagnosis graph ----------
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const GRAPH = {box: {w: 230, h: 36}, colGap: 190, rowGap: 22, pad: 24};
+
+function svg(tag, attrs = {}, text) {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  if (text !== undefined) el.textContent = text;
+  return el;
+}
+
+const shortName = (s, n = 24) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+// `ros2 topic pub/echo` run as anonymous _ros2cli_<pid> nodes; name them by what they do.
+const nodeLabel = n => (n.id.startsWith('_ros2cli_') ? (n.publishes.length ? 'ros2 topic pub' : 'ros2 topic echo') + ' · ' + n.id.slice(9) : n.id);
+const idLabel = (id, role) => (id.startsWith('_ros2cli_') ? (role === 'publisher' ? 'ros2 topic pub' : 'ros2 topic echo') + ' (' + id.slice(9) + ')' : id);
+
+function layoutGraph(data) {
+  // Columns by role: only publishes | both | only subscribes; "waiting" topics get a ghost source on the left.
+  const cols = [[], [], []];
+  data.nodes.forEach(n => cols[n.publishes.length && n.subscribes.length ? 1 : n.publishes.length ? 0 : 2].push(n.id));
+  cols[0].push(...data.waiting.map(w => 'ghost:' + w.topic));
+  const links = data.edges.map(e => [e.source, e.target])
+    .concat(data.waiting.flatMap(w => w.subscribers.map(s => ['ghost:' + w.topic, s])));
+  const used = cols.filter(c => c.length);
+  // Two barycenter sweeps: order each column by the average row of its neighbours, so lines cross less.
+  const order = () => Object.fromEntries(used.flatMap(c => c.map((id, i) => [id, i])));
+  const sweep = (col, neighbours) => {
+    const rank = order();
+    const score = id => { const r = neighbours(id).map(n => rank[n]).filter(x => x !== undefined); return r.length ? r.reduce((a, b) => a + b, 0) / r.length : rank[id]; };
+    col.sort((a, b) => score(a) - score(b) || a.localeCompare(b));
+  };
+  const incoming = id => links.filter(l => l[1] === id).map(l => l[0]);
+  const outgoing = id => links.filter(l => l[0] === id).map(l => l[1]);
+  for (let pass = 0; pass < 2; pass++) {
+    used.slice(1).forEach(col => sweep(col, incoming));
+    used.slice(0, -1).reverse().forEach(col => sweep(col, outgoing));
+  }
+  const pos = {};
+  const {w, h} = GRAPH.box;
+  used.forEach((col, i) => col.forEach((id, j) => {
+    pos[id] = {x: GRAPH.pad + i * (w + GRAPH.colGap), y: GRAPH.pad + j * (h + GRAPH.rowGap)};
+  }));
+  const rows = Math.max(1, ...used.map(c => c.length));
+  return {pos, width: GRAPH.pad * 2 + used.length * w + (used.length - 1) * GRAPH.colGap,
+    height: GRAPH.pad * 2 + rows * h + (rows - 1) * GRAPH.rowGap};
+}
+
+function drawGraph(data) {
+  const view = $('graph-view');
+  view.innerHTML = '';
+  if (!data.nodes.length && !data.waiting.length) {
+    view.innerHTML = '<p class="muted">No publishers or subscribers found on the visible topics. Is ROS 2 sourced, and are your nodes running on the same ROS_DOMAIN_ID?</p>';
+    return;
+  }
+  const {pos, width, height} = layoutGraph(data);
+  const {w, h} = GRAPH.box;
+  const root = svg('svg', {viewBox: `0 0 ${width} ${height}`, width, height, class: 'graph', role: 'img',
+    'aria-label': 'Publisher to subscriber graph'});
+  const curve = (a, b) => {
+    const x1 = a.x + w, y1 = a.y + h / 2, x2 = b.x, y2 = b.y + h / 2;
+    const dx = Math.max(60, (x2 - x1) / 2);
+    return `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
+  };
+  const labels = [];
+  const edges = [...data.edges].sort((a, b) => ({ok: 0, warning: 1, error: 2}[a.status] - {ok: 0, warning: 1, error: 2}[b.status]));
+  const select = (el, render) => {
+    root.querySelectorAll('.selected').forEach(x => x.classList.remove('selected'));
+    el.classList.add('selected');
+    render();
+  };
+  edges.forEach(e => {
+    const a = pos[e.source], b = pos[e.target];
+    if (!a || !b) return;
+    const g = svg('g', {class: 'edge ' + e.status, tabindex: '0', role: 'button',
+      'aria-label': `${e.source} to ${e.target}: ${e.topics.map(t => t.topic).join(', ')} (${e.status})`});
+    const d = curve(a, b);
+    g.appendChild(svg('path', {d, class: 'hit'}));
+    g.appendChild(svg('path', {d, class: 'line'}));
+    const label = e.topics.length === 1 ? e.topics[0].topic : e.topics.length + ' topics';
+    const mid = {x: (a.x + w + b.x) / 2, y: (a.y + b.y) / 2 + h / 2 - 9};
+    labels.push(svg('text', {x: mid.x, y: mid.y, class: 'edge-label ' + e.status, 'text-anchor': 'middle'}, shortName(label, 28)));
+    const open = () => select(g, () => edgeDetails(e));
+    g.addEventListener('click', open);
+    g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); } });
+    root.appendChild(g);
+  });
+  data.waiting.forEach(wt => {
+    const a = pos['ghost:' + wt.topic];
+    wt.subscribers.forEach(sub => {
+      const b = pos[sub];
+      if (!a || !b) return;
+      const g = svg('g', {class: 'edge waiting', tabindex: '0', role: 'button', 'aria-label': `${sub} waits for ${wt.topic}`});
+      const d = curve(a, b);
+      g.appendChild(svg('path', {d, class: 'hit'}));
+      g.appendChild(svg('path', {d, class: 'line'}));
+      const open = () => select(g, () => waitingDetails(wt));
+      g.addEventListener('click', open);
+      g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); } });
+      root.appendChild(g);
+    });
+  });
+  labels.forEach(l => root.appendChild(l));
+  const byId = Object.fromEntries(data.nodes.map(n => [n.id, n]));
+  Object.entries(pos).forEach(([id, p]) => {
+    const ghost = id.startsWith('ghost:');
+    const g = svg('g', {class: 'gnode' + (ghost ? ' ghost' : '')});
+    g.appendChild(svg('rect', {x: p.x, y: p.y, width: w, height: h, rx: 9}));
+    const text = ghost ? 'nobody publishes ' + id.slice(6) : nodeLabel(byId[id]);
+    const t = svg('text', {x: p.x + w / 2, y: p.y + h / 2 + 4, 'text-anchor': 'middle'}, shortName(text, 32));
+    t.appendChild(svg('title', {}, text));
+    g.appendChild(t);
+    root.appendChild(g);
+  });
+  view.appendChild(root);
+}
+
+function qosLine(q) {
+  return esc((q.reliability || '?') + ' / ' + (q.durability || '?'));
+}
+
+function edgeDetails(e) {
+  $('graph-details').className = '';
+  $('graph-details').innerHTML = '<p><b>' + esc(idLabel(e.source, 'publisher')) + '</b> → <b>' + esc(idLabel(e.target, 'subscriber')) + '</b></p>' + e.topics.map(t =>
+    '<div class="graph-topic"><div class="card-head"><h3><code>' + esc(t.topic) + '</code> <small class="muted">' + esc(t.type) + '</small></h3>'
+    + '<a href="#topics" data-inspect-topic="' + esc(t.topic) + '">Inspect topic →</a></div>'
+    + '<p class="muted">Publisher offers ' + qosLine(t.publisher_qos) + ' · subscriber requests ' + qosLine(t.subscriber_qos) + '</p>'
+    + findingsHTML(t.findings, 'The QoS and message types of this connection are compatible. This does not prove that messages arrive; read a live sample to confirm.')
+    + '</div>').join('');
+}
+
+function waitingDetails(wt) {
+  const subs = wt.subscribers.map(id => idLabel(id, 'subscriber'));
+  $('graph-details').className = '';
+  $('graph-details').innerHTML = '<div class="finding warning"><div class="head"><span class="badge warning">Waiting</span><span class="code">'
+    + esc(wt.topic) + '</span></div><p>' + esc(subs.join(', ')) + ' subscribe' + (subs.length === 1 ? 's' : '')
+    + ' to <code>' + esc(wt.topic) + '</code>' + (wt.type ? ' (' + esc(wt.type) + ')' : '') + ', but no publisher is visible from this machine.</p>'
+    + '<p class="next"><b>Next step:</b> Start the node that publishes it, check the topic name and remapping, or compare hosts if it runs on another machine or container (domain ID, discovery range, RMW).</p>'
+    + '<div class="docs"><a href="#topics" data-inspect-topic="' + esc(wt.topic) + '">Inspect topic →</a> <a href="#environments" data-tab-link="environments">Compare hosts →</a></div></div>';
+}
+
+async function loadGraph(button) {
+  $('graph-view').innerHTML = '<p class="muted">' + loading('Inspecting every topic… this takes a few seconds.') + '</p>';
+  await busy(button, async () => {
+    const data = await api('/api/graph');
+    if (data.state !== 'ok') {
+      $('graph-view').innerHTML = '<div class="finding warning"><p>' + esc(data.error || 'The ROS graph could not be read.') + '</p></div>';
+      return;
+    }
+    const c = data.counts;
+    $('graph-summary').textContent = `${c.error} problem · ${c.warning} warning · ${c.ok} OK · ${c.waiting} waiting`;
+    $('graph-note').textContent = `${data.topics_inspected} of ${data.topics_total} topics inspected in ${data.seconds} s`
+      + (data.truncated ? ' (limited; the rest are not shown)' : '') + (data.hidden_topics.length ? '. Hidden: ' + data.hidden_topics.join(', ') : '')
+      + '. ' + data.limitations.join(' ');
+    drawGraph(data);
+    const worst = data.edges.find(e => e.status !== 'ok');
+    if (worst) edgeDetails(worst);
+    else if (data.waiting.length) waitingDetails(data.waiting[0]);
+  });
+}
+
 // ---------- wiring ----------
 const ACTIONS = {
   refresh: b => refresh(b), export: b => exportSnapshot(b), report: b => downloadReport(b), theme: () => toggleTheme(),
-  'load-topics': b => loadTopics(b), 'inspect-topic': b => inspectTopic(b), sample: () => readSample(),
+  'load-topics': b => loadTopics(b), 'load-graph': b => loadGraph(b), 'inspect-topic': b => inspectTopic(b), sample: () => readSample(),
   'copy-sample': () => navigator.clipboard.writeText($('sample-result').textContent).then(() => toast('Copied', 'ok'), () => toast('Clipboard unavailable', 'error')),
   'load-docker': b => loadDocker(b), 'compare-snapshot': b => compareSnapshot(b), 'compare-remote': b => compareRemote(b),
   'clear-peer': () => { state.peer = null; $('remote-results').className = 'muted'; $('remote-results').textContent = 'No peer loaded.'; $('snapshot-file').value = ''; toast('Peer cleared'); },
@@ -687,6 +848,8 @@ const ACTIONS = {
 document.addEventListener('click', e => {
   const tabLink = e.target.closest('[data-tab],[data-tab-link]');
   if (tabLink) { e.preventDefault(); showTab(tabLink.dataset.tab || tabLink.dataset.tabLink); return; }
+  const inspectLink = e.target.closest('[data-inspect-topic]');
+  if (inspectLink) { e.preventDefault(); showTab('topics'); selectTopic(inspectLink.dataset.inspectTopic); inspectTopic(); return; }
   const row = e.target.closest('tr[data-topic]');
   if (row) { selectTopic(row.dataset.topic); return; }
   const button = e.target.closest('[data-action]');

@@ -27,6 +27,24 @@ The landing page answers "is this machine set up correctly?":
    **Repeat every 3 s** to watch a topic. A received message proves delivery to the probe; a timeout tells you
    where to look next.
 
+## Graph
+
+**Check connections** draws every publisher → subscriber connection on the visible topics and checks each one with
+the same QoS and type rules as the topic inspector:
+
+![Diagnosis graph: lidar_driver to rviz2 on /scan in red, map_server to rviz2 on /map in orange, a dashed line for a
+subscriber nobody publishes to](../assets/media/diagnosis-graph.png)
+
+- **Red:** a problem; no data gets through (e.g. best-effort publisher, reliable subscriber).
+- **Orange:** a warning, e.g. a Volatile subscriber that misses latched (Transient Local) data such as a map.
+- **Green:** compatible QoS and types.
+- **Dashed:** a subscriber is waiting, but nobody publishes the topic (from this machine's point of view).
+
+Click a connection for both QoS profiles, the finding, the fix and a link to the topic inspector. Discovery runs once
+for the whole graph (about 3 s); `/rosout` and `/parameter_events` are hidden, and nodes started with
+`ros2 topic pub/echo` are shown as such. Like the topic inspector, the graph shows which endpoints exist and whether
+they are compatible, not that messages are delivered.
+
 ## Compare hosts
 
 Compare this machine with another PC, robot or container: load a snapshot file, paste JSON, or connect to a live,

@@ -22,6 +22,9 @@ Upcoming first public release, 0.1.0. Not tagged yet.
   `ros2 doctor --report`.
 - **Live topics.** Topic inspection (endpoints and QoS) and one-shot message sampling, including a warning when a
   subscriber requests Volatile from latched (Transient Local) data, such as an RViz Map display that stays empty.
+- **Diagnosis graph.** A dashboard tab that draws every publisher → subscriber connection, colored by the QoS/type
+  rules (red: no data gets through, orange: warning, green: compatible, dashed: nobody publishes), with the finding
+  and fix one click away (`/api/graph`).
 - **Demo.** `dds-autodiag demo`: two deliberately broken demo topics, diagnosed in about a minute without a robot.
 - **Comparison.** Host and container comparison from redacted snapshot files or a token-protected live collector.
 - **Sharing.** Markdown reports and snapshot redaction (random salt unless `--salt` is given).

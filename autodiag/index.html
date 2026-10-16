@@ -15,6 +15,7 @@
   <nav class="nav" aria-label="Sections">
     <a href="#overview" data-tab="overview" class="active"><span class="ico" aria-hidden="true">◎</span>Overview</a>
     <a href="#topics" data-tab="topics"><span class="ico" aria-hidden="true">≋</span>Topics</a>
+    <a href="#graph" data-tab="graph"><span class="ico" aria-hidden="true">⌘</span>Graph</a>
     <a href="#environments" data-tab="environments"><span class="ico" aria-hidden="true">⇄</span>Compare hosts</a>
     <a href="#diagnose" data-tab="diagnose"><span class="ico" aria-hidden="true">⚙</span>Transport</a>
     <a href="#assistant" data-tab="assistant"><span class="ico" aria-hidden="true">?</span>Assistant</a>
@@ -101,6 +102,27 @@
       <div class="actions"><button type="button" class="primary" data-action="sample">Read one sample</button><label class="check"><input id="auto-samples" type="checkbox"> Repeat every 3 s</label><button type="button" data-action="copy-sample">Copy</button></div>
       <small>Output is capped at 16 KB. A received sample proves delivery to this probe, not which transport carried it.</small>
       <pre id="sample-result">No sample requested.</pre>
+    </div>
+  </section>
+
+  <!-- Diagnosis graph -->
+  <section class="panel" id="graph">
+    <div class="card wide">
+      <div class="card-head"><h2>Who talks to whom</h2><button type="button" class="primary" data-action="load-graph">↻ Check connections</button></div>
+      <p class="muted">Every publisher → subscriber connection on the visible topics, checked with the same QoS and type rules as the topic inspector. Click a connection to see why it is broken and how to fix it.</p>
+      <div class="graph-legend" aria-label="Legend">
+        <span><i class="swatch error"></i>Problem: no data gets through</span>
+        <span><i class="swatch warning"></i>Warning: e.g. misses latched data</span>
+        <span><i class="swatch ok"></i>Compatible</span>
+        <span><i class="swatch waiting"></i>Subscriber waiting: nobody publishes</span>
+        <span class="muted" id="graph-summary"></span>
+      </div>
+      <div class="graph-wrap" id="graph-view"><p class="muted">Click “Check connections” to draw the ROS graph.</p></div>
+      <small class="muted" id="graph-note"></small>
+    </div>
+    <div class="card wide">
+      <h2>Connection details</h2>
+      <div id="graph-details" class="muted">Select a connection in the graph.</div>
     </div>
   </section>
 
