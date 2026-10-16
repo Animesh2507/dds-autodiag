@@ -60,3 +60,41 @@ def redact_snapshot(snapshot: dict, salt: str = '') -> dict:
             out['identity']['host'] = _token('host', host, salt)
     out['redacted'] = True
     return out
+
+
+def mask_for_cloud(value, node_labels: dict | None = None):
+    """Copy of findings/prompt text that is safe to send to a cloud AI provider.
+
+    Node names become neutral labels (``publisher 1``), and this machine's hostname,
+    IP addresses and home-directory paths are replaced with tokens. QoS, topic names,
+    message types and rule codes are kept: the diagnosis needs them.
+    """
+    import socket
+    names = sorted((node_labels or {}).items(), key=lambda kv: -len(kv[0]))
+    patterns = [(re.compile(r'(?<![\w/])' + re.escape(name) + r'(?!\w)'), label) for name, label in names if name]
+    host = socket.gethostname()
+
+    def text(s: str) -> str:
+        for pattern, label in patterns:
+            s = pattern.sub(label, s)
+        return redact_text(s, '', host)
+
+    def walk(v):
+        if isinstance(v, dict):
+            return {k: walk(x) for k, x in v.items()}
+        if isinstance(v, list):
+            return [walk(x) for x in v]
+        return text(v) if isinstance(v, str) else v
+
+    return walk(value)
+
+
+def node_labels(endpoints: list) -> dict:
+    """{node name: 'publisher 1' | 'subscriber 1' ...} in discovery order."""
+    labels, counts = {}, {}
+    for e in endpoints:
+        name, kind = e.get('node'), e.get('kind') or 'node'
+        if name and name not in labels:
+            counts[kind] = counts.get(kind, 0) + 1
+            labels[name] = f'{kind} {counts[kind]}'
+    return labels

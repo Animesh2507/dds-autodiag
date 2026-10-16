@@ -3,7 +3,8 @@ import json
 import os
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
-from .knowledge import DOCS
+from .knowledge import DOCS, TITLES
+from .redact import mask_for_cloud
 
 # Each known issue is mapped to vetted official docs, not a model-generated URL.
 ISSUE_DOCS = {
@@ -39,12 +40,12 @@ def evidence_report(snapshot, findings, topic_report=None):
                            'observation':finding.get('summary',''),
                            'evidence':finding.get('evidence',{}),
                            'next_test': next_step,
-                           'documentation':[{'label':doc_key,'url':DOCS[doc_key]}]})
+                           'documentation':[{'label':TITLES.get(doc_key,doc_key),'url':DOCS[doc_key]}]})
     if not hypotheses:
         hypotheses=[{'issue_code':'NO_CONFIRMED_CAUSE','severity':'info','confidence':'unknown',
                      'observation':'No configured diagnostic rule established a root cause.',
                      'evidence':{},'next_test':'Inspect live endpoint QoS and verify actual sample delivery on both hosts.',
-                     'documentation':[{'label':'qos','url':DOCS['qos']}]}]
+                     'documentation':[{'label':TITLES['qos'],'url':DOCS['qos']}]}]
     return {'mode':'deterministic','hypotheses':hypotheses,'tested_data_delivery':False,
             'caveat':'Environment snapshots may not represent every running process or prove sample delivery.',
             'topic_report':topic_report}
@@ -67,6 +68,7 @@ def optional_model_explanation(report, *, api_key=None, model=None, endpoint=Non
     # Do not send raw snapshots: their IPs, usernames, paths, topic payloads may be sensitive.
     sanitized=[{'code':h['issue_code'],'severity':h['severity'],'observation':h['observation'],
                'next_test':h['next_test']} for h in report['hypotheses']]
+    sanitized=mask_for_cloud(sanitized)
     body={'model':model,'temperature':0,'messages':[{'role':'system','content':SYSTEM},
             {'role':'user','content':json.dumps({'findings':sanitized,'tested_data_delivery':False})}]}
     request=Request(endpoint,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+key,

@@ -449,6 +449,9 @@ def plan(request: str, state: dict, provider: str | None = None, model: str | No
     prompt = ('CONTEXT (current RViz state, already including any applied changes):\n' + _context(state, topics, qos)
               + (f'\n\nEARLIER IN THIS CONVERSATION (oldest first):\n{earlier}' if earlier else '')
               + '\n\nREQUEST: ' + request.strip()[:1000])
+    if llm.is_cloud(provider):
+        from .redact import mask_for_cloud
+        prompt = mask_for_cloud(prompt)
     try:
         raw = llm.complete_json(provider, SYSTEM, prompt, PLAN_SCHEMA, model)
     except llm.ProviderError as exc:
