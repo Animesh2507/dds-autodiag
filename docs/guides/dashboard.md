@@ -41,8 +41,10 @@ subscriber nobody publishes to](../assets/media/diagnosis-graph.png)
 - **Dashed:** a subscriber is waiting, but nobody publishes the topic (from this machine's point of view).
 
 Click a connection for both QoS profiles, the finding, the fix and a link to the topic inspector. Discovery runs once
-for the whole graph (about 3 s); `/rosout` and `/parameter_events` are hidden, and nodes started with
-`ros2 topic pub/echo` are shown as such. Like the topic inspector, the graph shows which endpoints exist and whether
+for the whole graph (about 3 s); `/rosout` and `/parameter_events` are hidden, optional companion topics such as
+`/map_updates` are never reported as waiting, nodes started with `ros2 topic pub/echo` are shown as such, and tf2's
+internal listener nodes appear as *TF listener*. A problem is reported once per connection, even if a node (like RViz)
+holds several endpoints on the same topic. Like the topic inspector, the graph shows which endpoints exist and whether
 they are compatible, not that messages are delivered.
 
 ## Compare hosts

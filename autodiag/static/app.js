@@ -681,8 +681,10 @@ function svg(tag, attrs = {}, text) {
 
 const shortName = (s, n = 24) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
 // `ros2 topic pub/echo` run as anonymous _ros2cli_<pid> nodes; name them by what they do.
-const nodeLabel = n => (n.id.startsWith('_ros2cli_') ? (n.publishes.length ? 'ros2 topic pub' : 'ros2 topic echo') + ' · ' + n.id.slice(9) : n.id);
-const idLabel = (id, role) => (id.startsWith('_ros2cli_') ? (role === 'publisher' ? 'ros2 topic pub' : 'ros2 topic echo') + ' (' + id.slice(9) + ')' : id);
+const nodeLabel = n => (n.id.startsWith('_ros2cli_') ? (n.publishes.length ? 'ros2 topic pub' : 'ros2 topic echo') + ' · ' + n.id.slice(9)
+  : n.id.startsWith('transform_listener_impl_') ? 'TF listener' : n.id);
+const idLabel = (id, role) => (id.startsWith('_ros2cli_') ? (role === 'publisher' ? 'ros2 topic pub' : 'ros2 topic echo') + ' (' + id.slice(9) + ')'
+  : id.startsWith('transform_listener_impl_') ? 'TF listener' : id);
 
 function layoutGraph(data) {
   // Columns by role: only publishes | both | only subscribes; "waiting" topics get a ghost source on the left.
