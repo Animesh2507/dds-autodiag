@@ -174,6 +174,9 @@ class QosDiagnosisTests(unittest.TestCase):
         r = {'actions': [], 'notes': []}
         rviz_agent._complete(r, {}, 'fix it', state)
         self.assertEqual((r['actions'][0]['action'], r['actions'][0]['frame']), ('set_fixed_frame', 'map'))
+        wrong = {'actions': [act('set_fixed_frame', frame='odom_combined')], 'notes': []}
+        rviz_agent._complete(wrong, {}, 'fix the frames', state)
+        self.assertEqual([a['frame'] for a in wrong['actions'] if a['action'] == 'set_fixed_frame'], ['map'])
         ok = {'actions': [], 'notes': []}
         rviz_agent._complete(ok, {}, 'fix it', {**state, 'fixed_frame': 'map'})
         self.assertEqual(ok['actions'], [])
