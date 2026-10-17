@@ -156,6 +156,34 @@ class QosDiagnosisTests(unittest.TestCase):
         self.assertEqual((fix['display'], fix['property'], fix['value']), ('Cloud', 'Topic/Reliability Policy', 'Best Effort'))
         self.assertTrue(fix['auto'])
 
+    def test_model_best_effort_on_latched_robot_description_is_corrected(self):
+        # A latched sample only reaches Reliable readers; the model's "Topic/..." means RobotModel's Description Topic.
+        r = rviz_agent.validate({'actions': [
+            act('add_display', display='RobotModel', display_type='RobotModel', topic='/robot_description'),
+            act('set_property', display='RobotModel', property='Topic/Reliability Policy', value='Best Effort')]},
+            STATE, {**TOPICS, '/robot_description': 'std_msgs/msg/String'})
+        self.assertEqual(r['actions'][1]['property'], 'Description Topic/Reliability Policy')
+        report = {'state': 'ok', 'endpoints': [{'kind': 'publisher', 'node': 'robot_state_publisher',
+                                                'qos': {'reliability': 'RELIABLE', 'durability': 'TRANSIENT_LOCAL'}}]}
+        with patch('autodiag.live.inspect_topic', return_value=report):
+            qos = rviz_agent._added_display_qos(r['actions'])
+        rviz_agent._complete(r, qos)
+        settings = {a['property']: a['value'] for a in r['actions'] if a['action'] == 'set_property'}
+        self.assertEqual(settings, {'Description Topic/Reliability Policy': 'Reliable',
+                                    'Description Topic/Durability Policy': 'Transient Local'})
+        self.assertTrue(all(a.get('auto') for a in r['actions'][1:]))
+
+    def test_best_effort_display_on_latched_topic_is_diagnosed(self):
+        state = {'displays': [{'name': 'Map', 'type': 'rviz_default_plugins/Map', 'topic': '/map',
+                               'properties': {'Topic/Reliability Policy': 'Best Effort',
+                                              'Topic/Durability Policy': 'Transient Local'}}]}
+        report = {'state': 'ok', 'endpoints': [{'kind': 'publisher', 'node': 'map_server',
+                                                'qos': {'reliability': 'RELIABLE', 'durability': 'TRANSIENT_LOCAL'}}]}
+        with patch('autodiag.live.inspect_topic', return_value=report):
+            out = rviz_agent._topic_qos(state)
+        self.assertEqual(out['Map']['fix'], [('Topic/Reliability Policy', 'Reliable')])
+        self.assertIn('never receives the latched data', out['Map']['fact'])
+
 
     def test_planner_uses_one_discovery_snapshot(self):
         snapshot = {'/scan': [{'kind': 'publisher', 'node': 'lidar', 'type': 'sensor_msgs/msg/LaserScan',

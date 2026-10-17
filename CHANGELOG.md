@@ -44,7 +44,8 @@ Upcoming first public release, 0.1.0. Not tagged yet.
 - **AI providers.** Local Ollama (offline), Claude (`[cloud]` extra), ChatGPT, Gemini and any OpenAI-compatible API,
   with live model lists. Keys are stored server-side (mode 0600) and never returned to the browser.
 - **Configure RViz with AI.** Plans display changes, validates them against live topics, message types, TF frames
-  and a display catalog, adds diagnosed QoS fixes, and applies only confirmed items, with Undo.
+  and a display catalog, adds diagnosed QoS fixes, corrects model QoS settings that would receive nothing (such as
+  Best Effort on a latched topic), and applies only confirmed items, with Undo.
 - **Native.** C++20 diagnostic core with CTest, and a BehaviorTree.CPP trace viewer.
 - **Deployment.** Docker image (published to `ghcr.io` on release tags), systemd user service and GitHub Actions CI.
 - **Project.** Issue and pull request templates, a security policy, and a documentation site (MkDocs Material) with

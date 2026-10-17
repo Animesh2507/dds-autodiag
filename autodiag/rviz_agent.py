@@ -286,6 +286,26 @@ def _context(state: dict, topics: dict[str, str], qos: dict[str, dict], request:
     return '\n'.join(lines)
 
 
+def _topic_prefix(display_type: str | None) -> str:
+    """QoS settings sit under the display's topic setting: "Topic/..." or, for a RobotModel, "Description Topic/..."."""
+    return CATALOG.get(display_type or '', {}).get('topic_prop') or 'Topic'
+
+
+def _required_qos(reliability: set, durability: set, prefix: str) -> list:
+    """What a display must request to get data from these publishers. A latched (Transient Local) sample only
+    reaches Reliable readers, although Best Effort is QoS-compatible."""
+    need = []
+    if any('BEST_EFFORT' in r for r in reliability):
+        need.append((f'{prefix}/Reliability Policy', 'Best Effort'))
+    elif all('TRANSIENT_LOCAL' in d for d in durability):
+        need.append((f'{prefix}/Reliability Policy', 'Reliable'))
+    if all('TRANSIENT_LOCAL' in d for d in durability):
+        need.append((f'{prefix}/Durability Policy', 'Transient Local'))
+    elif all('VOLATILE' in d for d in durability):
+        need.append((f'{prefix}/Durability Policy', 'Volatile'))
+    return need
+
+
 def _topic_qos(state: dict, inspect=None) -> dict[str, dict]:
     """Inspect the topics of current displays: offered publisher QoS vs. what the display requests."""
     from concurrent.futures import ThreadPoolExecutor
@@ -308,18 +328,26 @@ def _topic_qos(state: dict, inspect=None) -> dict[str, dict]:
         offered_rel = {str(e['qos'].get('reliability', '')).upper() for e in pubs}
         offered_dur = {str(e['qos'].get('durability', '')).upper() for e in pubs}
         fact = f"publishers on {d['topic']} offer {'/'.join(sorted(offered_rel))} reliability, {'/'.join(sorted(offered_dur))} durability"
+        prefix = _topic_prefix(display_type_name(d.get('type', '')))
+        rel, dur = f'{prefix}/Reliability Policy', f'{prefix}/Durability Policy'
+        latched = all('TRANSIENT_LOCAL' in r for r in offered_dur)
         fix = []
-        if any('BEST_EFFORT' in r for r in offered_rel) and str(props.get('Topic/Reliability Policy', '')).lower() == 'reliable':
-            fix.append(('Topic/Reliability Policy', 'Best Effort'))
-            fact += f'; "{name}" requests Reliable, so it receives nothing -> set Topic/Reliability Policy to Best Effort'
-        if all('VOLATILE' in r for r in offered_dur) and str(props.get('Topic/Durability Policy', '')).lower() == 'transient local':
-            fix.append(('Topic/Durability Policy', 'Volatile'))
-            fact += f'; "{name}" requests Transient Local from a Volatile publisher -> set Topic/Durability Policy to Volatile'
-        if all('TRANSIENT_LOCAL' in r for r in offered_dur) and str(props.get('Topic/Durability Policy', '')).lower() == 'volatile':
-            fix.append(('Topic/Durability Policy', 'Transient Local'))
+        if any('BEST_EFFORT' in r for r in offered_rel) and str(props.get(rel, '')).lower() == 'reliable':
+            fix.append((rel, 'Best Effort'))
+            fact += f'; "{name}" requests Reliable, so it receives nothing -> set {rel} to Best Effort'
+        if (latched and not any('BEST_EFFORT' in r for r in offered_rel)
+                and str(props.get(rel, '')).lower() == 'best effort'):
+            fix.append((rel, 'Reliable'))
+            fact += (f'; "{name}" requests Best Effort from a latched (Transient Local) publisher, so it never receives '
+                     f'the latched data -> set {rel} to Reliable')
+        if all('VOLATILE' in r for r in offered_dur) and str(props.get(dur, '')).lower() == 'transient local':
+            fix.append((dur, 'Volatile'))
+            fact += f'; "{name}" requests Transient Local from a Volatile publisher -> set {dur} to Volatile'
+        if latched and str(props.get(dur, '')).lower() == 'volatile':
+            fix.append((dur, 'Transient Local'))
             fact += (f'; "{name}" requests Volatile from a latched (Transient Local) publisher, so it misses data published '
-                     'before it started -> set Topic/Durability Policy to Transient Local')
-        out[name] = {'fact': fact, 'fix': fix}
+                     f'before it started -> set {dur} to Transient Local')
+        out[name] = {'fact': fact, 'fix': fix, 'require': _required_qos(offered_rel, offered_dur, prefix)}
     return out
 
 
@@ -330,7 +358,7 @@ def _added_display_qos(actions: list, inspect=None) -> dict[str, dict]:
     from .live import inspect_topic
     inspect_topic = inspect or inspect_topic
     targets = [a for a in actions if a['action'] == 'add_display' and a.get('topic') and not a.get('not_publishing')
-               and a.get('topic_property', 'Topic') == 'Topic'][:6]
+               and a.get('topic_property', 'Topic')][:6]
     if not targets:
         return {}
     with ThreadPoolExecutor(max_workers=len(targets)) as pool:
@@ -342,14 +370,15 @@ def _added_display_qos(actions: list, inspect=None) -> dict[str, dict]:
             continue
         reliability = {str(e['qos'].get('reliability', '')).upper() for e in pubs}
         durability = {str(e['qos'].get('durability', '')).upper() for e in pubs}
+        prefix = a.get('topic_property', 'Topic')
         fix = []
         if any('BEST_EFFORT' in r for r in reliability):
-            fix.append(('Topic/Reliability Policy', 'Best Effort'))
+            fix.append((f'{prefix}/Reliability Policy', 'Best Effort'))
         if all('TRANSIENT_LOCAL' in d for d in durability):
-            fix.append(('Topic/Durability Policy', 'Transient Local'))
-        if fix:
-            out[a['display']] = {'fact': f'publishers on {a["topic"]} offer {"/".join(sorted(reliability))} reliability, '
-                                         f'{"/".join(sorted(durability))} durability', 'fix': fix}
+            fix.append((f'{prefix}/Durability Policy', 'Transient Local'))
+        out[a['display']] = {'fact': f'publishers on {a["topic"]} offer {"/".join(sorted(reliability))} reliability, '
+                                     f'{"/".join(sorted(durability))} durability', 'fix': fix,
+                             'require': _required_qos(reliability, durability, prefix)}
     return out
 
 
@@ -446,6 +475,10 @@ def validate(raw: dict, state: dict, topics: dict[str, str]) -> dict:
                 continue
             known = (existing.get(target) or {}).get('properties') or {}
             catalog_props = CATALOG.get(target_type or '', {}).get('props', {})
+            # "Topic/Reliability Policy" on a RobotModel means its "Description Topic/Reliability Policy".
+            prefix = _topic_prefix(target_type)
+            if prefix != 'Topic' and a['property'].startswith('Topic/'):
+                a['property'] = prefix + a['property'][len('Topic'):]
             # Models sometimes nest a top-level setting ("Color Transformer/Axis" -> "Axis").
             if '/' in a['property'] and a['property'] not in catalog_props and a['property'] not in known:
                 leaf = a['property'].rsplit('/', 1)[-1].strip()
@@ -492,7 +525,16 @@ def _complete(result: dict, qos: dict, request: str = '', state: dict | None = N
         if needed and dtype in _CLOUD_TYPES and not has(a['display'], 'Color Transformer'):
             extra.append({**a, 'property': 'Color Transformer', 'value': needed, 'auto': True,
                           'description': f'Set Color Transformer of "{a["display"]}" to {needed} (needed for {a["property"]})'})
+    corrected = False
     for name, info in qos.items():
+        # The publishers decide: correct a model setting that would receive nothing.
+        for prop, value in (info.get('fix') or []) + (info.get('require') or []):
+            for a in actions:
+                if (a['action'] == 'set_property' and a['display'].lower() == name.lower() and a['property'] == prop
+                        and str(a['value']).lower() != value.lower()):
+                    a.update(value=value, auto=True,
+                             description=f'Set {prop} of "{a["display"]}" to {value} (AutoDiag QoS fix, from the publishers)')
+                    corrected = True
         for prop, value in info.get('fix') or []:
             if not has(name, prop):
                 extra.append({'action': 'set_property', 'display': name, 'display_type': '', 'topic': '', 'property': prop,
@@ -534,7 +576,7 @@ def _complete(result: dict, qos: dict, request: str = '', state: dict | None = N
             actions.remove(a)
         elif key:
             seen.add(key)
-    if any(info.get('fix') for info in qos.values()):
+    if corrected or any(info.get('fix') for info in qos.values()):
         result['notes'].insert(0, 'AutoDiag found QoS mismatches between your displays and their publishers; fixes are included.')
 
 

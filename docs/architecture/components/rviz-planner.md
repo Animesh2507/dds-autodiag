@@ -71,7 +71,11 @@ After validation, `_complete()` adds what the model tends to miss, each marked a
 - **Dependencies:** `Axis` needs `Color Transformer: AxisColor`; `Color` needs `FlatColor`.
 - **Diagnosed QoS fixes:** if a display requests Reliable from a Best Effort publisher (or Transient Local from a
   Volatile one), the fix is added, and a model-proposed "disable this display" is unchecked. A Volatile display on a
-  latched (Transient Local) publisher, which misses data published before it started, gets Transient Local.
+  latched (Transient Local) publisher, which misses data published before it started, gets Transient Local; a Best
+  Effort one gets Reliable, because the latched sample only reaches Reliable readers.
+- **Publisher QoS wins:** `_required_qos()` derives what a display must request from its publishers. A model setting
+  that conflicts (e.g. Best Effort on the latched `/robot_description`) is corrected in place. The settings use the
+  display's topic property, so `Topic/...` on a RobotModel becomes `Description Topic/...`.
 - **Requested frame:** if the request mentions "frame" and exactly one TF frame name from the tree appears in it,
   that frame is applied when the model skipped it.
 - **Deduplication:** repeated settings of the same property keep the first.
