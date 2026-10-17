@@ -137,6 +137,26 @@ class QosDiagnosisTests(unittest.TestCase):
         self.assertEqual(out['Map']['fix'], [('Topic/Durability Policy', 'Transient Local')])
 
 
+    def test_added_display_gets_publisher_qos(self):
+        actions = [{'action': 'add_display', 'display': 'Cloud', 'topic': '/points', 'topic_property': 'Topic'},
+                   {'action': 'add_display', 'display': 'Map', 'topic': '/map', 'topic_property': 'Topic'},
+                   {'action': 'add_display', 'display': 'Waiting', 'topic': '/later', 'not_publishing': True}]
+        reports = {'/points': {'state': 'ok', 'endpoints': [{'kind': 'publisher', 'node': 'camera',
+                                                             'qos': {'reliability': 'BEST_EFFORT', 'durability': 'VOLATILE'}}]},
+                   '/map': {'state': 'ok', 'endpoints': [{'kind': 'publisher', 'node': 'map_server',
+                                                          'qos': {'reliability': 'RELIABLE', 'durability': 'TRANSIENT_LOCAL'}}]}}
+        with patch('autodiag.live.inspect_topic', side_effect=lambda t: reports[t]):
+            out = rviz_agent._added_display_qos(actions)
+        self.assertEqual(out['Cloud']['fix'], [('Topic/Reliability Policy', 'Best Effort')])
+        self.assertEqual(out['Map']['fix'], [('Topic/Durability Policy', 'Transient Local')])
+        self.assertNotIn('Waiting', out)
+        r = {'actions': [dict(actions[0], display_type='PointCloud2')], 'notes': []}
+        rviz_agent._complete(r, {'Cloud': out['Cloud']})
+        fix = r['actions'][-1]
+        self.assertEqual((fix['display'], fix['property'], fix['value']), ('Cloud', 'Topic/Reliability Policy', 'Best Effort'))
+        self.assertTrue(fix['auto'])
+
+
 class EndpointTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)

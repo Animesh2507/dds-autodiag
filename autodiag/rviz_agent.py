@@ -236,6 +236,35 @@ def _topic_qos(state: dict) -> dict[str, dict]:
     return out
 
 
+def _added_display_qos(actions: list) -> dict[str, dict]:
+    """QoS fixes for displays added in this plan: RViz creates them Reliable and Volatile, which receives nothing
+    from a best-effort publisher (most lidar and camera drivers) and misses latched data such as a map."""
+    from concurrent.futures import ThreadPoolExecutor
+    from .live import inspect_topic
+    targets = [a for a in actions if a['action'] == 'add_display' and a.get('topic') and not a.get('not_publishing')
+               and a.get('topic_property', 'Topic') == 'Topic'][:6]
+    if not targets:
+        return {}
+    with ThreadPoolExecutor(max_workers=len(targets)) as pool:
+        reports = list(pool.map(lambda a: inspect_topic(a['topic']), targets))
+    out = {}
+    for a, rep in zip(targets, reports):
+        pubs = [e for e in rep.get('endpoints', []) if e.get('kind') == 'publisher'] if rep.get('state') == 'ok' else []
+        if not pubs:
+            continue
+        reliability = {str(e['qos'].get('reliability', '')).upper() for e in pubs}
+        durability = {str(e['qos'].get('durability', '')).upper() for e in pubs}
+        fix = []
+        if any('BEST_EFFORT' in r for r in reliability):
+            fix.append(('Topic/Reliability Policy', 'Best Effort'))
+        if all('TRANSIENT_LOCAL' in d for d in durability):
+            fix.append(('Topic/Durability Policy', 'Transient Local'))
+        if fix:
+            out[a['display']] = {'fact': f'publishers on {a["topic"]} offer {"/".join(sorted(reliability))} reliability, '
+                                         f'{"/".join(sorted(durability))} durability', 'fix': fix}
+    return out
+
+
 def _loose(name: str) -> str:
     """'laser_scan', 'Laser Scan' and 'LaserScan' all match."""
     return ''.join(ch for ch in name.lower() if ch.isalnum())
@@ -457,6 +486,7 @@ def plan(request: str, state: dict, provider: str | None = None, model: str | No
     except llm.ProviderError as exc:
         raise PlanError(str(exc)) from exc
     result = validate(raw, state, topics)
+    qos = {**qos, **_added_display_qos(result['actions'])}
     _complete(result, qos, request, state)
     result.update(provider=provider, model=model or llm.model_for(provider),
                   seconds=round(time.monotonic() - started, 2))
