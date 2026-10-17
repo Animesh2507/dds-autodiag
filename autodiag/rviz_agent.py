@@ -187,10 +187,22 @@ def _short(msg_type: str) -> str:
     return msg_type.rsplit('/', 1)[-1]
 
 
+def _fixed_frame_fix(state: dict) -> str | None:
+    """A frame to switch to when the Fixed Frame is not in the TF tree (then RViz shows nothing at all)."""
+    frames, fixed = state.get('frames') or [], state.get('fixed_frame')
+    if not frames or not fixed or fixed in frames:
+        return None
+    return next((f for f in ('map', 'odom', 'world', 'base_link') if f in frames), frames[0])
+
+
 def _context(state: dict, topics: dict[str, str], qos: dict[str, dict]) -> str:
     """Compact plain-text context: small local models read this far faster than JSON."""
     lines = [f"Fixed frame: {state.get('fixed_frame') or 'unknown'}",
              'TF frames: ' + (', '.join(state.get('frames', [])[:60]) or 'unknown')]
+    better = _fixed_frame_fix(state)
+    if better:
+        lines.append(f'Diagnosed problem: the Fixed Frame "{state.get("fixed_frame")}" does not exist in the TF tree, so '
+                     f'RViz can show nothing -> set_fixed_frame to "{better}".')
     lines.append('Current displays:')
     used_types = set()
     for d in state.get('displays', [])[:40]:
@@ -439,8 +451,16 @@ def _complete(result: dict, qos: dict, request: str = '', state: dict | None = N
             actions.insert(index, e)
         else:
             actions.append(e)
-    # A frame named in the request ("... in the base_link frame") that the model did not apply.
     state = state or {}
+    # A Fixed Frame missing from the TF tree blanks every display; fix it even if the model did not.
+    better = _fixed_frame_fix(state)
+    if better and not any(a['action'] == 'set_fixed_frame' and a['frame'] in state.get('frames', []) for a in actions):
+        actions[:] = [a for a in actions if a['action'] != 'set_fixed_frame']
+        actions.insert(0, {'action': 'set_fixed_frame', 'display': '', 'display_type': '', 'topic': '', 'property': '',
+                           'value': '', 'frame': better, 'auto': True,
+                           'description': f'Set Fixed Frame to {better} ("{state.get("fixed_frame")}" is not in the TF tree; '
+                                          'AutoDiag TF fix)'})
+    # A frame named in the request ("... in the base_link frame") that the model did not apply.
     if 'frame' in request.lower() and not any(a['action'] == 'set_fixed_frame' for a in actions):
         words = set(re.findall(r'[A-Za-z0-9_/]+', request))
         named = [f for f in state.get('frames', []) if f in words and f != state.get('fixed_frame')]

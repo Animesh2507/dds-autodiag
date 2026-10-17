@@ -168,6 +168,17 @@ class QosDiagnosisTests(unittest.TestCase):
         self.assertIsNone(rviz_agent._snapshot_inspector(None))
 
 
+    def test_missing_fixed_frame_is_diagnosed_and_fixed(self):
+        state = {'displays': [], 'fixed_frame': 'odom_combined', 'frames': ['base_link', 'map', 'odom']}
+        self.assertIn('does not exist in the TF tree', rviz_agent._context(state, {}, {}))
+        r = {'actions': [], 'notes': []}
+        rviz_agent._complete(r, {}, 'fix it', state)
+        self.assertEqual((r['actions'][0]['action'], r['actions'][0]['frame']), ('set_fixed_frame', 'map'))
+        ok = {'actions': [], 'notes': []}
+        rviz_agent._complete(ok, {}, 'fix it', {**state, 'fixed_frame': 'map'})
+        self.assertEqual(ok['actions'], [])
+
+
 class EndpointTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
