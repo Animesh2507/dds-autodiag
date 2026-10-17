@@ -195,8 +195,55 @@ def _fixed_frame_fix(state: dict) -> str | None:
     return next((f for f in ('map', 'odom', 'world', 'base_link') if f in frames), frames[0])
 
 
-def _context(state: dict, topics: dict[str, str], qos: dict[str, dict]) -> str:
-    """Compact plain-text context: small local models read this far faster than JSON."""
+# Words in a request that point to display types (retrieval keys for the slim prompt).
+TYPE_WORDS = {
+    'PointCloud2': ('point cloud', 'pointcloud', 'cloud', '3d', 'lidar', 'velodyne', 'points', 'depth'),
+    'LaserScan': ('laser', 'scan', 'lidar', '2d'),
+    'Map': ('map', 'costmap', 'occupancy', 'grid map'),
+    'Path': ('path', 'plan', 'trajectory', 'route'),
+    'RobotModel': ('robot model', 'robot', 'urdf', 'model', 'mesh'),
+    'Image': ('image', 'camera', 'picture', 'video', 'rgb'),
+    'Camera': ('camera',),
+    'DepthCloud': ('depth',),
+    'Polygon': ('footprint', 'polygon', 'outline'),
+    'Pose': ('pose', 'goal'),
+    'PoseWithCovariance': ('amcl', 'localization', 'covariance'),
+    'PoseArray': ('particle', 'pose array'),
+    'Odometry': ('odom', 'odometry'),
+    'Marker': ('marker',), 'MarkerArray': ('marker', 'markers'),
+    'TF': ('tf', 'frame', 'frames', 'transform'),
+    'Grid': ('grid',), 'Axes': ('axes', 'axis frame'),
+    'Range': ('range', 'sonar', 'ultrasonic'), 'GridCells': ('grid cells', 'cells'),
+    'TwistStamped': ('twist', 'velocity', 'cmd_vel'), 'Wrench': ('wrench', 'force', 'torque'),
+}
+
+
+def _retrieve_types(request: str, state: dict, topics: dict[str, str]) -> set[str] | None:
+    """Display types relevant to this request; None when nothing matched (then the full catalog is used)."""
+    text = ' ' + re.sub(r'[^a-z0-9_/ ]+', ' ', request.lower()) + ' '
+    wanted = {name for name, words in TYPE_WORDS.items() if any(f' {w} ' in text or f' {w}s ' in text for w in words)}
+    for t, ty in topics.items():  # a topic named in the request brings its display types
+        if t.lower() in request.lower():
+            wanted |= {n for n, c in CATALOG.items() if ty in c['types']}
+    for d in state.get('displays', []):  # displays the request names (by name or type)
+        name, dtype = str(d.get('name', '')).lower(), display_type_name(d.get('type', '')) or ''
+        if name and (name in request.lower() or _loose(name) in _loose(request)):
+            wanted.add(dtype)
+    if not wanted:
+        return None
+    # Displays that show nothing are often what the user means ("nothing shows").
+    wanted |= {display_type_name(d.get('type', '')) or '' for d in state.get('displays', [])
+               if d.get('status') in ('Warn', 'Error')}
+    return {w for w in wanted if w in CATALOG}
+
+
+def _context(state: dict, topics: dict[str, str], qos: dict[str, dict], request: str | None = None) -> str:
+    """Compact plain-text context: small local models read this far faster than JSON.
+
+    With `request`, the context is slimmed by retrieval: only display types the request needs, full settings
+    only for displays it touches, and only matching topics. Prompt reading dominates on a CPU, so this is the
+    main speed lever for local models."""
+    focus = _retrieve_types(request, state, topics) if request else None
     lines = [f"Fixed frame: {state.get('fixed_frame') or 'unknown'}",
              'TF frames: ' + (', '.join(state.get('frames', [])[:60]) or 'unknown')]
     better = _fixed_frame_fix(state)
@@ -208,18 +255,29 @@ def _context(state: dict, topics: dict[str, str], qos: dict[str, dict]) -> str:
     for d in state.get('displays', [])[:40]:
         dtype = display_type_name(d.get('type', '')) or d.get('type', '?')
         used_types.add(dtype)
-        props = '; '.join(f'{k}={v}' for k, v in list((d.get('properties') or {}).items())[:25])
         fact = qos.get(d.get('name', ''), {}).get('fact', '')
+        detailed = focus is None or dtype in focus or bool(fact)
+        props = '; '.join(f'{k}={v}' for k, v in list((d.get('properties') or {}).items())[:25]) if detailed else ''
         lines.append(f'- "{d.get("name")}" ({dtype}) {"enabled" if d.get("enabled") else "disabled"}, '
                      f'status {d.get("status") or "?"}, topic {d.get("topic") or "-"}'
                      + (f'; {fact}' if fact else '') + (f'; {props}' if props else ''))
     if not state.get('displays'):
         lines.append('- (none)')
-    lines.append('Topics: ' + (', '.join(f'{t} [{_short(ty)}]' for t, ty in sorted(topics.items())[:150]) or 'none visible'))
+    if focus is None:
+        shown_topics = topics
+    else:
+        types = {t for name in focus for t in CATALOG[name]['types']}
+        shown_topics = {t: ty for t, ty in topics.items() if ty in types or t.lower() in (request or '').lower()}
+    lines.append('Topics: ' + (', '.join(f'{t} [{_short(ty)}]' for t, ty in sorted(shown_topics.items())[:150])
+                               or 'none visible'))
     present = {ty for ty in topics.values()}
     lines.append('Display types you may add or configure (message type; settable properties):')
     for name, c in CATALOG.items():
-        if name in used_types or name in COMMON_TYPES or not c['types'] or present.intersection(c['types']):
+        if focus is not None:
+            include = name in focus
+        else:
+            include = name in used_types or name in COMMON_TYPES or not c['types'] or present.intersection(c['types'])
+        if include:
             props = '; '.join(f'{k} ({v})' for k, v in c['props'].items())
             lines.append(f"- {name}: {', '.join(_short(t) for t in c['types']) or 'no topic'}; {props or 'no common settings'}")
     hints = [h['fact'] for h in qos.values() if h.get('fix')]
@@ -514,20 +572,40 @@ def plan(request: str, state: dict, provider: str | None = None, model: str | No
         inspect = _snapshot_inspector(snapshot)
         topics_job, qos_job = pool.submit(_live_topics, snapshot), pool.submit(_topic_qos, state, inspect)
         topics, qos = topics_job.result(), qos_job.result()
+    result = plan_with_context(request, state, topics, qos, provider, model, history, inspect)
+    result.update(seconds=round(time.monotonic() - started, 2))
+    return result
+
+
+def build_prompt(request: str, state: dict, topics: dict[str, str], qos: dict[str, dict],
+                 history: list | None = None, slim: bool = True) -> str:
     earlier = _history_text(history)
-    prompt = ('CONTEXT (current RViz state, already including any applied changes):\n' + _context(state, topics, qos)
-              + (f'\n\nEARLIER IN THIS CONVERSATION (oldest first):\n{earlier}' if earlier else '')
-              + '\n\nREQUEST: ' + request.strip()[:1000])
+    # Follow-ups ("make them bigger") name nothing; retrieve with the earlier requests too.
+    query = ' '.join([str(t.get('request', '')) for t in (history or [])[-2:] if isinstance(t, dict)] + [request])
+    context = _context(state, topics, qos, query if slim else None)
+    return ('CONTEXT (current RViz state, already including any applied changes):\n' + context
+            + (f'\n\nEARLIER IN THIS CONVERSATION (oldest first):\n{earlier}' if earlier else '')
+            + '\n\nREQUEST: ' + request.strip()[:1000])
+
+
+def plan_with_context(request: str, state: dict, topics: dict[str, str], qos: dict[str, dict],
+                      provider: str | None = None, model: str | None = None, history: list | None = None,
+                      inspect=None, slim: bool = True) -> dict:
+    """Plan from an already gathered ROS picture (topics, QoS facts). Used by plan() and the benchmark."""
+    provider = provider or llm.default_provider()
+    prompt = build_prompt(request, state, topics, qos, history, slim)
     if llm.is_cloud(provider):
         from .redact import mask_for_cloud
         prompt = mask_for_cloud(prompt)
+    started = time.monotonic()
     try:
         raw = llm.complete_json(provider, SYSTEM, prompt, PLAN_SCHEMA, model)
     except llm.ProviderError as exc:
         raise PlanError(str(exc)) from exc
+    model_seconds = time.monotonic() - started
     result = validate(raw, state, topics)
     qos = {**qos, **_added_display_qos(result['actions'], inspect)}
     _complete(result, qos, request, state)
     result.update(provider=provider, model=model or llm.model_for(provider),
-                  seconds=round(time.monotonic() - started, 2))
+                  usage={**llm.last_usage(), 'model_seconds': round(model_seconds, 2), 'prompt_chars': len(prompt)})
     return result

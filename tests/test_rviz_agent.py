@@ -201,7 +201,8 @@ class EndpointTests(unittest.TestCase):
         self.assertIn('/lidar/points [PointCloud2]', prompt)
         self.assertIn('"LaserScan" (LaserScan)', prompt)
         self.assertNotIn('Wrench', prompt)  # only relevant display types are listed
-        self.assertIn('- Image:', prompt)    # common types are always offered
+        self.assertIn('- PointCloud2:', prompt)  # retrieved for "lidar"
+        self.assertNotIn('- Image:', prompt)     # slim prompt: unrelated types are left out
 
     def test_empty_request_rejected(self):
         self.assertEqual(self.client.post('/api/rviz/plan', json={'request': ' '}).status_code, 400)
@@ -276,3 +277,31 @@ class HistoryTests(unittest.TestCase):
         self.assertIn('EARLIER IN THIS CONVERSATION', prompt)
         self.assertIn('add a cloud', prompt)
         self.assertTrue(prompt.rstrip().endswith('REQUEST: make it bigger'))
+
+
+class SlimPromptTests(unittest.TestCase):
+    def test_retrieves_only_relevant_display_types(self):
+        types = rviz_agent._retrieve_types('Show the front camera image.', {'displays': []}, {})
+        self.assertEqual(types, {'Image', 'Camera'})
+        prompt = rviz_agent._context({'displays': []}, TOPICS, {}, 'Show the front camera image.')
+        self.assertIn('- Image:', prompt)
+        self.assertNotIn('- PointCloud2:', prompt)
+
+    def test_unclear_request_falls_back_to_the_full_catalog(self):
+        self.assertIsNone(rviz_agent._retrieve_types('Make it look nicer.', {'displays': []}, {}))
+        full = rviz_agent._context({'displays': []}, TOPICS, {}, 'Make it look nicer.')
+        self.assertIn('- PointCloud2:', full)
+        self.assertIn('- LaserScan:', full)
+
+    def test_follow_up_uses_earlier_requests_and_problem_displays_keep_details(self):
+        history = [{'request': 'Show the lidar point cloud colored by height.', 'actions': []}]
+        prompt = rviz_agent.build_prompt('Make the points bigger.', STATE, TOPICS, {}, history)
+        self.assertIn('- PointCloud2:', prompt)
+        broken = {**STATE['displays'][0], 'status': 'Error'}
+        prompt = rviz_agent.build_prompt('Show the camera.', {'displays': [broken]}, TOPICS, {})
+        self.assertIn(f'- {broken["type"].split("/")[-1]}:', prompt)
+
+    def test_slim_prompt_is_smaller(self):
+        full = rviz_agent.build_prompt('Show the camera image.', STATE, TOPICS, {}, slim=False)
+        slim = rviz_agent.build_prompt('Show the camera image.', STATE, TOPICS, {})
+        self.assertLess(len(slim), len(full) * 0.8)

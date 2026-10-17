@@ -635,8 +635,21 @@ def _first_json_object(text: str) -> dict:
     raise ProviderError('The model did not return a valid plan. Try again or pick a larger model.')
 
 
+_usage = threading.local()
+
+
+def last_usage() -> dict:
+    """Token counts and timings of this thread's last complete_json call (for benchmarks and diagnostics)."""
+    return dict(getattr(_usage, 'value', None) or {})
+
+
+def _set_usage(**values) -> None:
+    _usage.value = {k: v for k, v in values.items() if v is not None}
+
+
 def complete_json(provider: str, system: str, prompt: str, schema: dict, model: str | None = None) -> dict:
     """One non-streaming answer constrained to `schema` (strict where the provider supports it)."""
+    _usage.value = {}
     _check_provider(provider)
     model = (model or model_for(provider)).strip()
     if not model or not MODEL_RE.match(model):
@@ -657,6 +670,11 @@ def complete_json(provider: str, system: str, prompt: str, schema: dict, model: 
                     raise
                 body.pop('think')
                 data = _post_json(_ollama_url() + '/api/chat', body, {}, timeout=300)
+            ns = 1e9
+            _set_usage(prompt_tokens=data.get('prompt_eval_count'), output_tokens=data.get('eval_count'),
+                       prompt_seconds=data.get('prompt_eval_duration', 0) / ns or None,
+                       output_seconds=data.get('eval_duration', 0) / ns or None,
+                       load_seconds=data.get('load_duration', 0) / ns or None)
             return _first_json_object(data.get('message', {}).get('content', ''))
         key, _ = _key(provider)
         if not key:
@@ -671,6 +689,8 @@ def complete_json(provider: str, system: str, prompt: str, schema: dict, model: 
             if model.startswith('gpt-5'):
                 body['reasoning_effort'] = 'low'
             data = _post_json('https://api.openai.com/v1/chat/completions', body, {'Authorization': 'Bearer ' + key}, 120)
+            usage = data.get('usage') or {}
+            _set_usage(prompt_tokens=usage.get('prompt_tokens'), output_tokens=usage.get('completion_tokens'))
             return _first_json_object(data['choices'][0]['message'].get('content') or '')
         if provider == 'gemini':
             url = f'https://generativelanguage.googleapis.com/v1beta/models/{quote(model, safe="")}:generateContent'
@@ -678,6 +698,8 @@ def complete_json(provider: str, system: str, prompt: str, schema: dict, model: 
             data = _post_json(url, {'systemInstruction': {'parts': [{'text': system + schema_hint}]},
                                     'contents': [{'role': 'user', 'parts': [{'text': prompt}]}],
                                     'generationConfig': config}, {'x-goog-api-key': key}, 120)
+            usage = data.get('usageMetadata') or {}
+            _set_usage(prompt_tokens=usage.get('promptTokenCount'), output_tokens=usage.get('candidatesTokenCount'))
             parts = (data.get('candidates') or [{}])[0].get('content', {}).get('parts', [])
             return _first_json_object(''.join(p.get('text', '') for p in parts if not p.get('thought')))
         base = _entry(provider).get('base_url')
@@ -726,6 +748,9 @@ def _anthropic_json(model: str, system: str, prompt: str, schema: dict, key: str
         raise ProviderError(f'Claude: API error {exc.status_code}; try again later.') from exc
     except anthropic.APIConnectionError as exc:
         raise _anthropic_connection_error(anthropic, exc) from exc
+    usage = getattr(response, 'usage', None)
+    if usage is not None:
+        _set_usage(prompt_tokens=getattr(usage, 'input_tokens', None), output_tokens=getattr(usage, 'output_tokens', None))
     if response.stop_reason == 'refusal':
         raise ProviderError('Claude declined this request. Try rephrasing it.')
     if response.stop_reason == 'max_tokens':
