@@ -18,6 +18,7 @@ set(CMAKE_AUTOMOC ON)
 add_library(${PROJECT_NAME} SHARED
   src/autodiag_panel.cpp
   src/configure_tab.cpp
+  src/graph_tab.cpp
   include/rviz_autodiag_panel/autodiag_panel.hpp)
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

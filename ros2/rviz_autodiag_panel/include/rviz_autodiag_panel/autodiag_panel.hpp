@@ -18,6 +18,8 @@
 
 class QCheckBox;
 class QComboBox;
+class QGraphicsScene;
+class QGraphicsView;
 class QLabel;
 class QLineEdit;
 class QListWidget;
@@ -69,6 +71,8 @@ private Q_SLOTS:
   void openDashboard();
   void onStreamData();
   void onStreamFinished();
+  // "Graph" tab (graph_tab.cpp)
+  void loadGraph();
   // "Configure RViz" tab (configure_tab.cpp)
   void planRviz();
   void applyPlan();
@@ -143,6 +147,18 @@ private:
   QString wanted_provider_;
   QString wanted_model_;
   QString wanted_topic_;
+
+  // "Graph" tab (graph_tab.cpp): every publisher -> subscriber connection, from GET /api/graph
+  QWidget * buildGraphTab();
+  void drawGraph(const QJsonObject & data);
+  void showEdgeDetails(const QJsonObject & edge);
+  void showWaitingDetails(const QJsonObject & waiting);
+  QPushButton * graph_button_{nullptr};
+  QLabel * graph_summary_{nullptr};
+  QGraphicsScene * graph_scene_{nullptr};
+  QGraphicsView * graph_view_{nullptr};
+  QTextBrowser * graph_details_{nullptr};
+  bool graph_loaded_{false};
 
   // "Configure RViz" tab (configure_tab.cpp)
   QWidget * buildConfigureTab();

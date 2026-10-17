@@ -55,15 +55,15 @@ RViz panel: build `ros2/rviz_autodiag_panel` with colcon, then start the server 
 | `dds-autodiag …` | CLI: `doctor`, `demo`, `check`, `topics`, `inspect`, `sample`, `collect`, `compare`, `selftest` |
 | http://127.0.0.1:8080 | Dashboard: health, topics, diagnosis graph, AI assistant, compare hosts |
 | http://127.0.0.1:8080/api/docs | REST API (OpenAPI) |
-| RViz → Panels → AutoDiag | Health, topic QoS, AI and Configure RViz next to your displays |
+| RViz → Panels → AutoDiag | Health, topic QoS, diagnosis graph, AI and Configure RViz next to your displays |
 
 ## What's included
 
 | | Feature | |
 |---|---|---|
 | **Core** | **Diagnosis**: 23 rules with evidence, a next step and official docs where one applies; live topic QoS inspection; one-shot message sampling | CLI · dashboard |
-| | **Diagnosis graph**: every publisher → subscriber connection, broken ones in red, fix one click away | dashboard |
-| | **RViz2 panel**: health, topic QoS and AI, right next to your displays | `ros2/rviz_autodiag_panel` |
+| | **Diagnosis graph**: every publisher → subscriber connection, broken ones in red, fix one click away | dashboard · RViz panel |
+| | **RViz2 panel**: health, topic QoS, the diagnosis graph and AI, right next to your displays | `ros2/rviz_autodiag_panel` |
 | **AI add-ons** | **Assistant**: answers grounded in official ROS 2 / DDS docs, streamed, with follow-ups | Local Ollama or Claude, ChatGPT, Gemini |
 | | **Configure RViz**: describe the view; every change is validated against your live system, applied on confirmation, undoable | RViz panel |
 | **Extras** | Compare hosts and containers, Markdown reports, redacted snapshots, Docker image, systemd service | |

@@ -60,7 +60,7 @@ AutoDiagPanel::AutoDiagPanel(QWidget * parent)
   token_edit_->setPlaceholderText(tr("token (only if AUTODIAG_UI_TOKEN is set)"));
   auto * connect_button = new QPushButton(tr("Connect"));
   auto * dashboard_button = new QPushButton(tr("Dashboard"));
-  dashboard_button->setToolTip(tr("Open the full AutoDiag dashboard in a browser"));
+  dashboard_button->setToolTip(tr("Open this view in the full AutoDiag dashboard (browser)"));
   connection_label_ = new QLabel(tr("Not connected"));
   connection_label_->setWordWrap(true);
 
@@ -94,6 +94,9 @@ AutoDiagPanel::AutoDiagPanel(QWidget * parent)
   topic_combo_ = new QComboBox;
   topic_combo_->setEditable(true);
   topic_combo_->setInsertPolicy(QComboBox::NoInsert);
+  // Long "topic  [type]" entries must not widen RViz's side dock.
+  topic_combo_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+  topic_combo_->setMinimumContentsLength(12);
   topic_combo_->setToolTip(tr("Topics used by RViz displays are listed first (⚠ = display reports a problem)"));
   auto * topics_button = new QPushButton(tr("↻"));
   topics_button->setToolTip(tr("Reload topics"));
@@ -171,6 +174,8 @@ AutoDiagPanel::AutoDiagPanel(QWidget * parent)
   tabs_ = new QTabWidget;
   tabs_->addTab(health_tab, tr("Health"));
   tabs_->addTab(topic_tab, tr("Topic"));
+  QWidget * graph_tab = buildGraphTab();
+  tabs_->addTab(graph_tab, tr("Graph"));
   tabs_->addTab(ai_tab, tr("AI assistant"));
   tabs_->addTab(buildConfigureTab(), tr("Configure RViz"));
 
@@ -195,6 +200,12 @@ AutoDiagPanel::AutoDiagPanel(QWidget * parent)
   connect(question_edit_, &QLineEdit::returnPressed, this, &AutoDiagPanel::ask);
   connect(stop_button_, &QPushButton::clicked, this, &AutoDiagPanel::stopAsk);
   connect(new_chat_button_, &QPushButton::clicked, this, &AutoDiagPanel::newChat);
+  // Checking every topic takes a few seconds: only when the Graph tab is first opened, then on request.
+  connect(tabs_, &QTabWidget::currentChanged, this, [this, graph_tab]() {
+      if (tabs_->currentWidget() == graph_tab && !graph_loaded_) {
+        loadGraph();
+      }
+    });
   // Mark the RViz config as modified when settings that are saved change.
   connect(server_edit_, &QLineEdit::editingFinished, this, [this]() {Q_EMIT configChanged();});
   connect(model_combo_, &QComboBox::currentTextChanged, this, [this]() {Q_EMIT configChanged();});
@@ -746,7 +757,12 @@ void AutoDiagPanel::onStreamFinished()
 
 void AutoDiagPanel::openDashboard()
 {
-  QDesktopServices::openUrl(QUrl(server_edit_->text().trimmed() + QStringLiteral("/#assistant")));
+  // The dashboard page that matches the current tab: Health, Topic, Graph, AI assistant, Configure RViz.
+  static const QStringList pages = {QStringLiteral("overview"), QStringLiteral("topics"), QStringLiteral("graph"),
+    QStringLiteral("assistant"), QStringLiteral("overview")};
+  const QString page = pages.value(tabs_->currentIndex(), QStringLiteral("overview"));
+  const QString base = server_edit_->text().trimmed().remove(QRegularExpression(QStringLiteral("/+$")));
+  QDesktopServices::openUrl(QUrl(base + QStringLiteral("/#") + page));
 }
 
 }  // namespace rviz_autodiag_panel

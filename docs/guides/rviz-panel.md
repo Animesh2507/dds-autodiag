@@ -39,11 +39,12 @@ again.
 ## Connecting
 
 The top row holds the server URL (default `http://127.0.0.1:8080`, or `AUTODIAG_SERVER_URL` if set; a URL saved in
-the `.rviz` file overrides both), **Connect**, and **Dashboard**, which opens the web UI. If the server isn't up yet,
+the `.rviz` file overrides both), **Connect**, and **Dashboard**, which opens the current view in the web dashboard (Health → Overview, Topic →
+Topics, Graph → Graph, AI assistant → Assistant). If the server isn't up yet,
 the panel keeps trying for about 30 seconds. If the server requires a token, enter it in the token field or start
 RViz with `AUTODIAG_UI_TOKEN` set.
 
-## The four tabs
+## The five tabs
 
 === "Health"
 
@@ -55,6 +56,17 @@ RViz with `AUTODIAG_UI_TOKEN` set.
     Pick a topic and press **Inspect** to see publishers, subscribers and QoS, with incompatibilities marked.
     Topics used by your RViz displays are listed first, and **⚠** marks a display that currently reports a
     problem. That's usually the one to inspect.
+
+=== "Graph"
+
+    Every publisher → subscriber connection on the visible topics, checked with the same QoS and type rules: red
+    means no data gets through, orange a warning (for example a Volatile display on a latched map), green
+    compatible, and a dashed line a subscriber that nobody publishes to. The check runs the first time you open the
+    tab (a few seconds; **Check connections** repeats it), opens the worst connection right away and scales to the
+    width of the dock. Click a line for its finding, next step and documentation; **Inspect topic** jumps to the
+    Topic tab.
+
+    ![Graph tab in the RViz panel: the red /scan link from lidar_driver to rviz is selected](../assets/media/rviz-panel-graph.png){ width="420" }
 
 === "AI assistant"
 

@@ -137,8 +137,8 @@ Experimental features may change or be removed before 1.0.
     source install/setup.bash && rviz2
     ```
 
-    Panels → Add New Panel → rviz_autodiag_panel → **AutoDiag**. Health, topic QoS, AI assistant and
-    Configure RViz, right next to your visualization. [RViz2 panel guide](guides/rviz-panel.md)
+    Panels → Add New Panel → rviz_autodiag_panel → **AutoDiag**. Health, topic QoS, the diagnosis graph, AI assistant
+    and Configure RViz, right next to your visualization. [RViz2 panel guide](guides/rviz-panel.md)
 
 ## How it fits together
 

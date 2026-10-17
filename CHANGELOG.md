@@ -26,7 +26,7 @@ Upcoming first public release, 0.1.0. Not tagged yet.
   actions, invalid suggestions, time and tokens per plan); results for one machine are in the docs.
 - **Faster local planning.** The Configure RViz prompt is slimmed by retrieval (only the display types, topics and
   settings a request needs): about 44% fewer prompt tokens and 35% less time per plan with a local 4B model.
-- **Diagnosis graph.** A dashboard tab that draws every publisher → subscriber connection, colored by the QoS/type
+- **Diagnosis graph.** A dashboard tab and an RViz panel tab that draw every publisher → subscriber connection, colored by the QoS/type
   rules (red: no data gets through, orange: warning, green: compatible, dashed: nobody publishes), with the finding
   and fix one click away (`/api/graph`).
 - **Demo.** `dds-autodiag demo`: two deliberately broken demo topics, diagnosed in about a minute without a robot.
@@ -36,7 +36,7 @@ Upcoming first public release, 0.1.0. Not tagged yet.
   `--json` and exit codes 0/1/2.
 - **Web dashboard.** Overview, topics, host comparison, transport checks, assistant, tools and settings; light/dark
   themes and a mobile layout.
-- **RViz2 panel** (`ros2/rviz_autodiag_panel`) with Health, Topic, AI assistant and Configure RViz tabs, and a launch
+- **RViz2 panel** (`ros2/rviz_autodiag_panel`) with Health, Topic, Graph, AI assistant and Configure RViz tabs, and a launch
   file that starts the server and RViz with the panel together.
 - **REST API** with OpenAPI docs at `/api/docs`.
 - **AI assistant.** Retrieval over a curated knowledge base of official ROS 2, DDS and Docker documentation (BM25,
