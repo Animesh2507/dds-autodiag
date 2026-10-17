@@ -9,7 +9,7 @@ hide:
 
 # DDS AutoDiag
 
-<p class="ad-tagline">Tells you why your ROS 2 nodes can't talk to each other, and fixes your RViz view for you. Every AI change is checked against your live system first.</p>
+<p class="ad-tagline">AI-powered diagnostics for ROS 2: find out why your nodes can't talk, see every broken connection, and let AI guide the fix. Every AI change is checked against your live system first.</p>
 
 [Get started :material-rocket-launch:](getting-started/installation.md){ .md-button .md-button--primary }
 [See how it works :material-graph:](architecture/index.md){ .md-button }

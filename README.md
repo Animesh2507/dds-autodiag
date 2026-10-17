@@ -6,7 +6,7 @@
 ![Version](https://img.shields.io/badge/version-0.1.0-0b7fab)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**Tells you why your ROS 2 nodes can't talk to each other, and fixes your RViz view for you.**
+**AI-powered diagnostics for ROS 2: find out why your nodes can't talk, see every broken connection, and let AI guide the fix.**
 
 ## The problem
 

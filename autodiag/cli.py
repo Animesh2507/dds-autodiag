@@ -346,7 +346,7 @@ def cmd_serve(args):
 # ---------- argument parsing ----------
 
 def build_parser():
-    ap = argparse.ArgumentParser(prog='dds-autodiag', description='Read-only ROS 2 / DDS communication diagnostics.',
+    ap = argparse.ArgumentParser(prog='dds-autodiag', description='AI-powered diagnostics for ROS 2: find out why your nodes can\'t talk, and how to fix it.',
                                  epilog='Run "dds-autodiag <command> -h" for command help. Start with "dds-autodiag doctor".')
     ap.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
     # Pre-1.0 interface, kept for scripts.
