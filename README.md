@@ -68,6 +68,8 @@ RViz panel: build `ros2/rviz_autodiag_panel` with colcon, then start the server 
 | **Experimental** | Native C++ endpoint checker, BehaviorTree.CPP trace viewer, the previous UI at `/legacy` | May change or be removed before 1.0 |
 
 AI is optional: without it, diagnosis and documentation search still work fully offline.
+Which model to pick? See the [AI model benchmark](docs/reference/ai-benchmark.md) (cloud and local, with
+`dds-autodiag bench` to run it on your machine).
 
 ## Documentation
 

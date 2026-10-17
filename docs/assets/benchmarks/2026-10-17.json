@@ -1,0 +1,1505 @@
+{
+ "version": "0.1.0",
+ "date": "2026-10-17",
+ "machine": "AMD Ryzen AI 5 PRO 340 w/ Radeon 840M, Linux 6.17.0-1033-oem",
+ "variant": "default (slim prompt)",
+ "scenarios": [
+  {
+   "id": "fix_qos",
+   "title": "Fix two silent QoS problems",
+   "checks": 2
+  },
+  {
+   "id": "cloud_height",
+   "title": "Add a 3D cloud colored by height",
+   "checks": 4
+  },
+  {
+   "id": "tf_robot",
+   "title": "TF error + robot model + QoS + 3D cloud (the video request)",
+   "checks": 6
+  },
+  {
+   "id": "follow_up",
+   "title": "Follow-up: \"make the points bigger\"",
+   "checks": 1
+  },
+  {
+   "id": "nav2_view",
+   "title": "Show what Nav2 is planning",
+   "checks": 5
+  },
+  {
+   "id": "light_weight",
+   "title": "Make a heavy cloud light-weight (and be honest about it)",
+   "checks": 2
+  },
+  {
+   "id": "camera",
+   "title": "Pick the real camera topic",
+   "checks": 1
+  },
+  {
+   "id": "hide_rename",
+   "title": "Hide and rename",
+   "checks": 2
+  }
+ ],
+ "results": [
+  {
+   "provider": "anthropic",
+   "model": "claude-opus-5-5",
+   "runs": [
+    {
+     "scenario": "fix_qos",
+     "seconds": 5.38,
+     "usage": {
+      "prompt_tokens": 2719,
+      "output_tokens": 251,
+      "model_seconds": 5.38,
+      "prompt_chars": 3340
+     },
+     "checks": [
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "cloud_height",
+     "seconds": 3.55,
+     "usage": {
+      "prompt_tokens": 1799,
+      "output_tokens": 206,
+      "model_seconds": 3.54,
+      "prompt_chars": 1273
+     },
+     "checks": [
+      {
+       "label": "PointCloud2 on /points",
+       "ok": true
+      },
+      {
+       "label": "AxisColor",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      },
+      {
+       "label": "Best Effort for the lidar",
+       "ok": true
+      }
+     ],
+     "passed": 4,
+     "total": 4,
+     "rejected": 0
+    },
+    {
+     "scenario": "tf_robot",
+     "seconds": 4.92,
+     "usage": {
+      "prompt_tokens": 3386,
+      "output_tokens": 473,
+      "model_seconds": 4.92,
+      "prompt_chars": 4886
+     },
+     "checks": [
+      {
+       "label": "Fixed Frame \u2192 map",
+       "ok": true
+      },
+      {
+       "label": "RobotModel",
+       "ok": true
+      },
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      },
+      {
+       "label": "PointCloud2",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      }
+     ],
+     "passed": 6,
+     "total": 6,
+     "rejected": 0
+    },
+    {
+     "scenario": "follow_up",
+     "seconds": 3.37,
+     "usage": {
+      "prompt_tokens": 2145,
+      "output_tokens": 129,
+      "model_seconds": 3.37,
+      "prompt_chars": 2015
+     },
+     "checks": [
+      {
+       "label": "bigger point size on the cloud",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "nav2_view",
+     "seconds": 7.1,
+     "usage": {
+      "prompt_tokens": 2498,
+      "output_tokens": 704,
+      "model_seconds": 7.1,
+      "prompt_chars": 2944
+     },
+     "checks": [
+      {
+       "label": "Path on /plan",
+       "ok": true
+      },
+      {
+       "label": "global costmap",
+       "ok": true
+      },
+      {
+       "label": "local costmap",
+       "ok": true
+      },
+      {
+       "label": "costmap color scheme",
+       "ok": true
+      },
+      {
+       "label": "footprint polygon",
+       "ok": true
+      }
+     ],
+     "passed": 5,
+     "total": 5,
+     "rejected": 0
+    },
+    {
+     "scenario": "light_weight",
+     "seconds": 5.71,
+     "usage": {
+      "prompt_tokens": 2051,
+      "output_tokens": 364,
+      "model_seconds": 5.7,
+      "prompt_chars": 1798
+     },
+     "checks": [
+      {
+       "label": "a load-reducing setting",
+       "ok": true
+      },
+      {
+       "label": "says real downsampling needs a filter node",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "camera",
+     "seconds": 2.7,
+     "usage": {
+      "prompt_tokens": 1696,
+      "output_tokens": 133,
+      "model_seconds": 2.7,
+      "prompt_chars": 1069
+     },
+     "checks": [
+      {
+       "label": "Image on /front_camera/image_raw",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "hide_rename",
+     "seconds": 4.62,
+     "usage": {
+      "prompt_tokens": 3283,
+      "output_tokens": 247,
+      "model_seconds": 4.62,
+      "prompt_chars": 4533
+     },
+     "checks": [
+      {
+       "label": "Grid hidden",
+       "ok": true
+      },
+      {
+       "label": "LaserScan renamed",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    }
+   ],
+   "scenarios_passed": 8,
+   "scenarios": 8,
+   "checks_passed": 23,
+   "checks": 23,
+   "errors": 0,
+   "rejected": 0,
+   "median_seconds": 4.8,
+   "mean_prompt_tokens": 2447,
+   "mean_output_tokens": 313,
+   "mean_prompt_seconds": null,
+   "mean_output_seconds": null
+  },
+  {
+   "provider": "anthropic",
+   "model": "claude-sonnet-5-5",
+   "runs": [
+    {
+     "scenario": "fix_qos",
+     "seconds": 4.05,
+     "usage": {
+      "prompt_tokens": 2719,
+      "output_tokens": 168,
+      "model_seconds": 4.05,
+      "prompt_chars": 3340
+     },
+     "checks": [
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "cloud_height",
+     "seconds": 3.76,
+     "usage": {
+      "prompt_tokens": 1799,
+      "output_tokens": 203,
+      "model_seconds": 3.76,
+      "prompt_chars": 1273
+     },
+     "checks": [
+      {
+       "label": "PointCloud2 on /points",
+       "ok": true
+      },
+      {
+       "label": "AxisColor",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      },
+      {
+       "label": "Best Effort for the lidar",
+       "ok": true
+      }
+     ],
+     "passed": 4,
+     "total": 4,
+     "rejected": 0
+    },
+    {
+     "scenario": "tf_robot",
+     "seconds": 3.77,
+     "usage": {
+      "prompt_tokens": 3386,
+      "output_tokens": 513,
+      "model_seconds": 3.77,
+      "prompt_chars": 4886
+     },
+     "checks": [
+      {
+       "label": "Fixed Frame \u2192 map",
+       "ok": true
+      },
+      {
+       "label": "RobotModel",
+       "ok": true
+      },
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      },
+      {
+       "label": "PointCloud2",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      }
+     ],
+     "passed": 6,
+     "total": 6,
+     "rejected": 0
+    },
+    {
+     "scenario": "follow_up",
+     "seconds": 1.93,
+     "usage": {
+      "prompt_tokens": 2145,
+      "output_tokens": 127,
+      "model_seconds": 1.93,
+      "prompt_chars": 2015
+     },
+     "checks": [
+      {
+       "label": "bigger point size on the cloud",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "nav2_view",
+     "seconds": 4.77,
+     "usage": {
+      "prompt_tokens": 2498,
+      "output_tokens": 697,
+      "model_seconds": 4.77,
+      "prompt_chars": 2944
+     },
+     "checks": [
+      {
+       "label": "Path on /plan",
+       "ok": true
+      },
+      {
+       "label": "global costmap",
+       "ok": true
+      },
+      {
+       "label": "local costmap",
+       "ok": true
+      },
+      {
+       "label": "costmap color scheme",
+       "ok": true
+      },
+      {
+       "label": "footprint polygon",
+       "ok": true
+      }
+     ],
+     "passed": 5,
+     "total": 5,
+     "rejected": 0
+    },
+    {
+     "scenario": "light_weight",
+     "seconds": 3.06,
+     "usage": {
+      "prompt_tokens": 2051,
+      "output_tokens": 341,
+      "model_seconds": 3.06,
+      "prompt_chars": 1798
+     },
+     "checks": [
+      {
+       "label": "a load-reducing setting",
+       "ok": true
+      },
+      {
+       "label": "says real downsampling needs a filter node",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "camera",
+     "seconds": 2.27,
+     "usage": {
+      "prompt_tokens": 1696,
+      "output_tokens": 97,
+      "model_seconds": 2.27,
+      "prompt_chars": 1069
+     },
+     "checks": [
+      {
+       "label": "Image on /front_camera/image_raw",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "hide_rename",
+     "seconds": 3.59,
+     "usage": {
+      "prompt_tokens": 3283,
+      "output_tokens": 228,
+      "model_seconds": 3.59,
+      "prompt_chars": 4533
+     },
+     "checks": [
+      {
+       "label": "Grid hidden",
+       "ok": true
+      },
+      {
+       "label": "LaserScan renamed",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    }
+   ],
+   "scenarios_passed": 8,
+   "scenarios": 8,
+   "checks_passed": 23,
+   "checks": 23,
+   "errors": 0,
+   "rejected": 0,
+   "median_seconds": 3.7,
+   "mean_prompt_tokens": 2447,
+   "mean_output_tokens": 297,
+   "mean_prompt_seconds": null,
+   "mean_output_seconds": null
+  },
+  {
+   "provider": "anthropic",
+   "model": "claude-haiku-5-5",
+   "runs": [
+    {
+     "scenario": "fix_qos",
+     "seconds": 2.13,
+     "usage": {
+      "prompt_tokens": 2719,
+      "output_tokens": 267,
+      "model_seconds": 2.13,
+      "prompt_chars": 3340
+     },
+     "checks": [
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "cloud_height",
+     "seconds": 2.17,
+     "usage": {
+      "prompt_tokens": 1799,
+      "output_tokens": 235,
+      "model_seconds": 2.17,
+      "prompt_chars": 1273
+     },
+     "checks": [
+      {
+       "label": "PointCloud2 on /points",
+       "ok": true
+      },
+      {
+       "label": "AxisColor",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      },
+      {
+       "label": "Best Effort for the lidar",
+       "ok": true
+      }
+     ],
+     "passed": 4,
+     "total": 4,
+     "rejected": 0
+    },
+    {
+     "scenario": "tf_robot",
+     "seconds": 2.98,
+     "usage": {
+      "prompt_tokens": 3386,
+      "output_tokens": 559,
+      "model_seconds": 2.98,
+      "prompt_chars": 4886
+     },
+     "checks": [
+      {
+       "label": "Fixed Frame \u2192 map",
+       "ok": true
+      },
+      {
+       "label": "RobotModel",
+       "ok": true
+      },
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      },
+      {
+       "label": "PointCloud2",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      }
+     ],
+     "passed": 6,
+     "total": 6,
+     "rejected": 0
+    },
+    {
+     "scenario": "follow_up",
+     "seconds": 2.04,
+     "usage": {
+      "prompt_tokens": 2145,
+      "output_tokens": 168,
+      "model_seconds": 2.04,
+      "prompt_chars": 2015
+     },
+     "checks": [
+      {
+       "label": "bigger point size on the cloud",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "nav2_view",
+     "seconds": 4.49,
+     "usage": {
+      "prompt_tokens": 2498,
+      "output_tokens": 1041,
+      "model_seconds": 4.49,
+      "prompt_chars": 2944
+     },
+     "checks": [
+      {
+       "label": "Path on /plan",
+       "ok": true
+      },
+      {
+       "label": "global costmap",
+       "ok": true
+      },
+      {
+       "label": "local costmap",
+       "ok": true
+      },
+      {
+       "label": "costmap color scheme",
+       "ok": true
+      },
+      {
+       "label": "footprint polygon",
+       "ok": true
+      }
+     ],
+     "passed": 5,
+     "total": 5,
+     "rejected": 0
+    },
+    {
+     "scenario": "light_weight",
+     "seconds": 3.63,
+     "usage": {
+      "prompt_tokens": 2051,
+      "output_tokens": 408,
+      "model_seconds": 3.62,
+      "prompt_chars": 1798
+     },
+     "checks": [
+      {
+       "label": "a load-reducing setting",
+       "ok": true
+      },
+      {
+       "label": "says real downsampling needs a filter node",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "camera",
+     "seconds": 1.72,
+     "usage": {
+      "prompt_tokens": 1696,
+      "output_tokens": 133,
+      "model_seconds": 1.72,
+      "prompt_chars": 1069
+     },
+     "checks": [
+      {
+       "label": "Image on /front_camera/image_raw",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "hide_rename",
+     "seconds": 1.99,
+     "usage": {
+      "prompt_tokens": 3283,
+      "output_tokens": 205,
+      "model_seconds": 1.99,
+      "prompt_chars": 4533
+     },
+     "checks": [
+      {
+       "label": "Grid hidden",
+       "ok": true
+      },
+      {
+       "label": "LaserScan renamed",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    }
+   ],
+   "scenarios_passed": 8,
+   "scenarios": 8,
+   "checks_passed": 23,
+   "checks": 23,
+   "errors": 0,
+   "rejected": 0,
+   "median_seconds": 2.1,
+   "mean_prompt_tokens": 2447,
+   "mean_output_tokens": 377,
+   "mean_prompt_seconds": null,
+   "mean_output_seconds": null
+  },
+  {
+   "provider": "ollama",
+   "model": "qwen3:4b-instruct",
+   "runs": [
+    {
+     "scenario": "fix_qos",
+     "seconds": 24.94,
+     "usage": {
+      "prompt_tokens": 1357,
+      "output_tokens": 202,
+      "prompt_seconds": 11.169224,
+      "output_seconds": 13.635012,
+      "load_seconds": 0.000875855,
+      "model_seconds": 24.94,
+      "prompt_chars": 3340
+     },
+     "checks": [
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "cloud_height",
+     "seconds": 30.71,
+     "usage": {
+      "prompt_tokens": 811,
+      "output_tokens": 446,
+      "prompt_seconds": 3.547189,
+      "output_seconds": 27.058761,
+      "load_seconds": 0.000863631,
+      "model_seconds": 30.71,
+      "prompt_chars": 1273
+     },
+     "checks": [
+      {
+       "label": "PointCloud2 on /points",
+       "ok": true
+      },
+      {
+       "label": "AxisColor",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      },
+      {
+       "label": "Best Effort for the lidar",
+       "ok": true
+      }
+     ],
+     "passed": 4,
+     "total": 4,
+     "rejected": 0
+    },
+    {
+     "scenario": "tf_robot",
+     "seconds": 70.74,
+     "usage": {
+      "prompt_tokens": 1782,
+      "output_tokens": 755,
+      "prompt_seconds": 17.29739,
+      "output_seconds": 53.352385,
+      "load_seconds": 0.00094345,
+      "model_seconds": 70.74,
+      "prompt_chars": 4886
+     },
+     "checks": [
+      {
+       "label": "Fixed Frame \u2192 map",
+       "ok": true
+      },
+      {
+       "label": "RobotModel",
+       "ok": true
+      },
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      },
+      {
+       "label": "PointCloud2",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      }
+     ],
+     "passed": 6,
+     "total": 6,
+     "rejected": 0
+    },
+    {
+     "scenario": "follow_up",
+     "seconds": 14.51,
+     "usage": {
+      "prompt_tokens": 1010,
+      "output_tokens": 135,
+      "prompt_seconds": 5.938833,
+      "output_seconds": 8.397674,
+      "load_seconds": 0.000838946,
+      "model_seconds": 14.51,
+      "prompt_chars": 2015
+     },
+     "checks": [
+      {
+       "label": "bigger point size on the cloud",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "nav2_view",
+     "seconds": 44.21,
+     "usage": {
+      "prompt_tokens": 1230,
+      "output_tokens": 548,
+      "prompt_seconds": 8.822003,
+      "output_seconds": 35.312065,
+      "load_seconds": 0.000860737,
+      "model_seconds": 44.21,
+      "prompt_chars": 2944
+     },
+     "checks": [
+      {
+       "label": "Path on /plan",
+       "ok": true
+      },
+      {
+       "label": "global costmap",
+       "ok": true
+      },
+      {
+       "label": "local costmap",
+       "ok": true
+      },
+      {
+       "label": "costmap color scheme",
+       "ok": true
+      },
+      {
+       "label": "footprint polygon",
+       "ok": true
+      }
+     ],
+     "passed": 5,
+     "total": 5,
+     "rejected": 0
+    },
+    {
+     "scenario": "light_weight",
+     "seconds": 43.84,
+     "usage": {
+      "prompt_tokens": 954,
+      "output_tokens": 696,
+      "prompt_seconds": 0.562155,
+      "output_seconds": 43.153377,
+      "load_seconds": 0.000999225,
+      "model_seconds": 43.84,
+      "prompt_chars": 1798
+     },
+     "checks": [
+      {
+       "label": "a load-reducing setting",
+       "ok": true
+      },
+      {
+       "label": "says real downsampling needs a filter node",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "camera",
+     "seconds": 28.02,
+     "usage": {
+      "prompt_tokens": 734,
+      "output_tokens": 426,
+      "prompt_seconds": 2.437032,
+      "output_seconds": 25.489383,
+      "load_seconds": 0.000875224,
+      "model_seconds": 28.02,
+      "prompt_chars": 1069
+     },
+     "checks": [
+      {
+       "label": "Image on /front_camera/image_raw",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "hide_rename",
+     "seconds": 33.41,
+     "usage": {
+      "prompt_tokens": 1720,
+      "output_tokens": 255,
+      "prompt_seconds": 15.913686,
+      "output_seconds": 17.413689,
+      "load_seconds": 0.001131121,
+      "model_seconds": 33.41,
+      "prompt_chars": 4533
+     },
+     "checks": [
+      {
+       "label": "Grid hidden",
+       "ok": true
+      },
+      {
+       "label": "LaserScan renamed",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    }
+   ],
+   "scenarios_passed": 8,
+   "scenarios": 8,
+   "checks_passed": 23,
+   "checks": 23,
+   "errors": 0,
+   "rejected": 0,
+   "median_seconds": 32.1,
+   "mean_prompt_tokens": 1200,
+   "mean_output_tokens": 433,
+   "mean_prompt_seconds": 8.2,
+   "mean_output_seconds": 28.0
+  },
+  {
+   "provider": "ollama",
+   "model": "qwen2.5:3b",
+   "runs": [
+    {
+     "scenario": "fix_qos",
+     "seconds": 23.96,
+     "usage": {
+      "prompt_tokens": 1357,
+      "output_tokens": 175,
+      "prompt_seconds": 12.601271,
+      "output_seconds": 8.398102999,
+      "load_seconds": 2.84222401,
+      "model_seconds": 23.96,
+      "prompt_chars": 3340
+     },
+     "checks": [
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "cloud_height",
+     "seconds": 22.38,
+     "usage": {
+      "prompt_tokens": 811,
+      "output_tokens": 434,
+      "prompt_seconds": 2.616423,
+      "output_seconds": 19.739247,
+      "load_seconds": 0.000895128,
+      "model_seconds": 22.38,
+      "prompt_chars": 1273
+     },
+     "checks": [
+      {
+       "label": "PointCloud2 on /points",
+       "ok": true
+      },
+      {
+       "label": "AxisColor",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      },
+      {
+       "label": "Best Effort for the lidar",
+       "ok": true
+      }
+     ],
+     "passed": 4,
+     "total": 4,
+     "rejected": 0
+    },
+    {
+     "scenario": "tf_robot",
+     "seconds": 45.04,
+     "usage": {
+      "prompt_tokens": 1782,
+      "output_tokens": 659,
+      "prompt_seconds": 12.630175,
+      "output_seconds": 32.393002,
+      "load_seconds": 0.001004364,
+      "model_seconds": 45.04,
+      "prompt_chars": 4886
+     },
+     "checks": [
+      {
+       "label": "Fixed Frame \u2192 map",
+       "ok": true
+      },
+      {
+       "label": "RobotModel",
+       "ok": true
+      },
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      },
+      {
+       "label": "PointCloud2",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      }
+     ],
+     "passed": 6,
+     "total": 6,
+     "rejected": 2
+    },
+    {
+     "scenario": "follow_up",
+     "seconds": 9.47,
+     "usage": {
+      "prompt_tokens": 1010,
+      "output_tokens": 109,
+      "prompt_seconds": 4.373328,
+      "output_seconds": 5.049041,
+      "load_seconds": 0.001101036,
+      "model_seconds": 9.47,
+      "prompt_chars": 2015
+     },
+     "checks": [
+      {
+       "label": "bigger point size on the cloud",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "nav2_view",
+     "seconds": 19.2,
+     "usage": {
+      "prompt_tokens": 1230,
+      "output_tokens": 277,
+      "prompt_seconds": 6.523189,
+      "output_seconds": 12.665209,
+      "load_seconds": 0.000824471,
+      "model_seconds": 19.2,
+      "prompt_chars": 2944
+     },
+     "checks": [
+      {
+       "label": "Path on /plan",
+       "ok": true
+      },
+      {
+       "label": "global costmap",
+       "ok": false
+      },
+      {
+       "label": "local costmap",
+       "ok": false
+      },
+      {
+       "label": "costmap color scheme",
+       "ok": false
+      },
+      {
+       "label": "footprint polygon",
+       "ok": false
+      }
+     ],
+     "passed": 1,
+     "total": 5,
+     "rejected": 2
+    },
+    {
+     "scenario": "light_weight",
+     "seconds": 20.32,
+     "usage": {
+      "prompt_tokens": 954,
+      "output_tokens": 447,
+      "prompt_seconds": 0.39442,
+      "output_seconds": 19.893829,
+      "load_seconds": 0.000944368,
+      "model_seconds": 20.32,
+      "prompt_chars": 1798
+     },
+     "checks": [
+      {
+       "label": "a load-reducing setting",
+       "ok": true
+      },
+      {
+       "label": "says real downsampling needs a filter node",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 2
+    },
+    {
+     "scenario": "camera",
+     "seconds": 16.26,
+     "usage": {
+      "prompt_tokens": 734,
+      "output_tokens": 323,
+      "prompt_seconds": 1.864041,
+      "output_seconds": 14.362891,
+      "load_seconds": 0.000893571,
+      "model_seconds": 16.26,
+      "prompt_chars": 1069
+     },
+     "checks": [
+      {
+       "label": "Image on /front_camera/image_raw",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "hide_rename",
+     "seconds": 16.11,
+     "usage": {
+      "prompt_tokens": 1720,
+      "output_tokens": 94,
+      "prompt_seconds": 11.515922,
+      "output_seconds": 4.583491,
+      "load_seconds": 0.000917956,
+      "model_seconds": 16.11,
+      "prompt_chars": 4533
+     },
+     "checks": [
+      {
+       "label": "Grid hidden",
+       "ok": false
+      },
+      {
+       "label": "LaserScan renamed",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 2,
+     "rejected": 0
+    }
+   ],
+   "scenarios_passed": 6,
+   "scenarios": 8,
+   "checks_passed": 18,
+   "checks": 23,
+   "errors": 0,
+   "rejected": 6,
+   "median_seconds": 19.8,
+   "mean_prompt_tokens": 1200,
+   "mean_output_tokens": 315,
+   "mean_prompt_seconds": 6.6,
+   "mean_output_seconds": 14.6
+  }
+ ],
+ "not_measured": [
+  {
+   "provider": "openai",
+   "model": "gpt-5-mini",
+   "reason": "API account had no credits"
+  }
+ ],
+ "full_prompt_baseline": [
+  {
+   "provider": "ollama",
+   "model": "qwen3:4b-instruct",
+   "runs": [
+    {
+     "scenario": "fix_qos",
+     "seconds": 56.02,
+     "usage": {
+      "prompt_tokens": 2301,
+      "output_tokens": 334,
+      "prompt_seconds": 26.729231,
+      "output_seconds": 25.398063,
+      "load_seconds": 3.846171246,
+      "model_seconds": 56.02,
+      "prompt_chars": 6761
+     },
+     "checks": [
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "cloud_height",
+     "seconds": 45.52,
+     "usage": {
+      "prompt_tokens": 1854,
+      "output_tokens": 424,
+      "prompt_seconds": 14.582337,
+      "output_seconds": 30.804926,
+      "load_seconds": 0.00091337,
+      "model_seconds": 45.52,
+      "prompt_chars": 5070
+     },
+     "checks": [
+      {
+       "label": "PointCloud2 on /points",
+       "ok": true
+      },
+      {
+       "label": "AxisColor",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": true
+      },
+      {
+       "label": "Best Effort for the lidar",
+       "ok": true
+      }
+     ],
+     "passed": 4,
+     "total": 4,
+     "rejected": 0
+    },
+    {
+     "scenario": "tf_robot",
+     "seconds": 75.8,
+     "usage": {
+      "prompt_tokens": 2363,
+      "output_tokens": 635,
+      "prompt_seconds": 23.727695,
+      "output_seconds": 51.923883,
+      "load_seconds": 0.000955841,
+      "model_seconds": 75.8,
+      "prompt_chars": 7016
+     },
+     "checks": [
+      {
+       "label": "Fixed Frame \u2192 map",
+       "ok": true
+      },
+      {
+       "label": "RobotModel",
+       "ok": true
+      },
+      {
+       "label": "LaserScan \u2192 Best Effort",
+       "ok": true
+      },
+      {
+       "label": "Map \u2192 Transient Local",
+       "ok": true
+      },
+      {
+       "label": "PointCloud2",
+       "ok": true
+      },
+      {
+       "label": "Axis Z",
+       "ok": false
+      }
+     ],
+     "passed": 5,
+     "total": 6,
+     "rejected": 0
+    },
+    {
+     "scenario": "follow_up",
+     "seconds": 26.92,
+     "usage": {
+      "prompt_tokens": 2053,
+      "output_tokens": 105,
+      "prompt_seconds": 19.024225,
+      "output_seconds": 7.688272,
+      "load_seconds": 0.001026344,
+      "model_seconds": 26.92,
+      "prompt_chars": 5812
+     },
+     "checks": [
+      {
+       "label": "bigger point size on the cloud",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "nav2_view",
+     "seconds": 90.81,
+     "usage": {
+      "prompt_tokens": 2408,
+      "output_tokens": 869,
+      "prompt_seconds": 23.14296,
+      "output_seconds": 67.497687999,
+      "load_seconds": 0.001499035,
+      "model_seconds": 90.81,
+      "prompt_chars": 7225
+     },
+     "checks": [
+      {
+       "label": "Path on /plan",
+       "ok": true
+      },
+      {
+       "label": "global costmap",
+       "ok": true
+      },
+      {
+       "label": "local costmap",
+       "ok": true
+      },
+      {
+       "label": "costmap color scheme",
+       "ok": false
+      },
+      {
+       "label": "footprint polygon",
+       "ok": true
+      }
+     ],
+     "passed": 4,
+     "total": 5,
+     "rejected": 0
+    },
+    {
+     "scenario": "light_weight",
+     "seconds": 51.38,
+     "usage": {
+      "prompt_tokens": 1997,
+      "output_tokens": 697,
+      "prompt_seconds": 0.736946,
+      "output_seconds": 50.432773,
+      "load_seconds": 0.001145507,
+      "model_seconds": 51.38,
+      "prompt_chars": 5595
+     },
+     "checks": [
+      {
+       "label": "a load-reducing setting",
+       "ok": true
+      },
+      {
+       "label": "says real downsampling needs a filter node",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    },
+    {
+     "scenario": "camera",
+     "seconds": 46.96,
+     "usage": {
+      "prompt_tokens": 1877,
+      "output_tokens": 425,
+      "prompt_seconds": 16.732335,
+      "output_seconds": 30.058826,
+      "load_seconds": 0.000968587,
+      "model_seconds": 46.96,
+      "prompt_chars": 5169
+     },
+     "checks": [
+      {
+       "label": "Image on /front_camera/image_raw",
+       "ok": true
+      }
+     ],
+     "passed": 1,
+     "total": 1,
+     "rejected": 0
+    },
+    {
+     "scenario": "hide_rename",
+     "seconds": 35.9,
+     "usage": {
+      "prompt_tokens": 2302,
+      "output_tokens": 174,
+      "prompt_seconds": 22.912475,
+      "output_seconds": 12.847398,
+      "load_seconds": 0.001033929,
+      "model_seconds": 35.9,
+      "prompt_chars": 6767
+     },
+     "checks": [
+      {
+       "label": "Grid hidden",
+       "ok": true
+      },
+      {
+       "label": "LaserScan renamed",
+       "ok": true
+      }
+     ],
+     "passed": 2,
+     "total": 2,
+     "rejected": 0
+    }
+   ],
+   "scenarios_passed": 6,
+   "scenarios": 8,
+   "checks_passed": 21,
+   "checks": 23,
+   "errors": 0,
+   "rejected": 0,
+   "median_seconds": 49.2,
+   "mean_prompt_tokens": 2144,
+   "mean_output_tokens": 458,
+   "mean_prompt_seconds": 18.4,
+   "mean_output_seconds": 34.6
+  }
+ ]
+}

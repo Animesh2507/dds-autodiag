@@ -14,6 +14,7 @@ dds-autodiag inspect /topic                  endpoints, QoS and incompatibilitie
 dds-autodiag sample  /topic [--timeout 1-15] [--reliability auto|best_effort|reliable]
 dds-autodiag demo    [--no-wait]             start two broken demo topics and diagnose them
 dds-autodiag selftest                        run every rule against its synthetic faults
+dds-autodiag bench   [--model PROVIDER[:MODEL]]... [--markdown]   benchmark AI models on Configure RViz
 dds-autodiag serve   [--host H] [--port P] [--open]   start the dashboard
                      [--log-level LEVEL] [--insecure-no-auth]
 ```
@@ -28,6 +29,20 @@ Starts two deliberately broken topics under `/autodiag_demo/` (a reliability mis
 volatile subscriber), diagnoses them, and keeps them running so you can explore them in the dashboard or RViz.
 Ctrl+C stops everything. `--no-wait` exits right after the diagnosis (exit code `0` when both problems are found),
 which also makes a quick smoke test for a new installation. The demo never touches your own topics.
+
+## Benchmark AI models: `bench`
+
+```bash
+dds-autodiag bench                                        # your default provider (local Ollama: free)
+dds-autodiag bench --model ollama:qwen2.5:3b --model anthropic:claude-sonnet-5-5 --markdown
+```
+
+Runs eight fixed Configure RViz scenarios (QoS fixes, a cloud colored by height, the TF + robot request, a follow-up,
+a Nav2 view, a light-weight cloud, picking the right camera topic, hide and rename) against each model and scores the
+final plans: required actions present, invalid suggestions, time per plan, prompt and output tokens. No robot or RViz
+is needed, and nothing is changed. Cloud models are billed per request on your API key. `--variant full` compares
+against the prompt without retrieval. Results for one machine are on the [AI model benchmark](../reference/ai-benchmark.md)
+page; please share yours.
 
 ## Exit codes
 

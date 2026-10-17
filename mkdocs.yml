@@ -83,6 +83,7 @@ nav:
       - Quality & testing: architecture/quality.md
   - Reference:
       - Diagnostic rules: reference/rules.md
+      - AI model benchmark: reference/ai-benchmark.md
       - Configuration: reference/configuration.md
       - REST API: reference/rest-api.md
   - Troubleshooting: troubleshooting.md
