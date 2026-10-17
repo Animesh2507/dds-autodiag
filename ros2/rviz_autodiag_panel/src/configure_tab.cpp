@@ -394,7 +394,7 @@ void AutoDiagPanel::planRviz()
   plan_button_->setEnabled(false);
   const bool local = provider_combo_->currentData().toString() == QLatin1String("ollama");
   plan_status_->setText(local ?
-    tr("Planning with the local model (about a minute on CPU)…") : tr("Planning…"));
+    tr("Planning with the local model (about 1–2 minutes on a CPU)…") : tr("Planning…"));
 
   QNetworkReply * reply = post(QStringLiteral("/api/rviz/plan"), body, kPlanTimeoutMs);
   connect(reply, &QNetworkReply::finished, this, [this, reply, request_text]() {
