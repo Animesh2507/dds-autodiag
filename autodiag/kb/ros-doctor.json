@@ -1,0 +1,8 @@
+{
+  "id": "ros-doctor",
+  "title": "Checking a setup with ros2 doctor",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Getting-Started-With-Ros2doctor.html",
+  "ros_distro": "jazzy",
+  "keywords": "doctor ros2doctor report check setup network platform",
+  "text": "ros2 doctor checks the ROS 2 setup (platform, network, environment, middleware and running topics) and prints warnings; ros2 doctor --report prints the full configuration, including the RMW in use and the network interfaces. It is a quick first check on a new machine, but it does not tell whether two specific endpoints can communicate."
+}

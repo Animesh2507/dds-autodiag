@@ -1,0 +1,8 @@
+{
+  "id": "ros-actions",
+  "title": "ROS 2 actions",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Basic/About-Actions.html",
+  "ros_distro": "jazzy",
+  "keywords": "action actions goal feedback result cancel action_server action_client send_goal long-running preempt",
+  "text": "Actions are for long-running goals with feedback and cancellation, such as navigating to a pose or moving an arm. A client sends a goal; the server accepts or rejects it, publishes feedback while it works and returns a result (succeeded, aborted or canceled). An action is built from services (send goal, get result, cancel) and topics (feedback, status). ros2 action list -t, ros2 action info /name and ros2 action send_goal /name pkg/action/Type \"{...}\" --feedback inspect and test them. If a goal is never accepted, check that the server runs and is discoverable and that the action name and type match on both sides."
+}

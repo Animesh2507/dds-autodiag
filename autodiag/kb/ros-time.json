@@ -1,0 +1,8 @@
+{
+  "id": "ros-time",
+  "title": "Clock and time (use_sim_time)",
+  "url": "https://design.ros2.org/articles/clock_and_time.html",
+  "ros_distro": "general",
+  "keywords": "time clock sim_time use_sim_time simulation simulated wall bag gazebo",
+  "text": "With use_sim_time set to true, a node takes its time from the /clock topic, published by a simulator or by ros2 bag play --clock, instead of the system clock. All nodes of a system must agree: mixing simulated and wall time causes TF extrapolation errors, timers that never fire and messages dropped as too old. ros2 param get /node use_sim_time shows what a node uses."
+}

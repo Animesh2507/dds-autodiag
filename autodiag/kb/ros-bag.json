@@ -1,0 +1,8 @@
+{
+  "id": "ros-bag",
+  "title": "Recording and playing back data (rosbag2)",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Beginner-CLI-Tools/Recording-And-Playing-Back-Data/Recording-And-Playing-Back-Data.html",
+  "ros_distro": "jazzy",
+  "keywords": "bag rosbag rosbag2 record play playback replay clock mcap sqlite",
+  "text": "rosbag2 records topics to a bag (ros2 bag record -a, or named topics) and replays them with ros2 bag play. ros2 bag info shows the topics, types and message counts of a bag. Add --clock during playback and run the nodes with use_sim_time:=true so they follow the time in the bag. Latched topics and best-effort sensor data may need QoS overrides during playback so that subscribers started later still receive them."
+}

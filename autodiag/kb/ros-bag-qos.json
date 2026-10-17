@@ -1,0 +1,8 @@
+{
+  "id": "ros-bag-qos",
+  "title": "QoS overrides for recording and playback",
+  "url": "https://docs.ros.org/en/jazzy/How-To-Guides/Overriding-QoS-Policies-For-Recording-And-Playback.html",
+  "ros_distro": "jazzy",
+  "keywords": "bag rosbag2 qos override qos-profile-overrides-path playback durability transient_local reliability",
+  "text": "ros2 bag record and ros2 bag play accept --qos-profile-overrides-path with a YAML file that sets QoS per topic. Use it when the defaults do not match: for example play /map with transient-local durability so an RViz started later still gets the map, or record a best-effort sensor topic with best-effort reliability so the recorder matches the publisher."
+}

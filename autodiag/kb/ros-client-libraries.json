@@ -1,0 +1,8 @@
+{
+  "id": "ros-client-libraries",
+  "title": "ROS 2 client libraries (rclcpp, rclpy)",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Basic/About-Client-Libraries.html",
+  "ros_distro": "jazzy",
+  "keywords": "client library rclcpp rclpy rcl cpp python language",
+  "text": "Nodes are written with a client library: rclcpp for C++ and rclpy for Python, both built on rcl and the RMW layer. They share the same concepts (nodes, publishers, executors, QoS), so a C++ node and a Python node interoperate when names, types and QoS match. A difference in behavior between them is usually a different default, such as the QoS profile or the executor, not an incompatibility on the wire."
+}

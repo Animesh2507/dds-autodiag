@@ -1,0 +1,8 @@
+{
+  "id": "ros-discovery-basics",
+  "title": "ROS 2 discovery",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Basic/About-Discovery.html",
+  "ros_distro": "jazzy",
+  "keywords": "discovery discover multicast automatic_discovery_range static_peers daemon no-daemon announce see each other machine machines network",
+  "text": "Nodes find each other automatically through the middleware; with DDS this uses multicast within the same ROS_DOMAIN_ID. When a node starts it announces itself and learns about the others, and endpoints match when name, type and QoS are compatible. ROS_AUTOMATIC_DISCOVERY_RANGE (SUBNET, LOCALHOST, OFF or SYSTEM_DEFAULT) and ROS_STATIC_PEERS narrow or extend discovery. Discovery takes a moment, and the ros2 CLI daemon can show stale results: add --no-daemon to double-check."
+}

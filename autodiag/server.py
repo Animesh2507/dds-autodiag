@@ -301,7 +301,7 @@ def v06_explain(payload: EnhancedRAGRequest):
 
 # --- AI explanations (streaming) and provider management -------------------------------------
 
-from .rag import hybrid_retrieve
+from .rag import retrieve_for
 from . import llm
 
 
@@ -371,8 +371,8 @@ def assistant_stream(payload: StreamRequest):
         topic_issues, topic_labels = _topic_context(topic)
         issues = sort_issues(topic_issues) + issues
         labels.update(topic_labels)
-    query = ' '.join([payload.question[:400]] + [f"{i.get('code', '')} {i.get('summary', '')}" for i in issues[:16]])
-    retrieved = hybrid_retrieve(query, semantic=payload.semantic_search)
+    findings_text = ' '.join(f"{i.get('code', '')} {i.get('summary', '')}" for i in issues[:16])
+    retrieved = retrieve_for(payload.question[:400], findings_text, semantic=payload.semantic_search)
     provider = payload.provider or llm.default_provider()
     for_model = mask_for_cloud(issues, labels) if llm.is_cloud(provider) else issues
 

@@ -1,0 +1,8 @@
+{
+  "id": "ros-services",
+  "title": "ROS 2 services",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Basic/About-Services.html",
+  "ros_distro": "jazzy",
+  "keywords": "service services client server request response call srv",
+  "text": "Services are request/response calls between a client and a server, meant for short operations. ros2 service list -t, ros2 service type and ros2 service call /name pkg/srv/Type \"{...}\" inspect and test them. A client that never gets a response usually sees no server: check the service name, namespace and remapping, the type and the domain. Long-running work belongs in an action, because a service call cannot report progress or be canceled."
+}

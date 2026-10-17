@@ -1,0 +1,8 @@
+{
+  "id": "ros-rviz",
+  "title": "RViz: displays, Fixed Frame and status",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Intermediate/RViz/RViz-User-Guide/RViz-User-Guide.html",
+  "ros_distro": "jazzy",
+  "keywords": "rviz rviz2 display displays fixed_frame status empty laserscan pointcloud map robotmodel config",
+  "text": "RViz shows live data through displays (Map, LaserScan, PointCloud2, RobotModel, TF, Path and more), each subscribing with its own topic and QoS settings. Everything is drawn relative to the Fixed Frame, which must exist in the TF tree. A display with status Error or Warn says why it shows nothing: often a QoS mismatch (a Reliable display on a best-effort sensor topic, a Volatile display on a latched map), a missing transform or a wrong topic. File > Save Config keeps the layout."
+}

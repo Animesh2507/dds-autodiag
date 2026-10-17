@@ -4,5 +4,5 @@
   "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html",
   "text": "Reliability offered/requested: reliable writer matches reliable or best effort reader; best effort writer only matches best effort reader. Transient local durability requested cannot be satisfied by volatile publisher. Deadline and liveliness have additional compatibility requirements.",
   "ros_distro": "jazzy",
-  "keywords": "DDS ROS2 discovery multicast containers interfaces QoS troubleshooting"
+  "keywords": "qos reliability durability best_effort reliable transient_local volatile deadline liveliness compatibility"
 }

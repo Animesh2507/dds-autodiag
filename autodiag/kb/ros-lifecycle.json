@@ -1,0 +1,8 @@
+{
+  "id": "ros-lifecycle",
+  "title": "Managed (lifecycle) nodes",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Demos/Managed-Nodes.html",
+  "ros_distro": "jazzy",
+  "keywords": "lifecycle managed node state unconfigured inactive active configure activate deactivate lifecycle_manager",
+  "text": "Lifecycle (managed) nodes move through the states unconfigured, inactive, active and finalized, using the transitions configure, activate, deactivate, cleanup and shutdown. A lifecycle publisher sends nothing until the node is active, so its topic exists but stays silent. ros2 lifecycle get /node shows the state and ros2 lifecycle set /node activate changes it. Navigation stacks and many drivers bring nodes up through a lifecycle manager; if one node fails to activate, the nodes that depend on it wait."
+}

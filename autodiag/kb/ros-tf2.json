@@ -1,0 +1,8 @@
+{
+  "id": "ros-tf2",
+  "title": "tf2: coordinate frames and transforms",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Tf2.html",
+  "ros_distro": "jazzy",
+  "keywords": "tf tf2 transform transforms frame frames tree fixed_frame tf_static view_frames tf2_echo extrapolation lookup",
+  "text": "tf2 keeps the tree of coordinate frames over time, for example map -> odom -> base_link -> laser. Transforms come from /tf (moving parts such as odometry) and /tf_static (fixed mounts, often from robot_state_publisher). Every frame has exactly one parent and the tree must be connected: a lookup fails with \"frame does not exist\" or an extrapolation error when a link is missing or timestamps are out of range. ros2 run tf2_tools view_frames draws the tree and ros2 run tf2_ros tf2_echo map base_link prints one transform. In RViz the Fixed Frame must exist in this tree, otherwise nothing is drawn."
+}

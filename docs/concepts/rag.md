@@ -8,13 +8,20 @@ prompt. Answers are grounded in real sources and cite them.
 
 ## 1. Knowledge base
 
-`autodiag/kb/` holds short, curated summaries of official ROS 2, Fast DDS, Cyclone DDS, Docker and Linux
-documentation. Each entry is a JSON document:
+`autodiag/kb/` holds about 40 short summaries, written for AutoDiag, each linking the official page it is based on:
+
+- **ROS 2 concepts:** nodes, topics, services, actions, parameters, interfaces, launch, remapping and namespaces,
+  discovery, tf2, executors and callback groups, composition, lifecycle nodes, logging, time and `use_sim_time`,
+  rosbag2, workspaces and colcon, the environment, `ros2 doctor`, RViz and rqt;
+- **communication troubleshooting:** QoS, domain IDs, discovery ranges, RMW implementations and Zenoh, Fast DDS,
+  Cyclone DDS, Docker networking and shared memory, Linux namespaces, intra-process communication and security.
+
+Each entry is a JSON document:
 
 ```json
 {
   "id": "ros-qos",
-  "title": "ROS 2 Quality of Service",
+  "title": "ROS 2 Quality of Service (QoS)",
   "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html",
   "keywords": "qos best_effort reliable volatile transient_local compatibility",
   "text": "Reliability is request/offered: a best-effort publisher cannot serve a reliable subscriber..."
@@ -25,15 +32,21 @@ Only HTTPS links are accepted; entries are curated from official sources. To add
 
 ## 2. Query
 
-The search query combines **your question** with the **codes and summaries of the current findings**. Retrieval is
-therefore driven by the diagnosed problem, not only by your wording.
+AutoDiag searches twice: for **your question**, and for the **codes and summaries of the current findings**. Pages
+for your question come first, so a general question ("what are actions?") isn't drowned out by the findings, but one
+of the three places always goes to the best page about the current findings, so the diagnosed problem stays covered.
 
 ## 3. Retrieve
 
 | Method | When | How |
 |---|---|---|
-| **BM25** | Always (offline) | Keyword ranking over title, text and keywords |
+| **BM25** | Always (offline) | Keyword ranking over title (counted twice), text and keywords. Stop words are ignored, plurals folded ("actions" finds "action") and underscores split, so the code `DOMAIN_MISMATCH` finds text about a domain mismatch |
 | **Hybrid** | When *Semantic search* is enabled | BM25 blended 50/50 with cosine similarity of local `nomic-embed-text` embeddings |
+
+**Only relevant pages are used.** The best match must share a fairly distinctive word with the query (BM25 score of
+at least 1.2), and every other result needs at least 35 % of the best score. With embeddings, a page without a keyword
+match needs a cosine similarity of at least 0.55. If nothing passes, the dashboard says that no documentation matched,
+and the model is told so instead of being handed unrelated pages.
 
 Document embeddings are cached on disk. If the embedding model isn't available, retrieval falls back to BM25
 automatically.

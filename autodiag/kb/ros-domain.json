@@ -2,6 +2,6 @@
   "id": "ros-domain",
   "title": "ROS 2 ROS_DOMAIN_ID",
   "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Domain-ID.html",
-  "keywords": "domain mismatch ROS_DOMAIN_ID participant discovery",
+  "keywords": "domain mismatch ROS_DOMAIN_ID participant discovery see each other machine machines network",
   "text": "ROS_DOMAIN_ID separates ROS 2 discovery domains. Participants on distinct domains will not ordinarily discover each other without an explicit bridge. Compare the effective environment for each ROS process, not only the current shell."
 }
