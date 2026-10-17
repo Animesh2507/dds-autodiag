@@ -450,7 +450,7 @@ async function ask(button, useAI) {
     const res = await fetch('/api/assistant/stream', {method: 'POST', credentials: 'same-origin', signal: aiAbort.signal,
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({host_a: withMode(state.local), host_b: state.peer, question: $('question').value,
-        provider, model: $('ai-model').value || null, semantic_search: $('semantic').checked})});
+        provider, model: $('ai-model').value || null, semantic_search: $('semantic').checked, topics_from_question: true})});
     if (res.status === 401) { location.href = '/login'; return; }
     if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.detail || 'HTTP ' + res.status); }
     const reader = res.body.getReader(), decoder = new TextDecoder();
@@ -489,7 +489,8 @@ async function ask(button, useAI) {
 }
 
 function renderContext(o) {
-  let html = '<h3>Relevant documentation <small>(' + esc(o.retrieval_mode) + (o.retrieval_note ? ', ' + esc(o.retrieval_note) : '') + ')</small></h3>';
+  let html = (o.topics || []).length ? '<p class="muted">Included the live endpoints and QoS of ' + o.topics.map(t => '<code>' + esc(t) + '</code>').join(', ') + ' (named in your question).</p>' : '';
+  html += '<h3>Relevant documentation <small>(' + esc(o.retrieval_mode) + (o.retrieval_note ? ', ' + esc(o.retrieval_note) : '') + ')</small></h3>';
   html += (o.sources || []).length ? o.sources.map(s => '<div class="finding info"><a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer"><b>' + esc(s.title) + '</b> ↗</a> <small class="muted">[' + esc(s.id) + ']</small><p class="muted">' + esc(s.excerpt) + '</p></div>').join('')
     : '<p class="muted">No matching documentation. Try describing the symptom in different words.</p>';
   if (o.issues && o.issues.length) html += '<details><summary>Findings used as context (' + o.issues.length + ')</summary>' + o.issues.map(findingHTML).join('') + '</details>';

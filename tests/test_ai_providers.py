@@ -370,6 +370,26 @@ class StreamEndpointTests(_TempConfig):
         self.assertIn('RELIABILITY_MISMATCH', prompt)
         self.assertIn('sensor_msgs/msg/LaserScan', prompt)
 
+    def test_dashboard_includes_topics_named_in_the_question(self):
+        report = {'state': 'ok', 'publisher_count': 1, 'subscriber_count': 1, 'endpoints': [], 'findings': [
+            {'code': 'LATCHED_DATA_VOLATILE_SUBSCRIBER', 'severity': 'warning', 'summary': 'rviz requests Volatile'}]}
+        live = {'/map': 'nav_msgs/msg/OccupancyGrid', '/map_updates': 'map_msgs/msg/OccupancyGridUpdate',
+                '/rosout': 'rcl_interfaces/msg/Log'}
+        with patch('autodiag.rviz_agent._live_topics', return_value=live), \
+             patch('autodiag.server.inspect_topic', return_value=report) as inspect, \
+             patch('autodiag.llm.stream_answer', return_value=iter(['ok'])):
+            r = self.client.post('/api/assistant/stream', json={'host_a': {'environment': {}}, 'provider': 'ollama',
+                                                                'question': 'Why does my map stay empty?',
+                                                                'topics_from_question': True})
+            context = json.loads(r.text.splitlines()[0])
+            self.assertEqual(context['topics'], ['/map'])
+            self.assertEqual(context['issues'][0]['code'], 'LATCHED_DATA_VOLATILE_SUBSCRIBER')
+            inspect.reset_mock()
+            # Without the dashboard's opt-in nothing is added (the RViz panel's "Include the topic" decides).
+            self.client.post('/api/assistant/stream', json={'host_a': {'environment': {}}, 'provider': 'ollama',
+                                                            'question': 'Why does my map stay empty?'})
+            inspect.assert_not_called()
+
     def test_warmup_returns_immediately(self):
         with patch('autodiag.llm.warm_up_ollama'):
             self.assertEqual(self.client.post('/api/ai/warmup').json()['state'], 'warming')

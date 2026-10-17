@@ -65,7 +65,9 @@ For shared memory, AutoDiag also inspects `/dev/shm`, free space and the IPC nam
 ## Assistant
 
 Ask in plain language. AutoDiag combines your current findings with the most relevant curated documentation and,
-if you choose, a streamed AI explanation. Follow-up questions keep the conversation. See
+if you choose, a streamed AI explanation. If your question names a live topic ("why does my map stay empty" →
+`/map`), its live endpoints and QoS findings are included too, and the answer says which topic it used. Follow-up
+questions keep the conversation. See
 [AI providers](ai-providers.md) and [RAG & AI pipeline](../concepts/rag.md).
 
 ## Tools & self-test

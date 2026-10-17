@@ -40,7 +40,8 @@ Upcoming first public release, 0.1.0. Not tagged yet.
   file that starts the server and RViz with the panel together.
 - **REST API** with OpenAPI docs at `/api/docs`.
 - **AI assistant.** Retrieval over a curated knowledge base of official ROS 2, DDS and Docker documentation (BM25,
-  optional local embeddings), cited answers, streamed responses and conversation memory.
+  optional local embeddings), cited answers, streamed responses and conversation memory. The dashboard includes the
+  live QoS findings of a topic the question names.
 - **AI providers.** Local Ollama (offline), Claude (`[cloud]` extra), ChatGPT, Gemini and any OpenAI-compatible API,
   with live model lists. Keys are stored server-side (mode 0600) and never returned to the browser.
 - **Configure RViz with AI.** Plans display changes, validates them against live topics, message types, TF frames
