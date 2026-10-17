@@ -147,8 +147,24 @@ class PlanError(Exception):
 _topics_cache: dict = {'at': 0.0, 'value': None}
 
 
-def _live_topics() -> dict[str, str]:
+def _discover() -> dict | None:
+    """One discovery pass over the whole graph that waits until every node's endpoints are in (see graph.py).
+
+    Per-topic `ros2 topic info` calls can miss a publisher under load, which made plans skip QoS fixes."""
+    from .graph import discover_all
+    return discover_all()
+
+
+def _snapshot_inspector(snapshot: dict | None):
+    if snapshot is None:
+        return None
+    return lambda topic: {'state': 'ok', 'endpoints': snapshot.get(topic, [])}
+
+
+def _live_topics(snapshot: dict | None = None) -> dict[str, str]:
     """topic -> type, cached briefly (each query spins up a ROS node)."""
+    if snapshot is not None:
+        return {t: eps[0]['type'] for t, eps in snapshot.items() if eps and eps[0].get('type')}
     if _topics_cache['value'] is None or time.monotonic() - _topics_cache['at'] > 15:
         result = topic_list()
         _topics_cache.update(at=time.monotonic(),
@@ -200,10 +216,11 @@ def _context(state: dict, topics: dict[str, str], qos: dict[str, dict]) -> str:
     return '\n'.join(lines)
 
 
-def _topic_qos(state: dict) -> dict[str, dict]:
+def _topic_qos(state: dict, inspect=None) -> dict[str, dict]:
     """Inspect the topics of current displays: offered publisher QoS vs. what the display requests."""
     from concurrent.futures import ThreadPoolExecutor
     from .live import inspect_topic
+    inspect_topic = inspect or inspect_topic
     targets = [d for d in state.get('displays', []) if str(d.get('topic', '')).startswith('/')][:6]
     if not targets:
         return {}
@@ -236,11 +253,12 @@ def _topic_qos(state: dict) -> dict[str, dict]:
     return out
 
 
-def _added_display_qos(actions: list) -> dict[str, dict]:
+def _added_display_qos(actions: list, inspect=None) -> dict[str, dict]:
     """QoS fixes for displays added in this plan: RViz creates them Reliable and Volatile, which receives nothing
     from a best-effort publisher (most lidar and camera drivers) and misses latched data such as a map."""
     from concurrent.futures import ThreadPoolExecutor
     from .live import inspect_topic
+    inspect_topic = inspect or inspect_topic
     targets = [a for a in actions if a['action'] == 'add_display' and a.get('topic') and not a.get('not_publishing')
                and a.get('topic_property', 'Topic') == 'Topic'][:6]
     if not targets:
@@ -472,7 +490,9 @@ def plan(request: str, state: dict, provider: str | None = None, model: str | No
     started = time.monotonic()
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=2) as pool:
-        topics_job, qos_job = pool.submit(_live_topics), pool.submit(_topic_qos, state)
+        snapshot = _discover()
+        inspect = _snapshot_inspector(snapshot)
+        topics_job, qos_job = pool.submit(_live_topics, snapshot), pool.submit(_topic_qos, state, inspect)
         topics, qos = topics_job.result(), qos_job.result()
     earlier = _history_text(history)
     prompt = ('CONTEXT (current RViz state, already including any applied changes):\n' + _context(state, topics, qos)
@@ -486,7 +506,7 @@ def plan(request: str, state: dict, provider: str | None = None, model: str | No
     except llm.ProviderError as exc:
         raise PlanError(str(exc)) from exc
     result = validate(raw, state, topics)
-    qos = {**qos, **_added_display_qos(result['actions'])}
+    qos = {**qos, **_added_display_qos(result['actions'], inspect)}
     _complete(result, qos, request, state)
     result.update(provider=provider, model=model or llm.model_for(provider),
                   seconds=round(time.monotonic() - started, 2))

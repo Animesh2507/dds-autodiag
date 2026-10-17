@@ -157,6 +157,17 @@ class QosDiagnosisTests(unittest.TestCase):
         self.assertTrue(fix['auto'])
 
 
+    def test_planner_uses_one_discovery_snapshot(self):
+        snapshot = {'/scan': [{'kind': 'publisher', 'node': 'lidar', 'type': 'sensor_msgs/msg/LaserScan',
+                               'qos': {'reliability': 'BEST_EFFORT', 'durability': 'VOLATILE'}}]}
+        inspect = rviz_agent._snapshot_inspector(snapshot)
+        self.assertEqual(rviz_agent._live_topics(snapshot), {'/scan': 'sensor_msgs/msg/LaserScan'})
+        with patch('autodiag.live.inspect_topic', side_effect=AssertionError('per-topic CLI must not be used')):
+            out = rviz_agent._topic_qos(STATE, inspect)
+        self.assertEqual(out['LaserScan']['fix'], [('Topic/Reliability Policy', 'Best Effort')])
+        self.assertIsNone(rviz_agent._snapshot_inspector(None))
+
+
 class EndpointTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
@@ -164,7 +175,8 @@ class EndpointTests(unittest.TestCase):
     def test_plan_endpoint(self):
         raw = {'summary': 'Show the cloud', 'notes': [],
                'actions': [act('add_display', display='Cloud', display_type='PointCloud2', topic='/lidar/points')]}
-        with patch('autodiag.rviz_agent._live_topics', return_value=TOPICS), \
+        with patch('autodiag.rviz_agent._discover', return_value=None), \
+             patch('autodiag.rviz_agent._live_topics', return_value=TOPICS), \
              patch('autodiag.rviz_agent._topic_qos', return_value={}), \
              patch('autodiag.llm.complete_json', return_value=raw) as complete:
             r = self.client.post('/api/rviz/plan', json={'request': 'show lidar', **STATE, 'provider': 'ollama'})
@@ -241,7 +253,8 @@ class HistoryTests(unittest.TestCase):
         self.assertIn('Undo', text)
 
     def test_plan_prompt_includes_conversation(self):
-        with patch('autodiag.rviz_agent._live_topics', return_value=TOPICS), \
+        with patch('autodiag.rviz_agent._discover', return_value=None), \
+             patch('autodiag.rviz_agent._live_topics', return_value=TOPICS), \
              patch('autodiag.rviz_agent._topic_qos', return_value={}), \
              patch('autodiag.llm.complete_json', return_value={'summary': '', 'actions': [], 'notes': []}) as complete:
             rviz_agent.plan('make it bigger', STATE, 'ollama', history=[{'request': 'add a cloud', 'actions': []}])
