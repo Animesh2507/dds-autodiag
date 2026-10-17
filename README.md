@@ -28,6 +28,8 @@ ROS configuration.
 ## Quick start
 
 ```bash
+sudo apt install python3-venv  # once: Ubuntu doesn't ship it by default
+git clone https://github.com/Animesh2507/dds-autodiag.git && cd dds-autodiag
 source /opt/ros/jazzy/setup.bash
 python3 -m venv --system-site-packages .venv && source .venv/bin/activate
 pip install .
