@@ -94,15 +94,35 @@ function setBanner(health) {
 const EVENT_LEVEL = {error: 'ERROR', warning: 'WARN', info: 'NOTE', ok: 'OK', waiting: 'WAIT'};
 const events = [];
 
+const EVENTS_SHOWN = 10;
+const eventLog = {expanded: false, inView: false};
+
 function logEvents(items) {
   const tm = new Date().toLocaleTimeString([], {hour12: false});
   events.unshift(...items.map(x => ({tm, ...x})));
   events.length = Math.min(events.length, 200);
-  $('events-count').textContent = events.length + (events.length === 1 ? ' entry' : ' entries');
-  $('events').innerHTML = events.map((e, i) => '<div class="ev"' + (e.topic || e.tab ? ' data-go="' + i + '" tabindex="0" role="button"' : '') + '>'
+  renderEvents();
+}
+
+function renderEvents() {
+  const shown = eventLog.expanded ? events : events.slice(0, EVENTS_SHOWN);
+  $('events-count').textContent = events.length ? events.length + (events.length === 1 ? ' entry' : ' entries') : '';
+  $('events').innerHTML = shown.length ? shown.map((e, i) => '<div class="ev"' + (e.topic || e.tab ? ' data-go="' + i + '" tabindex="0" role="button"' : '') + '>'
     + '<span class="tm">' + esc(e.tm) + '</span><span class="lvl ' + esc(e.level) + '">' + esc(EVENT_LEVEL[e.level] || e.level) + '</span>'
     + '<span class="tgt">' + esc(e.target || '') + '</span><span class="what">' + esc(e.what || '') + '</span>'
-    + '<span class="who">' + esc(e.who || '') + '</span></div>').join('');
+    + '<span class="who">' + esc(e.who || '') + '</span></div>').join('')
+    : '<div class="ev empty">Checks you run appear here, newest first.</div>';
+  const toggle = $('events-toggle');
+  toggle.hidden = events.length <= EVENTS_SHOWN;
+  toggle.textContent = eventLog.expanded ? 'Show latest ' + EVENTS_SHOWN : 'Show all ' + events.length;
+  toggle.setAttribute('aria-expanded', String(eventLog.expanded));
+  $('events-strip').classList.toggle('expanded', eventLog.expanded);
+  const latest = events[0];
+  $('ticker-count').textContent = events.length ? String(events.length) : '';
+  $('ticker-latest').innerHTML = latest ? '<span class="lvl ' + esc(latest.level) + '">' + esc(EVENT_LEVEL[latest.level] || latest.level) + '</span>'
+    + esc([latest.target, latest.what].filter(Boolean).join('  ')) : '';
+  $('events-ticker').setAttribute('aria-label', 'Jump to the event log (' + events.length + ' entries)');
+  $('events-ticker').hidden = !events.length || eventLog.inView;
 }
 
 function findingEvents(issues, fallbackTarget, okText) {
@@ -114,13 +134,6 @@ function findingEvents(issues, fallbackTarget, okText) {
       who: ev.publisher && ev.subscriber ? ev.publisher + ' → ' + ev.subscriber : (f.summary || '').slice(0, 80),
       topic, tab: topic ? '' : 'overview'};
   });
-}
-
-function setEventsOpen(open) {
-  $('events-strip').classList.toggle('collapsed', !open);
-  $('events-toggle').textContent = open ? 'Hide' : 'Show';
-  $('events-toggle').setAttribute('aria-expanded', String(open));
-  store.set('events', open ? 'open' : 'closed');
 }
 
 // ---------- status bar ----------
@@ -991,7 +1004,8 @@ const ACTIONS = {
   'prov-save': b => saveProvider(b), 'prov-default': b => saveProvider(b, {make_default: true}),
   'prov-test': b => testProvider(b), 'prov-remove': b => removeKey(b),
   'bt-replay': () => { const events = state.bt.events; btClear(); state.bt.events = events; tickBT(); },
-  'toggle-events': () => setEventsOpen($('events-strip').classList.contains('collapsed')),
+  'toggle-events': () => { eventLog.expanded = !eventLog.expanded; renderEvents(); },
+  'goto-events': () => $('events-strip').scrollIntoView({block: 'end', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}),
 };
 
 function openEvent(el) {
@@ -1043,6 +1057,8 @@ $('remoteUrl').value = store.get('remoteUrl') || '';
 window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
 
 applyTheme(store.get('theme'));
-setEventsOpen(store.get('events') !== 'closed' && !matchMedia('(max-width: 900px)').matches);
+// The ticker stands in for the log only while the log itself is off screen.
+new IntersectionObserver(([entry]) => { eventLog.inView = entry.isIntersecting; renderEvents(); },
+  {rootMargin: '0px 0px -36px 0px'}).observe($('events-strip'));  // hide only once the log is clearly in view, not under the ticker
 showTab(location.hash.slice(1) || 'overview');
 refresh();

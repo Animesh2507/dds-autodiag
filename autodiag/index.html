@@ -285,16 +285,20 @@
     </div>
   </section>
 
+  <section class="events" id="events-strip" aria-label="Event log">
+    <div class="events-head">
+      <h2>Event log</h2><span class="muted" id="events-count"></span><span class="spacer"></span>
+      <button type="button" class="link" data-action="toggle-events" id="events-toggle" aria-expanded="false" aria-controls="events" hidden>Show all</button>
+    </div>
+    <div class="events-list" id="events"><div class="ev empty">Checks you run appear here, newest first.</div></div>
+  </section>
+
   <footer>DDS AutoDiag · read-only diagnostics: never changes your ROS 2 or DDS configuration · <a href="/api/docs">REST API</a> · <a href="/legacy">Previous interface</a></footer>
 </main>
 
-<section class="events" id="events-strip" aria-label="Event log">
-  <div class="events-head">
-    <span>Event log</span><span class="muted" id="events-count"></span><span class="spacer"></span>
-    <button type="button" class="link" data-action="toggle-events" id="events-toggle" aria-expanded="true" aria-controls="events">Hide</button>
-  </div>
-  <div class="events-list" id="events"><div class="ev empty">Checks you run appear here, newest first.</div></div>
-</section>
+<button type="button" class="ticker" id="events-ticker" data-action="goto-events" hidden>
+  <span class="tk-label">Event log</span><span class="tk-count" id="ticker-count"></span><span class="tk-latest" id="ticker-latest"></span><span class="tk-go">Show ↓</span>
+</button>
 </div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 </body>

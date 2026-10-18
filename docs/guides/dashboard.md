@@ -5,7 +5,7 @@ dds-autodiag serve --open      # http://127.0.0.1:8080
 ```
 
 The dashboard runs locally and is laid out like a console: a status bar on top, the sections in the rail on the left
-and an event log at the bottom. Colour only ever means health (red, amber, green); everything else stays black and
+and an event log at the end of every page. Colour only ever means health (red, amber, green); everything else stays black and
 white. It opens dark unless your system is set to light, **Theme** switches, and the fonts ship with AutoDiag, so it
 looks the same offline. It also works on a phone-sized screen.
 
@@ -14,9 +14,10 @@ looks the same offline. It also works on a phone-sized screen.
 - **Status bar:** domain ID, RMW, distro, node and topic counts, and the problems and warnings found so far. The
   counts add up the host checks and the graph; click one to open where they were found. The dot next to the name
   turns red as soon as anything is broken.
-- **Event log:** every check you run (overview, graph, topic inspection) with its time, level, topic and rule, newest
-  first. Click an entry to open that topic in the inspector. **Hide** folds the log away, and the dashboard remembers
-  it.
+- **Event log:** the last section of every page, so it never covers anything: each check you run (overview, graph,
+  topic inspection) with its time, level, topic and rule, newest first. **Show all** lists more than the latest 10,
+  and clicking an entry opens that topic in the inspector. While the log is off screen, a one-line bar at the bottom
+  shows the latest entry; click it to jump down.
 
 ## Overview
 

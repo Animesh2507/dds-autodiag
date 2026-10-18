@@ -11,7 +11,7 @@
   --err:#ff5a52;--warn:#f2b33d;--ok:#3ccf8e;--wait:#7d8597;--info:#9aa9cc;
   --err-bg:rgba(255,90,82,.12);--warn-bg:rgba(242,179,61,.11);--ok-bg:rgba(60,207,142,.10);--info-bg:rgba(154,169,204,.10);
   --err-line:rgba(255,90,82,.45);--warn-line:rgba(242,179,61,.42);--ok-line:rgba(60,207,142,.4);--info-line:rgba(154,169,204,.35);
-  --grid:rgba(255,255,255,.035);--code:#0b0d11;--sel:#ffffff;--flow:#c9f7e2;--shadow:0 10px 30px rgba(0,0,0,.45);
+  --grid:rgba(255,255,255,.035);--fade:rgba(0,0,0,.35);--code:#0b0d11;--sel:#ffffff;--flow:#c9f7e2;--shadow:0 10px 30px rgba(0,0,0,.45);
   --sans:"Plex Condensed","IBM Plex Sans Condensed",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"Plex Mono","IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   color-scheme:dark;
@@ -21,15 +21,16 @@
   --err:#d23a31;--warn:#a26b00;--ok:#11895a;--wait:#6d7586;--info:#4f5d80;
   --err-bg:#fdecea;--warn-bg:#fdf3df;--ok-bg:#e6f5ee;--info-bg:#eef1f7;
   --err-line:rgba(210,58,49,.45);--warn-line:rgba(162,107,0,.42);--ok-line:rgba(17,137,90,.4);--info-line:rgba(79,93,128,.32);
-  --grid:rgba(18,21,27,.05);--code:#f6f7f9;--sel:#12151b;--flow:#ffffff;--shadow:0 10px 30px rgba(18,21,27,.14);color-scheme:light}}
+  --grid:rgba(18,21,27,.05);--fade:rgba(18,21,27,.08);--code:#f6f7f9;--sel:#12151b;--flow:#ffffff;--shadow:0 10px 30px rgba(18,21,27,.14);color-scheme:light}}
 :root[data-theme="light"]{
   --bg:#f3f4f6;--pane:#ffffff;--pane2:#f7f8fa;--line:#dfe2e8;--line2:#c4c9d3;--ink:#12151b;--dim:#5b6372;--faint:#8a91a0;
   --err:#d23a31;--warn:#a26b00;--ok:#11895a;--wait:#6d7586;--info:#4f5d80;
   --err-bg:#fdecea;--warn-bg:#fdf3df;--ok-bg:#e6f5ee;--info-bg:#eef1f7;
   --err-line:rgba(210,58,49,.45);--warn-line:rgba(162,107,0,.42);--ok-line:rgba(17,137,90,.4);--info-line:rgba(79,93,128,.32);
-  --grid:rgba(18,21,27,.05);--code:#f6f7f9;--sel:#12151b;--flow:#ffffff;--shadow:0 10px 30px rgba(18,21,27,.14);color-scheme:light}
+  --grid:rgba(18,21,27,.05);--fade:rgba(18,21,27,.08);--code:#f6f7f9;--sel:#12151b;--flow:#ffffff;--shadow:0 10px 30px rgba(18,21,27,.14);color-scheme:light}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}  /* components that set display must still hide */
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--ink);font:14.5px/1.5 var(--sans)}
 a{color:var(--ink);text-decoration-color:var(--line2);text-underline-offset:3px}
@@ -57,7 +58,7 @@ input[type=checkbox]{accent-color:var(--ink)}
 label.check{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 
 /* ---------- shell: top bar, icon rail, main, event log ---------- */
-.shell{display:grid;grid-template-columns:76px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;height:100vh}
+.shell{display:grid;grid-template-columns:76px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:100vh}
 .topbar{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--pane);flex-wrap:wrap;min-height:48px}
 .wordmark{display:flex;align-items:center;gap:9px;font:600 14px var(--mono);letter-spacing:.02em;text-decoration:none;color:var(--ink);margin-right:10px}
 .wordmark small{font-weight:400;font-size:11px;color:var(--faint)}
@@ -81,7 +82,7 @@ button.icon svg path{fill:currentColor;stroke:none}
 @media (max-width:1500px){.topbar .host{display:none}}
 @media (max-width:1300px){.readouts .chip:nth-child(n+4){display:none}}
 
-.rail{grid-row:2/4;border-right:1px solid var(--line);background:var(--pane);display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 0;overflow-y:auto}
+.rail{grid-row:2;border-right:1px solid var(--line);background:var(--pane);display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 0;overflow-y:auto}
 .rail a{position:relative;width:62px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 0 7px;color:var(--dim);text-decoration:none;font-size:11px;border-radius:2px}
 .rail a:hover{color:var(--ink);background:var(--pane2)}
 .rail a.active{color:var(--ink);background:var(--pane2)}
@@ -89,7 +90,7 @@ button.icon svg path{fill:currentColor;stroke:none}
 .rail svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .rail .alert{position:absolute;top:6px;right:14px;width:7px;height:7px;border-radius:50%;background:var(--err)}
 
-.main{grid-column:2;grid-row:2;overflow:auto;padding:18px 24px 28px;min-width:0}
+.main{grid-column:2;grid-row:2;overflow:auto;padding:18px 24px 56px;min-width:0}
 .page-head{margin-bottom:16px}
 .eyebrow{font:500 10.5px var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--dim)}
 .panel{display:none;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr));max-width:1500px}
@@ -106,11 +107,25 @@ button.icon svg path{fill:currentColor;stroke:none}
 footer{margin-top:22px;color:var(--faint);font-size:12px}
 footer a{color:var(--dim)}
 
-.events{grid-column:2;grid-row:3;border-top:1px solid var(--line);background:var(--pane);font:400 12px var(--mono);min-width:0}
-.events-head{display:flex;align-items:center;gap:10px;padding:7px 24px;color:var(--dim);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
-.events-head .link{font:500 11px var(--mono);letter-spacing:.06em;text-transform:none;color:var(--dim)}
-.events-list{max-height:132px;overflow:auto;padding:0 24px 10px}
-.events.collapsed .events-list{display:none}
+/* The event log is the last section of the page, so it never covers content; while it is out of view, a one-line
+   ticker at the bottom shows the latest entry and jumps down to it. */
+.events{margin-top:14px;max-width:1500px;border:1px solid var(--line);border-radius:3px;background:var(--pane);font:400 12px var(--mono);min-width:0;scroll-margin-bottom:16px}
+.events-head{display:flex;align-items:center;gap:10px;padding:14px 18px 8px}
+.events-head h2{margin:0}
+.events-head .link{font:500 11.5px var(--mono)}
+.events-list{padding:0 12px 12px}
+.events.expanded .events-list{max-height:420px;overflow:auto}
+.ticker{grid-column:2;grid-row:2;align-self:end;z-index:5;display:flex;align-items:center;gap:14px;width:100%;min-width:0;border:none;
+  border-top:1px solid var(--line);border-radius:0;background:var(--pane);padding:6px 24px;font:400 12px var(--mono);color:var(--ink);
+  text-align:left;cursor:pointer;box-shadow:0 -8px 18px var(--fade)}
+.ticker:hover{background:var(--pane2)}
+.ticker:focus-visible{outline-offset:-2px}
+.tk-label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.tk-count{color:var(--faint)}
+.tk-latest{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tk-latest .lvl{font-weight:600;margin-right:8px}
+.tk-latest .lvl.error{color:var(--err)}.tk-latest .lvl.warning{color:var(--warn)}.tk-latest .lvl.ok{color:var(--ok)}.tk-latest .lvl.info{color:var(--info)}.tk-latest .lvl.waiting{color:var(--wait)}
+.tk-go{color:var(--dim);font-weight:500}
 .ev{display:grid;grid-template-columns:72px 52px minmax(90px,170px) minmax(0,1fr) minmax(0,260px);gap:12px;padding:3px 6px;border-radius:2px;color:var(--ink);align-items:baseline}
 .ev.empty{display:block;color:var(--faint)}
 .ev[data-go]{cursor:pointer}
@@ -287,15 +302,15 @@ svg.graph .edge-label.waiting rect{stroke:var(--wait)}svg.graph .edge-label.wait
   .inspector{position:static}
 }
 @media (max-width:900px){
-  .shell{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;height:auto;min-height:100vh}
+  .shell{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);height:auto;min-height:100vh}
   .topbar{padding:8px 16px}
   .readouts{display:none}
   .rail{grid-row:2;grid-column:1;flex-direction:row;border-right:none;border-bottom:1px solid var(--line);padding:4px 10px;overflow-x:auto}
   .rail a{width:auto;padding:7px 10px;flex:none}
   .rail a.active::before{left:10px;right:10px;top:auto;bottom:-4px;width:auto;height:2px}
   .main{grid-column:1;grid-row:3;overflow:visible;padding:16px}
-  .events{grid-column:1;grid-row:4}
-  .events-head,.events-list{padding-left:16px;padding-right:16px}
+  .ticker{position:fixed;left:0;right:0;bottom:0;padding:9px 16px}
+  .main{padding-bottom:64px}
   .ev{grid-template-columns:64px 48px minmax(0,1fr)}
   .ev .tgt,.ev .who{display:none}
 }

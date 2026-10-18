@@ -36,7 +36,7 @@ Upcoming first public release, 0.1.0. Not tagged yet.
 - **CLI.** `doctor`, `check`, `collect`, `compare`, `topics`, `inspect`, `sample`, `selftest`, `demo`, `serve`, with
   `--json` and exit codes 0/1/2.
 - **Web dashboard.** A console layout: a status bar with domain, RMW, distro, counts and the problems found so far,
-  a section rail, and an event log of every check. Overview, topics, graph, host comparison, transport checks,
+  a section rail, and an event log of every check at the end of each page. Overview, topics, graph, host comparison, transport checks,
   assistant, tools and settings; dark and light themes, bundled IBM Plex fonts (SIL OFL) so it looks the same
   offline, and a mobile layout.
 - **RViz2 panel** (`ros2/rviz_autodiag_panel`) with Health, Topic, Graph, AI assistant and Configure RViz tabs, and a launch
