@@ -217,7 +217,7 @@ body.login{display:grid;place-items:center;min-height:100vh;padding:16px}
 .login-card .wordmark{margin:0 0 4px}
 
 .ai-answer{border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:2px;padding:12px 16px;margin:10px 0 16px;background:var(--pane2)}
-.ai-body{line-height:1.6;max-width:80ch}
+.ai-body{line-height:1.6}
 .ai-body ul{margin:4px 0 8px;padding-left:20px}
 .ai-body h3{margin:10px 0 4px}
 .ai-body p{margin:4px 0}
