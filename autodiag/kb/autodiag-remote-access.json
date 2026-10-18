@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-remote-access",
+  "title": "Using AutoDiag on a robot from another machine",
+  "url": "https://animesh2507.github.io/dds-autodiag/guides/deployment/",
+  "ros_distro": "general",
+  "keywords": "autodiag remote access robot ssh tunnel token network listen host 0.0.0.0 allowed hosts security headless laptop from another machine open remotely",
+  "text": "Keep the server on the robot at 127.0.0.1 and open it from your laptop through an SSH tunnel: ssh -L 8080:127.0.0.1:8080 robot, then browse to http://127.0.0.1:8080. To listen on the network instead, a token is mandatory: AUTODIAG_UI_TOKEN=<secret> AUTODIAG_ALLOWED_HOSTS=<robot-ip> dds-autodiag serve --host 0.0.0.0. AutoDiag has no TLS of its own, so use a TLS reverse proxy beyond a trusted network."
+}

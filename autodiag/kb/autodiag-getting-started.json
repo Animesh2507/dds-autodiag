@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-getting-started",
+  "title": "First steps with AutoDiag: doctor and demo",
+  "url": "https://animesh2507.github.io/dds-autodiag/getting-started/quickstart/",
+  "ros_distro": "general",
+  "keywords": "autodiag getting started first steps quick start doctor demo try example smoke test",
+  "text": "dds-autodiag doctor checks the prerequisites (ROS 2 sourced, CLI available, network) and prints fixes. dds-autodiag demo starts two deliberately broken topics under /autodiag_demo/ (a reliability mismatch and latched data with a volatile subscriber), diagnoses them and keeps them running so you can explore them in the dashboard or RViz; Ctrl+C stops them, and --no-wait exits right after the diagnosis. The demo never touches your own topics."
+}

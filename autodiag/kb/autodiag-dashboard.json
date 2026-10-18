@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-dashboard",
+  "title": "The AutoDiag web dashboard",
+  "url": "https://animesh2507.github.io/dds-autodiag/guides/dashboard/",
+  "ros_distro": "general",
+  "keywords": "autodiag dashboard web ui browser tabs overview topics graph compare hosts transport assistant tools settings export snapshot download report serve start open browser url",
+  "text": "dds-autodiag serve --open starts the dashboard at http://127.0.0.1:8080. Its tabs: Overview (status, key facts and findings), Topics (every topic, its endpoints and QoS, and Read one sample to prove delivery), Graph (every publisher to subscriber connection, broken ones in red), Compare hosts, Transport (shared memory, intra-process, UDP or TCP checks), Assistant (AI explanations with documentation), Tools & self-test and About & settings (AI providers and keys). The header has Export snapshot and Download report."
+}

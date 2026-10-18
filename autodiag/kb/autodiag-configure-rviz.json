@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-configure-rviz",
+  "title": "Configure RViz with AI in AutoDiag",
+  "url": "https://animesh2507.github.io/dds-autodiag/guides/configure-rviz/",
+  "ros_distro": "general",
+  "keywords": "autodiag configure rviz ai plan apply undo request displays follow-up fix tf qos robot model point cloud validate",
+  "text": "In the panel tab Configure RViz, describe the view you want (for example \"fix the TF error, show the robot model and the 3D cloud colored by height\") and press Plan changes. AutoDiag checks every suggested change against the live topics, message types, TF frames and publisher QoS, adds the QoS and Fixed Frame fixes a model misses, and lists the changes; nothing changes until you press Apply checked, and Undo restores the previous view. Follow-up requests such as \"make the points bigger\" keep the conversation; New conversation starts fresh. A cloud model plans in seconds, a local model in about 1-2 minutes on a CPU."
+}

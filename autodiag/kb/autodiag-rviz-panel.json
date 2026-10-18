@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-rviz-panel",
+  "title": "The AutoDiag RViz2 panel",
+  "url": "https://animesh2507.github.io/dds-autodiag/guides/rviz-panel/",
+  "ros_distro": "general",
+  "keywords": "autodiag rviz panel rviz2 plugin tabs health topic graph ai assistant configure launch autodiag.launch.py dashboard button add panel",
+  "text": "The RViz2 panel puts AutoDiag next to your displays. Build ros2/rviz_autodiag_panel with colcon and start the server and RViz together with ros2 launch rviz_autodiag_panel autodiag.launch.py, or add it in RViz under Panels > Add New Panel > AutoDiag. Tabs: Health (findings for this machine), Topic (inspect a topic; topics of your displays come first), Graph (every connection, click one for its finding), AI assistant and Configure RViz. Dashboard opens the same view in the browser. The server URL, provider and model are saved in the .rviz file."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-graph",
+  "title": "The AutoDiag diagnosis graph",
+  "url": "https://animesh2507.github.io/dds-autodiag/guides/dashboard/",
+  "ros_distro": "general",
+  "keywords": "autodiag graph diagnosis graph connections who talks to whom red orange green dashed check connections",
+  "text": "The Graph tab (in the dashboard and the RViz panel) draws every publisher to subscriber connection on the visible topics, checked with the same QoS and type rules as topic inspection: red means no data gets through, orange a warning such as latched data with a volatile subscriber, green compatible, and dashed a subscriber nobody publishes to. Click a connection for its finding, next step and documentation."
+}

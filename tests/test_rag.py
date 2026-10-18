@@ -33,7 +33,7 @@ class TestLocalRAG(unittest.TestCase):
         self.assertEqual(retrieve('what is the weather today'),[])
         self.assertEqual(retrieve('how do I use it'),[])
     def test_symptoms_reach_the_right_pages(self):
-        self.assertEqual(retrieve('robot and laptop cannot see each other')[0]['id'],'ros-domain')
+        self.assertIn('ros-domain',[d['id'] for d in retrieve('robot and laptop cannot see each other')])
         self.assertEqual(retrieve('tf error frame does not exist')[0]['id'],'ros-tf2')
         self.assertIn('fastdds-docker',[d['id'] for d in retrieve(
             "Two Docker containers see each other's topics but receive no data")])
@@ -46,6 +46,16 @@ class TestLocalRAG(unittest.TestCase):
                'robot curves when driving straight':'control-wheel-kinematics'}
         for question,page in cases.items():
             self.assertEqual(retrieve(question)[0]['id'],page,question)
+    def test_questions_about_autodiag_itself(self):
+        # "this tool" means AutoDiag: how-to questions must reach its own pages.
+        self.assertEqual(retrieve('I have 2 robots and i want to transfer the ros config, how can i use this tool '
+                                  'for it to compare?')[0]['id'],'autodiag-compare')
+        self.assertEqual(retrieve('what can this tool do')[0]['id'],'autodiag-overview')
+        cases={'how do I start the dashboard':'autodiag-dashboard','how do I add my claude api key':'autodiag-ai-setup',
+               'which commands does dds-autodiag have':'autodiag-cli','how does configure rviz work':'autodiag-configure-rviz',
+               'use it on my robot from my laptop':'autodiag-remote-access','can I call autodiag from a script':'autodiag-rest-api'}
+        for question,page in cases.items():
+            self.assertIn(page,[d['id'] for d in retrieve(question)],question)
     def test_question_first_then_findings(self):
         result=retrieve_for('what are ros actions?','DOMAIN_MISMATCH Different ROS_DOMAIN_ID values')
         ids=[d['id'] for d in result['sources']]

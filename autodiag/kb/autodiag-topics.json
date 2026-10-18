@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-topics",
+  "title": "Inspecting topics and reading samples with AutoDiag",
+  "url": "https://animesh2507.github.io/dds-autodiag/guides/cli/",
+  "ros_distro": "general",
+  "keywords": "autodiag inspect topic topics sample read message delivery qos endpoints silent no data proof",
+  "text": "dds-autodiag inspect /scan lists every publisher and subscriber of a topic with reliability, durability and history, and reports incompatible pairs. dds-autodiag sample /scan --reliability best_effort --timeout 5 waits for one real message: receiving one proves delivery, a timeout tells you where to look next. The dashboard Topics tab (Read one sample) and the RViz panel Topic tab do the same; discovery alone never proves that data arrives."
+}

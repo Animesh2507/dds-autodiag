@@ -8,7 +8,7 @@ prompt. Answers are grounded in real sources and cite them.
 
 ## 1. Knowledge base
 
-`autodiag/kb/` holds about 60 short summaries, written for AutoDiag, each linking the official page it is based on:
+`autodiag/kb/` holds about 80 short summaries, written for AutoDiag, each linking the official page it is based on:
 
 - **ROS 2 concepts:** nodes, topics, services, actions, parameters, interfaces, launch, remapping and namespaces,
   discovery, tf2, executors and callback groups, composition, lifecycle nodes, logging, time and `use_sim_time`,
@@ -18,6 +18,10 @@ prompt. Answers are grounded in real sources and cite them.
 - **robotics maths:** units and axes (REP 103), map, odom and base_link (REP 105), quaternions, roll, pitch, yaw and
   angle wrapping, composing transforms, covariance matrices, LaserScan, OccupancyGrid, odometry, IMU (REP 145),
   timestamps across machines, camera intrinsics and PointCloud2 layout;
+- **DDS AutoDiag itself:** what it does, the command line, comparing robots, hosts and containers, the dashboard, the
+  RViz panel, Configure RViz, AI providers, the rules, reports and snapshots, transport checks, remote access, the
+  benchmark and the REST API, so "how do I compare two robots with this tool?" gets AutoDiag's own commands. The
+  assistant's instructions also say that "this tool" means DDS AutoDiag;
 - **control:** ros2_control and its controllers (loading and activating, diff_drive_controller, wheel kinematics and
   calibration, joint_trajectory_controller), `cmd_vel` and Twist vs TwistStamped, PID and anti-windup, loop rate and
   latency, and the Nav2 velocity smoother, controller server and local controllers.

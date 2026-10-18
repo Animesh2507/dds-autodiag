@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-overview",
+  "title": "DDS AutoDiag: what this tool is and what it can do",
+  "url": "https://animesh2507.github.io/dds-autodiag/",
+  "ros_distro": "general",
+  "keywords": "autodiag dds-autodiag this tool tool what is it features can it do overview diagnostics read-only cli dashboard rviz panel ai",
+  "text": "DDS AutoDiag (this tool) is a read-only diagnostics tool for ROS 2 communication. It finds why nodes cannot talk (QoS, domain IDs, discovery, the RMW, containers and shared memory) with 23 rules, each showing the evidence, a next step and official documentation. It has a command line (dds-autodiag), a web dashboard (dds-autodiag serve) and an RViz2 panel. Optional AI adds an assistant that explains findings from curated documentation, and Configure RViz, which plans and validates RViz display changes. It never changes the robot or the ROS configuration; only Configure RViz changes RViz displays, and only after you confirm."
+}

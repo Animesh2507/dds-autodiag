@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-cli",
+  "title": "DDS AutoDiag command line (dds-autodiag)",
+  "url": "https://animesh2507.github.io/dds-autodiag/guides/cli/",
+  "ros_distro": "general",
+  "keywords": "autodiag this tool cli command line commands dds-autodiag doctor check collect compare topics inspect sample demo selftest bench serve json exit code ci",
+  "text": "The dds-autodiag command: doctor (is this machine ready), check (diagnose this host; --peer FILE.json compares with another snapshot, --transport sets the expected transport, --report writes Markdown), collect (save a snapshot, --redact hides hostnames and IPs), compare PEER.json [OTHER.json], topics, inspect /topic (endpoints, QoS and incompatibilities), sample /topic (wait for one real message), demo (two broken demo topics, diagnosed), selftest (every rule against its synthetic faults), bench (benchmark AI models) and serve (the dashboard). --json gives machine-readable output, and the exit code is 0 for no problem, 1 for a problem and 2 for a usage error, so it works as a CI gate."
+}

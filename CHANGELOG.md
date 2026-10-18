@@ -39,8 +39,8 @@ Upcoming first public release, 0.1.0. Not tagged yet.
 - **RViz2 panel** (`ros2/rviz_autodiag_panel`) with Health, Topic, Graph, AI assistant and Configure RViz tabs, and a launch
   file that starts the server and RViz with the panel together.
 - **REST API** with OpenAPI docs at `/api/docs`.
-- **AI assistant.** Retrieval over a curated knowledge base of about 60 pages on core ROS 2 concepts, communication
-  troubleshooting, robotics maths and control, each linking the official documentation (BM25 with a relevance cutoff, optional
+- **AI assistant.** Retrieval over a curated knowledge base of about 80 pages on DDS AutoDiag itself, core ROS 2
+  concepts, communication troubleshooting, robotics maths and control, each linking the official documentation (BM25 with a relevance cutoff, optional
   local embeddings; the question first, plus the current findings), cited answers, streamed responses and conversation memory. The dashboard includes the
   live QoS findings of a topic the question names.
 - **AI providers.** Local Ollama (offline), Claude (`[cloud]` extra), ChatGPT, Gemini and any OpenAI-compatible API,
