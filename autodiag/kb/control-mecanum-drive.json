@@ -1,0 +1,8 @@
+{
+  "id": "control-mecanum-drive",
+  "title": "Mecanum wheel robots: mecanum_drive_controller",
+  "url": "https://control.ros.org/jazzy/doc/ros2_controllers/mecanum_drive_controller/doc/userdoc.html",
+  "ros_distro": "jazzy",
+  "keywords": "mecanum omnidirectional holonomic four wheels rollers strafe sideways front_left rear_right wheels_radius curve curves drift drive straight",
+  "text": "mecanum_drive_controller drives four mecanum wheels. In Jazzy it takes geometry_msgs/TwistStamped on <controller>/reference (linear x and y, angular z) and publishes <controller>/odometry. Each wheel is named explicitly (front_left, front_right, rear_right and rear_left _wheel_command_joint_name), with kinematics.wheels_radius and kinematics.sum_of_robot_center_projection_on_X_Y_axis (lx + ly). When a mecanum robot curves, drifts sideways or turns when it should drive straight, check that each joint is mapped to the right corner, that every motor spins the right way, that left- and right-handed wheels sit where the kinematics expect (the rollers of left and right wheels are mirror images), then wheels_radius and lx + ly. Mecanum rollers slip, so wheel odometry drifts more than on a differential drive. Parameters of diff_drive_controller do not apply here."
+}

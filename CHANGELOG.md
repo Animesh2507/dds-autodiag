@@ -41,7 +41,8 @@ Upcoming first public release, 0.1.0. Not tagged yet.
 - **REST API** with OpenAPI docs at `/api/docs`.
 - **AI assistant.** Retrieval over a curated knowledge base of about 80 pages on DDS AutoDiag itself, core ROS 2
   concepts, communication troubleshooting, robotics maths and control, each linking the official documentation (BM25 with a relevance cutoff, optional
-  local embeddings; the question first, plus the current findings), cited answers, streamed responses and conversation memory. The dashboard includes the
+  local embeddings; the question first, plus the current findings), cited answers, a check of every dds-autodiag
+  command an answer mentions, streamed responses and conversation memory. The dashboard includes the
   live QoS findings of a topic the question names.
 - **AI providers.** Local Ollama (offline), Claude (`[cloud]` extra), ChatGPT, Gemini and any OpenAI-compatible API,
   with live model lists. Keys are stored server-side (mode 0600) and never returned to the browser.

@@ -3,6 +3,6 @@
   "title": "diff_drive_controller for mobile bases",
   "url": "https://control.ros.org/jazzy/doc/ros2_controllers/diff_drive_controller/doc/userdoc.html",
   "ros_distro": "jazzy",
-  "keywords": "diff_drive_controller differential drive cmd_vel twiststamped twist odom wheel wheel_separation wheel_radius cmd_vel_timeout enable_odom_tf mobile base",
+  "keywords": "diff_drive_controller differential drive cmd_vel twiststamped twist odom wheel wheel_separation wheel_radius cmd_vel_timeout enable_odom_tf mobile base differential two-wheeled",
   "text": "diff_drive_controller turns velocity commands into left and right wheel commands and publishes odometry on ~/odom, plus odom -> base_link on /tf while enable_odom_tf is true. It needs left_wheel_names, right_wheel_names, wheel_separation and wheel_radius. In Jazzy it subscribes to ~/cmd_vel as geometry_msgs/TwistStamped, so a plain Twist publisher (teleop_twist_keyboard by default, or Nav2's velocity smoother unless enable_stamped_cmd_vel is true) is never received: a type mismatch on the same topic. Commands older than cmd_vel_timeout (0.5 s by default) stop the robot, so a publisher slower than about 2 Hz makes it stutter."
 }

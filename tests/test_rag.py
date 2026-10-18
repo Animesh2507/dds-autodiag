@@ -57,6 +57,38 @@ class TestLocalRAG(unittest.TestCase):
                'use it on my robot from my laptop':'autodiag-remote-access','can I call autodiag from a script':'autodiag-rest-api'}
         for question,page in cases.items():
             self.assertIn(page,[d['id'] for d in retrieve(question)],question)
+    def test_drive_types_get_their_own_pages(self):
+        # Omni and mecanum questions must not be answered from the differential-drive pages.
+        self.assertEqual(retrieve('Why does my robot curve when it should drive straight in omni drive?')[0]['id'],
+                         'control-omni-drive')
+        self.assertEqual(retrieve('my mecanum robot drifts sideways')[0]['id'],'control-mecanum-drive')
+        self.assertEqual(retrieve('robot curves when driving straight')[0]['id'],'control-wheel-kinematics')
+    def test_prompts_forbid_invented_commands(self):
+        self.assertIn('commands and options only as the excerpts show them',' '.join(llm.SYSTEM.split()))
+        from autodiag.cli import build_parser
+        import argparse
+        names=next(a for a in build_parser()._actions if isinstance(a,argparse._SubParsersAction)).choices
+        for name in names:  # the list in the prompt matches the real CLI
+            self.assertIn(name,llm.SYSTEM)
+    def test_invented_commands_get_a_visible_note(self):
+        answer=('- Run `dds-autodiag control omni-drive --check wheel-order`\n'
+                '- Then `dds-autodiag compare a.json b.json --transport dds_shm` and `dds-autodiag inspect`\n'
+                '```\ndds-autodiag check --findings x\n```')
+        note=llm.command_note(answer)
+        self.assertIn('`dds-autodiag control omni-drive --check wheel-order`',note)
+        self.assertIn('`dds-autodiag check --findings x`',note)
+        self.assertNotIn('compare',note.split('commands are')[0])  # real commands are not flagged
+        self.assertNotIn('`dds-autodiag inspect`',note)
+        self.assertIn('is not a valid command',note)
+        self.assertEqual(llm.command_note('Run `dds-autodiag inspect /scan`, then `dds-autodiag serve --open`.'),'')
+        # inspect and sample take topics: a parameter name is flagged, a placeholder is not
+        self.assertIn('needs a ROS topic',llm.command_note('`dds-autodiag inspect wheel_names`'))
+        self.assertEqual(llm.command_note('`dds-autodiag inspect <topic>` or `dds-autodiag sample /odom --timeout 5`'),'')
+    def test_note_is_appended_to_the_streamed_answer(self):
+        with patch('autodiag.llm.stream_answer',return_value=iter(['Run `dds-autodiag fix-everything`.'])):
+            events=list(llm.explain_events('ollama',[],'q',[]))
+        self.assertEqual([e['type'] for e in events],['meta','token','token','done'])
+        self.assertIn('AutoDiag check',events[2]['text'])
     def test_question_first_then_findings(self):
         result=retrieve_for('what are ros actions?','DOMAIN_MISMATCH Different ROS_DOMAIN_ID values')
         ids=[d['id'] for d in result['sources']]

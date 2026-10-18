@@ -1,0 +1,8 @@
+{
+  "id": "control-omni-drive",
+  "title": "Omni wheel robots: omni_wheel_drive_controller",
+  "url": "https://control.ros.org/jazzy/doc/ros2_controllers/omni_wheel_drive_controller/doc/userdoc.html",
+  "ros_distro": "jazzy",
+  "keywords": "omni omniwheel omni-wheel omnidirectional holonomic kiwi three wheels wheel_names wheel_offset robot_radius curve curves drift drive straight sideways",
+  "text": "omni_wheel_drive_controller drives robots with three or more omni wheels spaced at equal angles. In Jazzy it takes geometry_msgs/TwistStamped on ~/cmd_vel (linear x and y, angular z) and publishes odometry on ~/odom. It needs wheel_names in anti-clockwise order, starting with the wheel on the +x axis (or offset from it by wheel_offset, in radians), plus robot_radius (centre to wheel) and wheel_radius. When an omni robot curves or rotates when it should drive straight, check in this order: the wheel order and wheel_offset, the spin direction of each motor, robot_radius and wheel_radius, then roller slip and uneven motor tuning, which odometry alone cannot see (fuse an IMU). Parameters of diff_drive_controller, such as wheel_separation, do not apply here."
+}
