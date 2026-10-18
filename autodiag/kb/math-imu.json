@@ -1,0 +1,8 @@
+{
+  "id": "math-imu",
+  "title": "IMU conventions (REP 145)",
+  "url": "https://www.ros.org/reps/rep-0145.html",
+  "ros_distro": "general",
+  "keywords": "imu accelerometer gyroscope magnetometer gravity 9.81 orientation imu_link data_raw mag enu ned covariance",
+  "text": "IMU data is reported in the sensor frame (default frame_id imu_link), right-handed. At rest the accelerometer measures the specific force from gravity: with the z axis pointing up it reads about +9.81 m/s^2 on z, not 0 and not -9.81. Gyroscope rates are in rad/s, and the orientation, when provided, is relative to an ENU world frame (NED for frames named imu_link_ned). Common topics are imu/data_raw (without orientation), imu/data (with orientation) and imu/mag. Unknown covariance is all zeros; an unreported field has -1 in the first element. The transform from base_link to imu_link must describe how the IMU is mounted."
+}

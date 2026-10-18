@@ -1,0 +1,8 @@
+{
+  "id": "control-nav2-controller-server",
+  "title": "Nav2 controller server: progress and goal checking",
+  "url": "https://docs.nav2.org/jazzy/configuration_and_development/configuration_guide/core_servers/controller_server/",
+  "ros_distro": "jazzy",
+  "keywords": "nav2 controller server controller_frequency progress checker goal checker xy_goal_tolerance yaw_goal_tolerance failed to make progress stops short goal",
+  "text": "The Nav2 controller server runs the local controller at controller_frequency (20 Hz by default) and uses two plugins: a progress checker aborts the goal when the robot does not move required_movement_radius within movement_time_allowance (\"failed to make progress\"), and a goal checker decides arrival from xy_goal_tolerance and yaw_goal_tolerance (stateful keeps the position satisfied once reached while the robot turns). A robot that stops short of the goal or keeps turning at the end usually has tolerances tighter than its localization accuracy. min_x_velocity_threshold treats tiny odometry speeds as zero."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "math-quaternions",
+  "title": "Quaternions in ROS",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Intermediate/Tf2/Quaternion-Fundamentals.html",
+  "ros_distro": "jazzy",
+  "keywords": "quaternion quaternions orientation normalize normalized identity xyzw wxyz eigen tf_denormalized_quaternion rotation",
+  "text": "Orientations are unit quaternions (x, y, z, w). The identity, meaning no rotation, is (0, 0, 0, 1), not all zeros. A quaternion must be normalized (x^2 + y^2 + z^2 + w^2 = 1): tf2 ignores a transform with an invalid quaternion (TF_DENORMALIZED_QUATERNION) and RViz reports it. Order is a classic bug: ROS messages and tf2 store x, y, z, w, while Eigen's Quaterniond constructor takes w, x, y, z. q and -q describe the same rotation. Combine rotations by multiplying quaternions and invert a unit quaternion by negating x, y and z; use tf2 or a library for conversions instead of hand-written formulas."
+}

@@ -8,13 +8,19 @@ prompt. Answers are grounded in real sources and cite them.
 
 ## 1. Knowledge base
 
-`autodiag/kb/` holds about 40 short summaries, written for AutoDiag, each linking the official page it is based on:
+`autodiag/kb/` holds about 60 short summaries, written for AutoDiag, each linking the official page it is based on:
 
 - **ROS 2 concepts:** nodes, topics, services, actions, parameters, interfaces, launch, remapping and namespaces,
   discovery, tf2, executors and callback groups, composition, lifecycle nodes, logging, time and `use_sim_time`,
   rosbag2, workspaces and colcon, the environment, `ros2 doctor`, RViz and rqt;
 - **communication troubleshooting:** QoS, domain IDs, discovery ranges, RMW implementations and Zenoh, Fast DDS,
-  Cyclone DDS, Docker networking and shared memory, Linux namespaces, intra-process communication and security.
+  Cyclone DDS, Docker networking and shared memory, Linux namespaces, intra-process communication and security;
+- **robotics maths:** units and axes (REP 103), map, odom and base_link (REP 105), quaternions, roll, pitch, yaw and
+  angle wrapping, composing transforms, covariance matrices, LaserScan, OccupancyGrid, odometry, IMU (REP 145),
+  timestamps across machines, camera intrinsics and PointCloud2 layout;
+- **control:** ros2_control and its controllers (loading and activating, diff_drive_controller, wheel kinematics and
+  calibration, joint_trajectory_controller), `cmd_vel` and Twist vs TwistStamped, PID and anti-windup, loop rate and
+  latency, and the Nav2 velocity smoother, controller server and local controllers.
 
 Each entry is a JSON document:
 

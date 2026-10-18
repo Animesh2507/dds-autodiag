@@ -1,0 +1,8 @@
+{
+  "id": "control-loop-rate",
+  "title": "Control loop rate, latency and QoS",
+  "url": "https://control.ros.org/jazzy/doc/ros2_control/controller_manager/doc/userdoc.html",
+  "ros_distro": "jazzy",
+  "keywords": "loop rate frequency update_rate latency delay jitter real-time realtime executor qos control lag oscillation",
+  "text": "A controller reacts only as fast as its loop and its data: the controller_manager update_rate (100 Hz by default) sets how often controllers run, while sensors and odometry may arrive slower or late. Latency adds lag, which makes high gains oscillate. Keep command topics small and frequent. For high-rate streams where only the latest value matters, best-effort QoS avoids the delay of resending a lost message. Run the control loop on its own, uncontended executor, and use the real-time settings of the controller_manager on hardware."
+}

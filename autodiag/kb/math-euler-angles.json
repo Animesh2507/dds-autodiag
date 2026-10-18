@@ -1,0 +1,8 @@
+{
+  "id": "math-euler-angles",
+  "title": "Roll, pitch, yaw and angle wrapping",
+  "url": "https://www.ros.org/reps/rep-0103.html",
+  "ros_distro": "general",
+  "keywords": "roll pitch yaw rpy euler angle angles wrap wrapping normalize atan2 gimbal lock heading",
+  "text": "Roll, pitch and yaw rotate about the fixed X, Y and Z axes in that order (REP 103), which equals rotating about Z, then the new Y, then the new X; tf2's setRPY and getRPY use this convention. Angles are in radians and yaw wraps around: normalize differences to [-pi, pi] (atan2(sin a, cos a), or angles::normalize_angle), otherwise a robot at 179 degrees told to face -179 degrees turns almost a full circle. Near a pitch of +/-90 degrees roll and yaw become ambiguous (gimbal lock), so compute with quaternions and convert to roll, pitch and yaw only for display."
+}

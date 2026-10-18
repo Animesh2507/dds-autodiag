@@ -1,0 +1,8 @@
+{
+  "id": "math-time-stamps",
+  "title": "Timestamps and clocks across machines",
+  "url": "https://design.ros2.org/articles/clock_and_time.html",
+  "ros_distro": "general",
+  "keywords": "timestamp stamp stamps time clock clocks sync synchronization chrony ntp extrapolation future past too old latency",
+  "text": "Every header.stamp is seconds plus nanoseconds on the clock of the node that wrote it: system time, or /clock with use_sim_time. TF lookups, message filters and sensor fusion compare stamps, so all machines must agree on the time: run chrony or NTP on the robot and the laptop. Unsynchronized clocks show up as TF extrapolation errors (\"into the future\" or \"into the past\") and as messages that RViz or message filters drop as too old."
+}

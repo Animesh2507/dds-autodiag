@@ -1,0 +1,8 @@
+{
+  "id": "control-wheel-kinematics",
+  "title": "Differential drive kinematics and calibration",
+  "url": "https://control.ros.org/jazzy/doc/ros2_controllers/diff_drive_controller/doc/userdoc.html",
+  "ros_distro": "jazzy",
+  "keywords": "kinematics wheel radius separation calibration multiplier drift curve curving odometry wrong distance rotation smear",
+  "text": "For a differential drive, v = r (wR + wL) / 2 and w = r (wR - wL) / b, with wheel radius r, wheel separation b and wheel speeds wL and wR in rad/s. A wrong wheel_radius scales distances (the robot drives 1.1 m when told 1 m), a wrong wheel_separation scales rotation (the map smears while the robot turns), and unequal left and right radii make it curve when it should drive straight. Calibrate by driving a measured straight line and turning a known number of times, then correct left_wheel_radius_multiplier, right_wheel_radius_multiplier and wheel_separation_multiplier."
+}

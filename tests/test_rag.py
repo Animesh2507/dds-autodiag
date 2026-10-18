@@ -37,6 +37,15 @@ class TestLocalRAG(unittest.TestCase):
         self.assertEqual(retrieve('tf error frame does not exist')[0]['id'],'ros-tf2')
         self.assertIn('fastdds-docker',[d['id'] for d in retrieve(
             "Two Docker containers see each other's topics but receive no data")])
+    def test_maths_and_control_questions(self):
+        cases={'my imu reads -9.81 on z at rest':'math-imu','quaternion is invalid in rviz':'math-quaternions',
+               'yaw angle wraps around at 180 degrees':'math-euler-angles','my map is shifted in rviz':'math-occupancy-grid',
+               'robot does not move with teleop keyboard':'control-cmd-vel',
+               'controller is loaded but not active':'control-controller-cli','pid oscillates and overshoots':'control-pid',
+               'robot stops short of the goal':'control-nav2-controller-server',
+               'robot curves when driving straight':'control-wheel-kinematics'}
+        for question,page in cases.items():
+            self.assertEqual(retrieve(question)[0]['id'],page,question)
     def test_question_first_then_findings(self):
         result=retrieve_for('what are ros actions?','DOMAIN_MISMATCH Different ROS_DOMAIN_ID values')
         ids=[d['id'] for d in result['sources']]

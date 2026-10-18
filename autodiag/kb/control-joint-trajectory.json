@@ -1,0 +1,8 @@
+{
+  "id": "control-joint-trajectory",
+  "title": "joint_trajectory_controller for arms",
+  "url": "https://control.ros.org/jazzy/doc/ros2_controllers/joint_trajectory_controller/doc/userdoc.html",
+  "ros_distro": "jazzy",
+  "keywords": "joint_trajectory_controller trajectory arm joints follow_joint_trajectory goal rejected aborted tolerance constraints time_from_start partial",
+  "text": "joint_trajectory_controller follows trajectories from <controller>/follow_joint_trajectory (action) or <controller>/joint_trajectory (topic). Unless allow_partial_joints_goal is true, a goal must list every joint of the controller, with names that match its joints. Tolerances under constraints (goal_time, stopped_velocity_tolerance, and per-joint trajectory and goal tolerances) abort a goal when violated, and the controller then holds the current position. Points need increasing time_from_start. A goal that is rejected or aborted right away usually has missing joints, wrong names or tolerances that are too tight."
+}

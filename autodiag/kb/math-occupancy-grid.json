@@ -1,0 +1,8 @@
+{
+  "id": "math-occupancy-grid",
+  "title": "OccupancyGrid geometry",
+  "url": "https://github.com/ros2/common_interfaces/blob/jazzy/nav_msgs/msg/OccupancyGrid.msg",
+  "ros_distro": "jazzy",
+  "keywords": "occupancygrid occupancy grid map cell cells resolution origin width height index row-major unknown shifted yaml",
+  "text": "info.resolution is metres per cell, info.width and info.height are counts of cells, and info.origin is the real-world pose of cell (0, 0), the lower-left cell of the map image, in the map frame. data is row-major starting at (0, 0): cell (x, y) is data[x + y * width], and with an unrotated origin a point (px, py) falls in cell ((px - origin.x) / resolution, (py - origin.y) / resolution). Values are occupancy probabilities from 0 to 100, and -1 means unknown. A map that appears shifted or rotated usually has a wrong origin in its YAML file."
+}

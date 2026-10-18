@@ -1,0 +1,8 @@
+{
+  "id": "control-nav2-controllers",
+  "title": "Choosing and tuning Nav2 controllers",
+  "url": "https://docs.nav2.org/jazzy/configuration_and_development/tuning_guide/",
+  "ros_distro": "jazzy",
+  "keywords": "nav2 controller controllers tuning regulated pure pursuit rpp mppi dwb local planner oscillation oscillates path following lookahead",
+  "text": "Nav2 ships several local controllers: Regulated Pure Pursuit (simple path following that slows down on sharp curves and near obstacles), MPPI (a sampling-based model-predictive controller that handles dynamics and obstacles well but needs more CPU) and DWB (a configurable trajectory-scoring controller). Oscillation usually comes from velocity or acceleration limits that do not match the robot, a low controller_frequency or noisy odometry; a robot that cuts corners or drifts off the path needs a different lookahead or path-following weights. Start from the robot's real limits and the Nav2 tuning guide rather than copied parameters."
+}

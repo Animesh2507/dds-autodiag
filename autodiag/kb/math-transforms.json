@@ -1,0 +1,8 @@
+{
+  "id": "math-transforms",
+  "title": "Composing and inverting transforms",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Intermediate/Tf2/Writing-A-Tf2-Listener-Cpp.html",
+  "ros_distro": "jazzy",
+  "keywords": "transform transforms compose composition inverse invert lookup_transform lookuptransform target source dotransform matrix chain",
+  "text": "A transform T_a_b is the pose of frame b in frame a and maps points from b into a. Transforms chain, T_a_c = T_a_b * T_b_c, and the inverse T_b_a undoes T_a_b. In tf2, lookup_transform(target, source, time) returns the transform that maps data from the source frame into the target frame; swapping the two arguments is a common bug that shows up as mirrored or offset data. Use tf2's doTransform (tf2_geometry_msgs) for poses and points instead of hand-written matrix code, and look transforms up at the data's timestamp; time 0 means the latest transform."
+}

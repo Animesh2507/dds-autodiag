@@ -1,0 +1,8 @@
+{
+  "id": "math-laserscan",
+  "title": "LaserScan geometry and special ranges",
+  "url": "https://github.com/ros2/common_interfaces/blob/jazzy/sensor_msgs/msg/LaserScan.msg",
+  "ros_distro": "jazzy",
+  "keywords": "laserscan laser scan lidar angle_min angle_max angle_increment range_min range_max beam ranges inf nan rep 117 mirrored",
+  "text": "Beam i points at angle_min + i * angle_increment radians, measured counter-clockwise from the x axis (forward) of the scan frame, so a scan has about (angle_max - angle_min) / angle_increment + 1 ranges. Ignore ranges outside [range_min, range_max]. REP 117 gives special values: +Inf means no return within range, -Inf an object too close to measure, and NaN an invalid reading. A scan that is mirrored left to right usually comes from a negative angle_increment or a sensor mounted upside down without the matching transform."
+}
