@@ -8,6 +8,10 @@
   --md-accent-fg-color: #11895a;
   --md-accent-fg-color--transparent: rgba(17, 137, 90, 0.12);
   --md-typeset-a-color: #12151b;
+  /* Ink for buttons, badges and highlighted diagram boxes. The header keeps --md-primary-fg-color, which is
+     near-black in the dark theme, so content accents must not use it. */
+  --ad-ink: #12151b;
+  --ad-ink-on: #f3f4f6;
 }
 
 [data-md-color-scheme="slate"] {
@@ -20,6 +24,9 @@
   --md-default-bg-color: #0f1115;
   --md-code-bg-color: #151820;
   --md-typeset-a-color: #e7e9ee;
+  --md-accent-bg-color: #0f1115;
+  --ad-ink: #e7e9ee;
+  --ad-ink-on: #0f1115;
 }
 
 /* Links are ink, like the dashboard, so they carry an underline to stay recognisable. */
@@ -41,6 +48,14 @@
 
 .md-typeset .md-button {
   border-radius: 0.15rem;
+  color: var(--ad-ink);
+  border-color: var(--ad-ink);
+}
+
+.md-typeset .md-button--primary {
+  background-color: var(--ad-ink);
+  border-color: var(--ad-ink);
+  color: var(--ad-ink-on);
 }
 
 /* ---------- Home page hero ---------- */
@@ -85,8 +100,8 @@
 }
 
 .ad-badge--version {
-  color: var(--md-primary-fg-color);
-  border-color: var(--md-primary-fg-color);
+  color: var(--ad-ink);
+  border-color: var(--ad-ink);
 }
 
 /* ---------- Feature cards (Material grid cards) ---------- */
@@ -123,7 +138,7 @@
 
 .ad-box--primary {
   fill: var(--md-code-bg-color);
-  stroke: var(--md-primary-fg-color);
+  stroke: var(--ad-ink);
   stroke-width: 2;
 }
 
