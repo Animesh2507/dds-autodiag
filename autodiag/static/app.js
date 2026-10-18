@@ -90,9 +90,71 @@ function setBanner(health) {
   $('banner').innerHTML = '<span class="dot"></span><div><b>' + esc(title) + '</b><span class="muted">' + esc(text) + '</span></div>';
 }
 
+// ---------- event log: every check lands here, newest first ----------
+const EVENT_LEVEL = {error: 'ERROR', warning: 'WARN', info: 'NOTE', ok: 'OK', waiting: 'WAIT'};
+const events = [];
+
+function logEvents(items) {
+  const tm = new Date().toLocaleTimeString([], {hour12: false});
+  events.unshift(...items.map(x => ({tm, ...x})));
+  events.length = Math.min(events.length, 200);
+  $('events-count').textContent = events.length + (events.length === 1 ? ' entry' : ' entries');
+  $('events').innerHTML = events.map((e, i) => '<div class="ev"' + (e.topic || e.tab ? ' data-go="' + i + '" tabindex="0" role="button"' : '') + '>'
+    + '<span class="tm">' + esc(e.tm) + '</span><span class="lvl ' + esc(e.level) + '">' + esc(EVENT_LEVEL[e.level] || e.level) + '</span>'
+    + '<span class="tgt">' + esc(e.target || '') + '</span><span class="what">' + esc(e.what || '') + '</span>'
+    + '<span class="who">' + esc(e.who || '') + '</span></div>').join('');
+}
+
+function findingEvents(issues, fallbackTarget, okText) {
+  if (!issues || !issues.length) return [{level: 'ok', target: fallbackTarget, what: okText, tab: 'overview'}];
+  return issues.map(f => {
+    const ev = f.evidence && typeof f.evidence === 'object' ? f.evidence : {};
+    const topic = ev.topic || '';
+    return {level: f.severity || 'info', target: topic || fallbackTarget, what: f.code,
+      who: ev.publisher && ev.subscriber ? ev.publisher + ' → ' + ev.subscriber : (f.summary || '').slice(0, 80),
+      topic, tab: topic ? '' : 'overview'};
+  });
+}
+
+function setEventsOpen(open) {
+  $('events-strip').classList.toggle('collapsed', !open);
+  $('events-toggle').textContent = open ? 'Hide' : 'Show';
+  $('events-toggle').setAttribute('aria-expanded', String(open));
+  store.set('events', open ? 'open' : 'closed');
+}
+
+// ---------- status bar ----------
+function setStatusBar(o) {
+  const s = o.summary, rmw = o.capabilities.rmw;
+  const chip = (k, v) => '<span class="chip">' + esc(k) + ' <b>' + esc(v ?? '—') + '</b></span>';
+  $('status-chips').innerHTML = chip('DOMAIN', s.domain_id) + chip('RMW', rmw.effective || s.rmw || 'default')
+    + chip('DISTRO', s.ros_distro || 'not sourced') + chip('NODES', s.node_count) + chip('TOPICS', s.topic_count);
+  const count = sev => o.issues.filter(i => i.severity === sev).length;
+  alarms.host = {error: count('error'), warning: count('warning'), healthy: o.health.status === 'healthy'};
+  renderAlarms();
+  $('alert-overview').hidden = !alarms.host.error;
+  $('host-tag').innerHTML = esc(s.host || 'this host') + ' · checked <span id="checked-at">' + esc(new Date().toLocaleTimeString([], {hour12: false})) + '</span>';
+}
+
+// Problems found anywhere (host checks, the graph) add up in the status bar; each alarm opens where most of them are.
+const alarms = {host: null, graph: null};
+function renderAlarms() {
+  const h = alarms.host || {error: 0, warning: 0}, g = alarms.graph || {error: 0, warning: 0};
+  const chip = (sev, n, word) => {
+    const tab = g[sev] > h[sev] ? 'graph' : 'overview';
+    return '<a class="alarm ' + sev + '" href="#' + tab + '" data-tab-link="' + tab + '">' + n + ' ' + word + (n === 1 ? '' : 'S') + '</a>';
+  };
+  const errors = h.error + g.error, warnings = h.warning + g.warning;
+  $('alarms').innerHTML = (errors ? chip('error', errors, 'PROBLEM') : '') + (warnings ? chip('warning', warnings, 'WARNING') : '')
+    + (errors || warnings ? '' : '<span class="alarm neutral">NO RULE MATCHED</span>');
+  $('health-dot').className = 'health ' + (errors ? 'error' : warnings || !(alarms.host && alarms.host.healthy) ? 'warning' : 'ok');
+}
+
 // ---------- navigation ----------
-const TITLES = {overview: 'System overview', topics: 'Topic inspector', graph: 'Diagnosis graph', environments: 'Compare hosts & containers',
+const TITLES = {overview: 'System overview', topics: 'Topic inspector', graph: 'Who talks to whom', environments: 'Compare hosts & containers',
   diagnose: 'Transport diagnosis', assistant: 'Diagnostic assistant', tools: 'Tools & self-test', about: 'About & settings'};
+const EYEBROWS = {overview: 'Health · this host', topics: 'Topics · live discovery', graph: 'Graph · live discovery', environments: 'Hosts · compare',
+  diagnose: 'Transport · checks', assistant: 'Assistant · docs + AI', tools: 'Tools', about: 'Settings'};
 const loaded = new Set();
 
 function showTab(tab) {
@@ -104,6 +166,7 @@ function showTab(tab) {
     if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
   $('page-title').textContent = TITLES[tab];
+  $('page-eyebrow').textContent = EYEBROWS[tab];
   if (location.hash.slice(1) !== tab) history.replaceState(null, '', '#' + tab);
   if (!loaded.has(tab)) {
     loaded.add(tab);
@@ -122,7 +185,8 @@ async function refresh(button) {
     state.local = o.snapshot;
     const s = o.summary, rmw = o.capabilities.rmw, shm = o.capabilities.shm;
     setBanner(o.health);
-    $('checked-at').textContent = new Date().toLocaleTimeString();
+    setStatusBar(o);
+    logEvents(findingEvents(o.issues, 'host', 'host checks: no rule matched'));
     $('version-tag').textContent = 'v' + o.version;
     $('metrics').innerHTML = metric('Host', s.host) + metric('ROS distro', s.ros_distro || 'not sourced')
       + metric('Domain ID', s.domain_id) + metric('RMW', rmw.effective || s.rmw || 'default')
@@ -212,6 +276,10 @@ async function inspectTopic(button) {
     const o = await api('/api/topic-inspect?topic=' + encodeURIComponent(topic));
     $('topic-result').textContent = JSON.stringify(o, null, 2);
     if (o.state !== 'ok') { $('topic-findings').innerHTML = '<div class="notice error">' + esc(o.error || o.state) + '</div>'; return; }
+    logEvents(o.findings.length ? findingEvents(o.findings, topic).map(e => ({...e, target: topic, topic}))
+      : [{level: o.publisher_count ? 'ok' : 'waiting', target: topic, topic,
+        what: o.publisher_count ? 'advertised QoS compatible' : 'no publisher visible',
+        who: o.publisher_count + ' pub · ' + o.subscriber_count + ' sub'}]);
     $('topic-findings').innerHTML = '<p class="muted">' + o.publisher_count + ' publisher(s), ' + o.subscriber_count + ' subscriber(s)</p>'
       + (o.findings.length ? o.findings.map(findingHTML).join('') : '<div class="finding ok"><p>Advertised QoS is compatible. Delivery is not verified until you read a sample.</p></div>')
       + (o.publisher_count === 0 ? '<div class="notice warning">No publisher is visible on this topic from here.</div>' : '');
@@ -671,7 +739,8 @@ function toggleTheme() {
 
 // ---------- diagnosis graph ----------
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const GRAPH = {box: {w: 230, h: 36}, colGap: 190, rowGap: 22, pad: 24};
+const GRAPH = {box: {w: 230, h: 52}, colGap: 200, rowGap: 26, pad: 28};
+const RANK = {ok: 0, waiting: 1, warning: 2, error: 3};
 
 function svg(tag, attrs = {}, text) {
   const el = document.createElementNS(SVG_NS, tag);
@@ -718,6 +787,17 @@ function layoutGraph(data) {
     height: GRAPH.pad * 2 + rows * h + (rows - 1) * GRAPH.rowGap};
 }
 
+// Point and heading on a cubic Bézier, for topic labels and break marks.
+function bezier(p, t) {
+  const u = 1 - t;
+  return [0, 1].map(i => u * u * u * p[0][i] + 3 * u * u * t * p[1][i] + 3 * u * t * t * p[2][i] + t * t * t * p[3][i]);
+}
+function bezierAngle(p, t) {
+  const u = 1 - t;
+  const d = [0, 1].map(i => 3 * u * u * (p[1][i] - p[0][i]) + 6 * u * t * (p[2][i] - p[1][i]) + 3 * t * t * (p[3][i] - p[2][i]));
+  return Math.atan2(d[1], d[0]) * 180 / Math.PI;
+}
+
 function drawGraph(data) {
   const view = $('graph-view');
   view.innerHTML = '';
@@ -729,86 +809,145 @@ function drawGraph(data) {
   const {w, h} = GRAPH.box;
   const root = svg('svg', {viewBox: `0 0 ${width} ${height}`, width, height, class: 'graph', role: 'img',
     'aria-label': 'Publisher to subscriber graph'});
-  const curve = (a, b) => {
-    const x1 = a.x + w, y1 = a.y + h / 2, x2 = b.x, y2 = b.y + h / 2;
+  // Shrink to fit the pane, but never below 60 %: past that the pane scrolls instead of the text getting unreadable.
+  root.style.maxWidth = width + 'px';
+  root.style.minWidth = Math.round(width * 0.6) + 'px';
+  const byId = Object.fromEntries(data.nodes.map(n => [n.id, n]));
+
+  // One drawn link per publisher → subscriber pair, plus each subscriber waiting for a topic nobody publishes.
+  const links = data.edges.map(e => ({source: e.source, target: e.target, status: e.status, edge: e,
+    label: e.topics.length === 1 ? e.topics[0].topic : e.topics.length + ' topics'}))
+    .concat(data.waiting.flatMap(wt => wt.subscribers.map(s => ({source: 'ghost:' + wt.topic, target: s, status: 'waiting', waiting: wt, label: wt.topic}))))
+    .filter(l => pos[l.source] && pos[l.target]);
+
+  // Ports: every link gets its own point on the node's edge, ordered by where its other end sits.
+  const ports = new Map();
+  const side = (id, end, other) => {
+    const list = links.filter(l => l[end] === id).sort((a, b) => pos[a[other]].y - pos[b[other]].y);
+    const step = Math.min(14, (h - 22) / Math.max(1, list.length - 1));
+    list.forEach((l, i) => ports.set(end + l.source + '>' + l.target, h / 2 + (i - (list.length - 1) / 2) * step));
+  };
+  Object.keys(pos).forEach(id => { side(id, 'source', 'target'); side(id, 'target', 'source'); });
+
+  const edgeLayer = svg('g'), labelLayer = svg('g'), nodeLayer = svg('g'), portLayer = svg('g');
+  const placed = [];
+  const nodeEls = {};
+  let selected = null;
+  const select = (g, l) => {
+    root.querySelectorAll('.selected,.linked').forEach(x => x.classList.remove('selected', 'linked'));
+    g.classList.add('selected');
+    [l.source, l.target].forEach(id => nodeEls[id] && nodeEls[id].classList.add('linked'));
+    if (l.waiting) waitingDetails(l.waiting); else edgeDetails(l.edge);
+  };
+
+  [...links].sort((a, b) => RANK[a.status] - RANK[b.status]).forEach(l => {
+    const a = pos[l.source], b = pos[l.target], key = l.source + '>' + l.target;
+    const x1 = a.x + w, y1 = a.y + ports.get('source' + key), x2 = b.x, y2 = b.y + ports.get('target' + key);
     const dx = Math.max(60, (x2 - x1) / 2);
-    return `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
-  };
-  const labels = [];
-  const edges = [...data.edges].sort((a, b) => ({ok: 0, warning: 1, error: 2}[a.status] - {ok: 0, warning: 1, error: 2}[b.status]));
-  const select = (el, render) => {
-    root.querySelectorAll('.selected').forEach(x => x.classList.remove('selected'));
-    el.classList.add('selected');
-    render();
-  };
-  edges.forEach(e => {
-    const a = pos[e.source], b = pos[e.target];
-    if (!a || !b) return;
-    const g = svg('g', {class: 'edge ' + e.status, tabindex: '0', role: 'button',
-      'aria-label': `${e.source} to ${e.target}: ${e.topics.map(t => t.topic).join(', ')} (${e.status})`});
-    const d = curve(a, b);
-    g.appendChild(svg('path', {d, class: 'hit'}));
-    g.appendChild(svg('path', {d, class: 'line'}));
-    const label = e.topics.length === 1 ? e.topics[0].topic : e.topics.length + ' topics';
-    const mid = {x: (a.x + w + b.x) / 2, y: (a.y + b.y) / 2 + h / 2 - 9};
-    labels.push(svg('text', {x: mid.x, y: mid.y, class: 'edge-label ' + e.status, 'text-anchor': 'middle'}, shortName(label, 28)));
-    const open = () => select(g, () => edgeDetails(e));
+    const p = [[x1, y1], [x1 + dx, y1], [x2 - dx, y2], [x2, y2]];
+    const d = `M${x1},${y1} C${p[1]} ${p[2]} ${x2},${y2}`;
+    const g = svg('g', {class: 'edge ' + l.status, tabindex: '0', role: 'button',
+      'aria-label': l.waiting ? `${l.target} waits for ${l.label}` : `${l.source} to ${l.target}: ${l.edge.topics.map(t => t.topic).join(', ')} (${l.status})`});
+    ['hit', 'halo', 'glow', 'line'].forEach(c => g.appendChild(svg('path', {d, class: c})));
+    if (l.status === 'ok') g.appendChild(svg('path', {d, class: 'flow'}));
+    if (l.status === 'error') {
+      const [bx, by] = bezier(p, 0.5);
+      const brk = svg('g', {class: 'brk', transform: `translate(${bx},${by}) rotate(${bezierAngle(p, 0.5)})`});
+      brk.appendChild(svg('rect', {x: -7, y: -9, width: 14, height: 18}));
+      brk.appendChild(svg('line', {x1: -5, y1: -9, x2: -5, y2: 9}));
+      brk.appendChild(svg('line', {x1: 5, y1: -9, x2: 5, y2: 9}));
+      g.appendChild(brk);
+    }
+    // Topic label: the first spot along the curve that doesn't cover another label.
+    const text = shortName(l.label, 28), lw = text.length * 7.1 + 14, lh = 20;
+    let spot = null;
+    for (const t of [0.5, 0.34, 0.66, 0.24, 0.76]) {
+      const [cx, cy] = bezier(p, t);
+      const box = {x: cx - lw / 2, y: cy - lh / 2, w: lw, h: lh};
+      if (!placed.some(o => box.x < o.x + o.w + 4 && o.x < box.x + box.w + 4 && box.y < o.y + o.h + 3 && o.y < box.y + box.h + 3)) { spot = box; break; }
+      spot = spot || box;
+    }
+    placed.push(spot);
+    const lab = svg('g', {class: 'edge-label ' + l.status, transform: `translate(${spot.x},${spot.y})`});
+    lab.appendChild(svg('rect', {width: lw, height: lh, rx: 2}));
+    lab.appendChild(svg('text', {x: lw / 2, y: 14, 'text-anchor': 'middle'}, text));
+    labelLayer.appendChild(lab);
+    portLayer.appendChild(svg('circle', {cx: x1, cy: y1, r: 4, class: 'port ' + l.status}));
+    portLayer.appendChild(svg('circle', {cx: x2, cy: y2, r: 4, class: 'port ' + l.status}));
+    const open = () => select(g, l);
     g.addEventListener('click', open);
     g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); } });
-    root.appendChild(g);
+    edgeLayer.appendChild(g);
+    if (!selected || RANK[l.status] >= RANK[selected.l.status]) selected = {g, l};
   });
-  data.waiting.forEach(wt => {
-    const a = pos['ghost:' + wt.topic];
-    wt.subscribers.forEach(sub => {
-      const b = pos[sub];
-      if (!a || !b) return;
-      const g = svg('g', {class: 'edge waiting', tabindex: '0', role: 'button', 'aria-label': `${sub} waits for ${wt.topic}`});
-      const d = curve(a, b);
-      g.appendChild(svg('path', {d, class: 'hit'}));
-      g.appendChild(svg('path', {d, class: 'line'}));
-      const open = () => select(g, () => waitingDetails(wt));
-      g.addEventListener('click', open);
-      g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); } });
-      root.appendChild(g);
-    });
-  });
-  labels.forEach(l => root.appendChild(l));
-  const byId = Object.fromEntries(data.nodes.map(n => [n.id, n]));
+
   Object.entries(pos).forEach(([id, p]) => {
     const ghost = id.startsWith('ghost:');
     const g = svg('g', {class: 'gnode' + (ghost ? ' ghost' : '')});
-    g.appendChild(svg('rect', {x: p.x, y: p.y, width: w, height: h, rx: 9}));
-    const text = ghost ? 'nobody publishes ' + id.slice(6) : nodeLabel(byId[id]);
-    const t = svg('text', {x: p.x + w / 2, y: p.y + h / 2 + 4, 'text-anchor': 'middle'}, shortName(text, 32));
-    t.appendChild(svg('title', {}, text));
-    g.appendChild(t);
-    root.appendChild(g);
+    g.appendChild(svg('rect', {x: p.x, y: p.y, width: w, height: h, rx: 2}));
+    if (ghost) {
+      const t = svg('text', {x: p.x + w / 2, y: p.y + h / 2 + 4, 'text-anchor': 'middle', class: 'name'}, shortName('nobody publishes ' + id.slice(6), 30));
+      g.appendChild(t);
+    } else {
+      const n = byId[id];
+      const role = n.publishes.length && n.subscribes.length ? 'PUB + SUB' : n.publishes.length ? 'PUBLISHER' : 'SUBSCRIBER';
+      g.appendChild(svg('text', {x: p.x + 13, y: p.y + 19, class: 'role'}, role));
+      const t = svg('text', {x: p.x + 13, y: p.y + 39, class: 'name'}, shortName(nodeLabel(n), 26));
+      t.appendChild(svg('title', {}, nodeLabel(n)));
+      g.appendChild(t);
+    }
+    nodeEls[id] = g;
+    nodeLayer.appendChild(g);
   });
+  [edgeLayer, nodeLayer, portLayer, labelLayer].forEach(x => root.appendChild(x));
   view.appendChild(root);
+  // Open the worst link straight away: that is usually the one to fix.
+  if (selected) select(selected.g, selected.l);
 }
 
-function qosLine(q) {
-  return esc((q.reliability || '?') + ' / ' + (q.durability || '?'));
+const STATE_TEXT = {error: ['Problem', 'No data gets through'], warning: ['Warning', 'Some data can be missed'],
+  ok: ['Compatible', 'QoS and message types match'], waiting: ['Waiting', 'Nobody publishes this topic']};
+const QOS_ROWS = ['reliability', 'durability', 'history', 'deadline', 'lifespan', 'liveliness'];
+
+function linkState(status) {
+  const [k, t] = STATE_TEXT[status] || STATE_TEXT.ok;
+  return '<div class="link-state ' + esc(status) + '"><span class="k">' + esc(k) + '</span><span class="t">' + esc(t) + '</span></div>';
+}
+
+// Offered against requested QoS, side by side; the policies a finding blames are marked.
+function qosTable(t) {
+  const pub = t.publisher_qos || {}, sub = t.subscriber_qos || {};
+  const blamed = k => (t.findings || []).find(f => (f.code || '').includes(k.toUpperCase()) || (k === 'durability' && (f.code || '').includes('LATCHED')));
+  const rows = QOS_ROWS.filter(k => pub[k] || sub[k]);
+  if (!rows.length) return '';
+  return '<table class="qos"><thead><tr><th>Policy</th><th>Publisher offers</th><th>Subscriber asks</th></tr></thead><tbody>'
+    + rows.map(k => { const f = blamed(k);
+      return '<tr' + (f ? ' class="bad ' + esc(f.severity) + '"' : '') + '><td>' + esc(k) + '</td><td>' + esc(pub[k] || '—') + '</td><td>' + esc(sub[k] || '—') + '</td></tr>'; }).join('')
+    + '</tbody></table>';
 }
 
 function edgeDetails(e) {
   $('graph-details').className = '';
-  $('graph-details').innerHTML = '<p><b>' + esc(idLabel(e.source, 'publisher')) + '</b> → <b>' + esc(idLabel(e.target, 'subscriber')) + '</b></p>' + e.topics.map(t =>
-    '<div class="graph-topic"><div class="card-head"><h3><code>' + esc(t.topic) + '</code> <small class="muted">' + esc(t.type) + '</small></h3>'
-    + '<a href="#topics" data-inspect-topic="' + esc(t.topic) + '">Inspect topic →</a></div>'
-    + '<p class="muted">Publisher offers ' + qosLine(t.publisher_qos) + ' · subscriber requests ' + qosLine(t.subscriber_qos) + '</p>'
-    + findingsHTML(t.findings, 'The QoS and message types of this connection are compatible. This does not prove that messages arrive; read a live sample to confirm.')
-    + '</div>').join('');
+  $('graph-details').innerHTML = linkState(e.status)
+    + '<div class="route"><span>' + esc(idLabel(e.source, 'publisher')) + '</span><span class="arrow">──▶</span><span>' + esc(idLabel(e.target, 'subscriber')) + '</span></div>'
+    + e.topics.map(t => '<div class="graph-topic"><div class="card-head"><h3>' + esc(t.topic) + ' <small class="muted">' + esc(t.type) + '</small></h3>'
+      + '<a href="#topics" data-inspect-topic="' + esc(t.topic) + '">Inspect topic →</a></div>'
+      + qosTable(t)
+      + findingsHTML(t.findings, 'The QoS and message types of this connection are compatible. This does not prove that messages arrive; read a live sample to confirm.')
+      + '</div>').join('');
 }
 
 function waitingDetails(wt) {
   const subs = wt.subscribers.map(id => idLabel(id, 'subscriber'));
   $('graph-details').className = '';
-  $('graph-details').innerHTML = '<div class="finding warning"><div class="head"><span class="badge warning">Waiting</span><span class="code">'
-    + esc(wt.topic) + '</span></div><p>' + esc(subs.join(', ')) + ' subscribe' + (subs.length === 1 ? 's' : '')
-    + ' to <code>' + esc(wt.topic) + '</code>' + (wt.type ? ' (' + esc(wt.type) + ')' : '') + ', but no publisher is visible from this machine.</p>'
-    + '<p class="next"><b>Next step:</b> Start the node that publishes it, check the topic name and remapping, or compare hosts if it runs on another machine or container (domain ID, discovery range, RMW).</p>'
-    + '<div class="docs"><a href="#topics" data-inspect-topic="' + esc(wt.topic) + '">Inspect topic →</a> <a href="#environments" data-tab-link="environments">Compare hosts →</a></div></div>';
+  $('graph-details').innerHTML = linkState('waiting')
+    + '<div class="route"><span class="muted">nobody</span><span class="arrow">──▶</span><span>' + esc(subs.join(', ')) + '</span></div>'
+    + '<div class="graph-topic"><div class="card-head"><h3>' + esc(wt.topic) + (wt.type ? ' <small class="muted">' + esc(wt.type) + '</small>' : '') + '</h3>'
+    + '<a href="#topics" data-inspect-topic="' + esc(wt.topic) + '">Inspect topic →</a></div>'
+    + '<div class="finding warning"><p>' + esc(subs.join(', ')) + ' subscribe' + (subs.length === 1 ? 's' : '')
+    + ' to <code>' + esc(wt.topic) + '</code>, but no publisher is visible from this machine.</p>'
+    + '<p class="next"><b>Next step</b> Start the node that publishes it, check the topic name and remapping, or compare hosts if it runs on another machine or container (domain ID, discovery range, RMW).</p>'
+    + '<div class="docs"><a href="#environments" data-tab-link="environments">Compare hosts →</a></div></div></div>';
 }
 
 async function loadGraph(button) {
@@ -820,14 +959,20 @@ async function loadGraph(button) {
       return;
     }
     const c = data.counts;
-    $('graph-summary').textContent = `${c.error} problem · ${c.warning} warning · ${c.ok} OK · ${c.waiting} waiting`;
+    $('graph-summary').textContent = `${c.error} no data · ${c.warning} warning · ${c.ok} ok · ${c.waiting} waiting`;
     $('graph-note').textContent = `${data.topics_inspected} of ${data.topics_total} topics inspected in ${data.seconds} s`
       + (data.truncated ? ' (limited; the rest are not shown)' : '') + (data.hidden_topics.length ? '. Hidden: ' + data.hidden_topics.join(', ') : '')
       + '. ' + data.limitations.join(' ');
+    $('alert-graph').hidden = !c.error;
+    alarms.graph = {error: c.error, warning: c.warning};
+    renderAlarms();
     drawGraph(data);
-    const worst = data.edges.find(e => e.status !== 'ok');
-    if (worst) edgeDetails(worst);
-    else if (data.waiting.length) waitingDetails(data.waiting[0]);
+    logEvents(data.edges.flatMap(e => e.topics.filter(t => t.status !== 'ok').map(t => ({level: t.status, target: t.topic, topic: t.topic,
+      what: (t.findings[0] && t.findings[0].code) || t.status, who: idLabel(e.source, 'publisher') + ' → ' + idLabel(e.target, 'subscriber')})))
+      .concat(data.waiting.map(wt => ({level: 'waiting', target: wt.topic, topic: wt.topic, what: 'subscriber waiting, nobody publishes',
+        who: wt.subscribers.map(s => idLabel(s, 'subscriber')).join(', ')})))
+      .concat([{level: 'ok', target: 'graph', tab: 'graph', what: c.ok + (c.ok === 1 ? ' link' : ' links') + ' compatible',
+        who: data.topics_inspected + ' topics · ' + data.seconds + ' s'}]));
   });
 }
 
@@ -846,7 +991,15 @@ const ACTIONS = {
   'prov-save': b => saveProvider(b), 'prov-default': b => saveProvider(b, {make_default: true}),
   'prov-test': b => testProvider(b), 'prov-remove': b => removeKey(b),
   'bt-replay': () => { const events = state.bt.events; btClear(); state.bt.events = events; tickBT(); },
+  'toggle-events': () => setEventsOpen($('events-strip').classList.contains('collapsed')),
 };
+
+function openEvent(el) {
+  const e = events[Number(el.dataset.go)];
+  if (!e) return;
+  if (e.topic) { showTab('topics'); selectTopic(e.topic); }
+  else if (e.tab) showTab(e.tab);
+}
 
 document.addEventListener('click', e => {
   const tabLink = e.target.closest('[data-tab],[data-tab-link]');
@@ -855,12 +1008,16 @@ document.addEventListener('click', e => {
   if (inspectLink) { e.preventDefault(); showTab('topics'); selectTopic(inspectLink.dataset.inspectTopic); inspectTopic(); return; }
   const row = e.target.closest('tr[data-topic]');
   if (row) { selectTopic(row.dataset.topic); return; }
+  const ev = e.target.closest('.ev[data-go]');
+  if (ev) { openEvent(ev); return; }
   const button = e.target.closest('[data-action]');
   if (button && ACTIONS[button.dataset.action]) ACTIONS[button.dataset.action](button);
 });
 document.addEventListener('keydown', e => {
   const row = e.target.closest && e.target.closest('tr[data-topic]');
   if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); selectTopic(row.dataset.topic); }
+  const ev = e.target.closest && e.target.closest('.ev[data-go]');
+  if (ev && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openEvent(ev); }
 });
 $('topic-filter').addEventListener('input', renderTopics);
 $('auto-samples').addEventListener('change', () => {
@@ -886,5 +1043,6 @@ $('remoteUrl').value = store.get('remoteUrl') || '';
 window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
 
 applyTheme(store.get('theme'));
+setEventsOpen(store.get('events') !== 'closed' && !matchMedia('(max-width: 900px)').matches);
 showTab(location.hash.slice(1) || 'overview');
 refresh();

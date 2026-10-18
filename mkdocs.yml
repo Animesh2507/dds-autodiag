@@ -9,12 +9,12 @@ copyright: Copyright &copy; 2026 Animesh Gunaki · MIT License
 theme:
   name: material
   logo: assets/images/logo.svg
-  favicon: assets/images/logo.svg
+  favicon: assets/images/favicon.svg
   icon:
     repo: fontawesome/brands/github
   font:
-    text: Inter
-    code: JetBrains Mono
+    text: IBM Plex Sans
+    code: IBM Plex Mono
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default

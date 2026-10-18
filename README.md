@@ -23,7 +23,7 @@ The cause is usually one mismatched setting: QoS reliability or durability, `ROS
 links the official docs, and can fix your RViz view for you. It is **read-only**: it never touches your robot or
 ROS configuration.
 
-![Diagnosis graph: every connection checked; the red /scan link from lidar_driver to rviz2 carries no data](docs/assets/media/diagnosis-graph.png)
+![Diagnosis graph: every connection checked; the red /scan link from lidar_driver to rviz carries no data](docs/assets/media/diagnosis-graph.png)
 
 ## Quick start
 

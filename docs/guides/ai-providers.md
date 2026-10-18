@@ -13,7 +13,7 @@ or link a cloud provider.
 
 ## Linking an API key
 
-1. Open the dashboard → **About & settings → AI providers**.
+1. Open the dashboard → **Settings → AI providers**.
 2. Paste the key into the provider's card and press **Save**. The badge changes to **READY**.
 3. Press **Test** to confirm it works.
 4. Optionally press **Make default**.

@@ -4,43 +4,53 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DDS AutoDiag</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1l7 7-7 7-7-7z' fill='%230b7fab'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%2312151b'/%3E%3Cpath d='M9.5 11.5C17 11.5 15 20.5 22.5 20.5' fill='none' stroke='%23e7e9ee' stroke-width='2.4'/%3E%3Ccircle cx='8' cy='11.5' r='3' fill='%23ff5a52'/%3E%3Ccircle cx='24' cy='20.5' r='3' fill='%233ccf8e'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/static/app.css">
 <script src="/static/app.js" defer></script>
 </head>
 <body>
-<div class="layout">
-<aside class="side">
-  <div class="brand"><b>◇</b> DDS AutoDiag <small class="muted" id="version-tag"></small></div>
-  <nav class="nav" aria-label="Sections">
-    <a href="#overview" data-tab="overview" class="active"><span class="ico" aria-hidden="true">◎</span>Overview</a>
-    <a href="#topics" data-tab="topics"><span class="ico" aria-hidden="true">≋</span>Topics</a>
-    <a href="#graph" data-tab="graph"><span class="ico" aria-hidden="true">⌘</span>Graph</a>
-    <a href="#environments" data-tab="environments"><span class="ico" aria-hidden="true">⇄</span>Compare hosts</a>
-    <a href="#diagnose" data-tab="diagnose"><span class="ico" aria-hidden="true">⚙</span>Transport</a>
-    <a href="#assistant" data-tab="assistant"><span class="ico" aria-hidden="true">?</span>Assistant</a>
-    <a href="#tools" data-tab="tools"><span class="ico" aria-hidden="true">✓</span>Tools &amp; self-test</a>
-    <a href="#about" data-tab="about"><span class="ico" aria-hidden="true">i</span>About &amp; settings</a>
-  </nav>
-  <div class="sidefoot">
-    <span>Read-only: never changes your ROS 2 or DDS configuration.</span>
-    <span><a href="/api/docs">REST API</a> · <a href="/legacy">Previous UI</a></span>
+<div class="shell">
+<header class="topbar">
+  <a class="wordmark" href="#overview" data-tab-link="overview" aria-label="DDS AutoDiag overview">
+    <i class="health" id="health-dot" aria-hidden="true"></i>dds-autodiag<small id="version-tag"></small>
+  </a>
+  <div class="readouts" id="status-chips" aria-label="ROS 2 environment">
+    <span class="chip">DOMAIN <b>—</b></span><span class="chip">RMW <b>—</b></span><span class="chip">DISTRO <b>—</b></span>
   </div>
-</aside>
+  <div class="alarms" id="alarms" role="status" aria-live="polite"></div>
+  <span class="spacer"></span>
+  <span class="host" id="host-tag">this host · checked <span id="checked-at">—</span></span>
+  <div class="actions tight">
+    <button type="button" class="icon" data-action="theme" aria-label="Toggle colour theme" title="Toggle colour theme"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M10 3.5a6.5 6.5 0 0 1 0 13z"/></svg></button>
+    <button type="button" data-action="export" title="Download this machine's snapshot (redacted by default)">Export</button>
+    <button type="button" data-action="report">Report</button>
+    <button type="button" class="primary" data-action="refresh">Check again</button>
+  </div>
+</header>
+
+<nav class="nav rail" aria-label="Sections">
+  <a href="#overview" data-tab="overview" class="active"><i class="alert" id="alert-overview" hidden></i>
+    <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="6" height="6"/><rect x="11" y="3" width="6" height="6"/><rect x="3" y="11" width="6" height="6"/><rect x="11" y="11" width="6" height="6"/></svg>Overview</a>
+  <a href="#topics" data-tab="topics">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9"/></svg>Topics</a>
+  <a href="#graph" data-tab="graph"><i class="alert" id="alert-graph" hidden></i>
+    <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="4" cy="5" r="2"/><circle cx="4" cy="15" r="2"/><circle cx="16" cy="10" r="2"/><path d="M6 5c5 0 4 5 8 5M6 15c5 0 4-5 8-5"/></svg>Graph</a>
+  <a href="#environments" data-tab="environments">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="4" width="7" height="12"/><rect x="11" y="4" width="7" height="12"/><path d="M9 10h2"/></svg>Hosts</a>
+  <a href="#diagnose" data-tab="diagnose">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10h4l2-5 4 10 2-5h4"/></svg>Transport</a>
+  <a href="#assistant" data-tab="assistant">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4h14v9H8l-4 3v-3H3z"/></svg>Assistant</a>
+  <a href="#tools" data-tab="tools">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 3l5 5-9 9H3v-5z"/></svg>Tools</a>
+  <a href="#about" data-tab="about">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3"/><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.3 4.3l2.1 2.1M13.6 13.6l2.1 2.1M4.3 15.7l2.1-2.1M13.6 6.4l2.1-2.1"/></svg>Settings</a>
+</nav>
 
 <main class="main">
-  <div class="top">
-    <div>
-      <div class="eyebrow">AI-powered ROS 2 diagnostics</div>
-      <h1 id="page-title">System overview</h1>
-      <small id="scope">Local host · last checked <span id="checked-at">—</span></small>
-    </div>
-    <div class="actions tight">
-      <button type="button" data-action="theme" aria-label="Toggle colour theme" title="Toggle colour theme">◐ Theme</button>
-      <button type="button" data-action="export">Export snapshot</button>
-      <button type="button" data-action="report">Download report</button>
-      <button type="button" class="primary" data-action="refresh">↻ Refresh</button>
-    </div>
+  <div class="page-head">
+    <span class="eyebrow" id="page-eyebrow">Health · this host</span>
+    <h1 id="page-title">System overview</h1>
   </div>
 
   <!-- Overview -->
@@ -69,10 +79,10 @@
     </div>
     <div class="card">
       <h2>Next steps</h2>
-      <ol class="muted">
+      <ol class="steps">
         <li>Open <a href="#topics" data-tab-link="topics">Topics</a>, pick a topic and check its publisher/subscriber QoS.</li>
         <li>Read one live sample to confirm data actually arrives.</li>
-        <li>If another PC or container can't see your topics, use <a href="#environments" data-tab-link="environments">Compare hosts</a>.</li>
+        <li>If another PC or container can't see your topics, use <a href="#environments" data-tab-link="environments">Hosts</a>.</li>
         <li>Ask the <a href="#assistant" data-tab-link="assistant">Assistant</a> for matching official documentation.</li>
       </ol>
     </div>
@@ -81,7 +91,7 @@
   <!-- Topics -->
   <section class="panel" id="topics">
     <div class="card wide">
-      <div class="card-head"><h2>Live topic discovery</h2><button type="button" class="primary" data-action="load-topics">↻ Discover topics</button></div>
+      <div class="card-head"><h2>Live topic discovery</h2><button type="button" class="primary" data-action="load-topics">Discover topics</button></div>
       <p class="muted">Lists topics visible in the ROS graph from this machine. Seeing a topic does not prove messages are delivered.</p>
       <div class="actions"><input id="topic-filter" class="grow" type="search" placeholder="Filter topics or types…" aria-label="Filter topics"><span class="muted" id="topic-count"></span></div>
       <div class="table-wrap scroll"><table><thead><tr><th>Topic</th><th>Message type</th></tr></thead><tbody id="topic-rows"><tr><td colspan="2" class="muted">Click “Discover topics” to list the ROS graph.</td></tr></tbody></table></div>
@@ -106,30 +116,31 @@
   </section>
 
   <!-- Diagnosis graph -->
-  <section class="panel" id="graph">
-    <div class="card wide">
-      <div class="card-head"><h2>Who talks to whom</h2><button type="button" class="primary" data-action="load-graph">↻ Check connections</button></div>
-      <p class="muted">Every publisher → subscriber connection on the visible topics, checked with the same QoS and type rules as the topic inspector. Click a connection to see why it is broken and how to fix it.</p>
+  <section class="panel graph-panel" id="graph">
+    <div class="card stage">
+      <div class="card-head">
+        <h2>Publisher → subscriber links</h2>
+        <div class="actions tight"><span class="graph-summary" id="graph-summary"></span><button type="button" class="primary" data-action="load-graph">Check connections</button></div>
+      </div>
       <div class="graph-legend" aria-label="Legend">
-        <span><i class="swatch error"></i>Problem: no data gets through</span>
-        <span><i class="swatch warning"></i>Warning: e.g. misses latched data</span>
-        <span><i class="swatch ok"></i>Compatible</span>
-        <span><i class="swatch waiting"></i>Subscriber waiting: nobody publishes</span>
-        <span class="muted" id="graph-summary"></span>
+        <span><i class="swatch error"></i>no data gets through</span>
+        <span><i class="swatch warning"></i>misses latched data</span>
+        <span><i class="swatch ok"></i>compatible</span>
+        <span><i class="swatch waiting"></i>waiting for a publisher</span>
       </div>
       <div class="graph-wrap" id="graph-view"><p class="muted">Click “Check connections” to draw the ROS graph.</p></div>
       <small class="muted" id="graph-note"></small>
     </div>
-    <div class="card wide">
-      <h2>Connection details</h2>
-      <div id="graph-details" class="muted">Select a connection in the graph.</div>
+    <div class="card inspector">
+      <h2>Selected link</h2>
+      <div id="graph-details" class="muted">Click a link in the graph to see why it is broken and how to fix it. Every link is checked with the same QoS and type rules as the topic inspector.</div>
     </div>
   </section>
 
   <!-- Hosts & containers -->
   <section class="panel" id="environments">
     <div class="card wide">
-      <div class="card-head"><h2>Local Docker environments</h2><button type="button" data-action="load-docker">↻ Scan containers</button></div>
+      <div class="card-head"><h2>Local Docker environments</h2><button type="button" data-action="load-docker">Scan containers</button></div>
       <p class="muted">Container metadata from the Docker CLI. To compare a container with this host, run the collector inside it and load the result below.</p>
       <div id="docker-results">Not scanned yet.</div>
     </div>
@@ -157,7 +168,7 @@
   <section class="panel" id="diagnose">
     <div class="card wide">
       <h2>Transport diagnosis</h2>
-      <p class="muted">Pick the transport you expect your nodes to use. Checks combine this host with the peer loaded in “Compare hosts”, if any.</p>
+      <p class="muted">Pick the transport you expect your nodes to use. Checks combine this host with the peer loaded in “Hosts”, if any.</p>
       <div class="actions">
         <label class="field grow"><span>Transport to investigate</span><select id="mode"><option value="auto">Auto / not sure</option><option value="intra_process">ROS 2 intra-process (same process)</option><option value="dds_shm">DDS shared memory (same machine)</option><option value="dds_udp">DDS over UDP (network)</option><option value="dds_tcp">DDS over TCP</option></select></label>
         <button type="button" class="primary" data-action="run-diagnostic">Run checks</button>
@@ -177,7 +188,7 @@
   <!-- Assistant -->
   <section class="panel" id="assistant">
     <div class="card wide">
-      <h2>Unified diagnostic assistant</h2>
+      <h2>Diagnostic assistant</h2>
       <p class="muted">Looks up official ROS 2, DDS and Docker documentation for your current findings, and lets an AI model explain them. The answer streams in as it's written.</p>
       <div id="ollama" class="hint">Checking AI providers…</div>
       <label class="field"><span>What are you trying to fix?</span><input id="question" maxlength="2000" placeholder="e.g. Two Docker containers see each other's topics but receive no data"></label>
@@ -203,7 +214,7 @@
       <div id="selftest-results"></div>
     </div>
     <div class="card wide">
-      <h2>Endpoint QoS checker <small class="muted">experimental</small></h2>
+      <h2>Endpoint QoS checker <small class="tag">experimental</small></h2>
       <p class="muted">Check a publisher/subscriber pair you describe by hand, for example from a design document. Uses the native C++ core when built, otherwise the Python rules.</p>
       <div class="split">
         <fieldset class="card"><legend>Publisher</legend>
@@ -231,7 +242,7 @@
       <div id="endpoint-results"></div>
     </div>
     <div class="card wide">
-      <h2>Behavior Tree viewer <small class="muted">experimental</small></h2>
+      <h2>Behavior Tree viewer <small class="tag">experimental</small></h2>
       <p class="hint">Replays the diagnosis Behavior Tree. With BehaviorTree.CPP built, this is a native trace on sample data; otherwise it is a labelled simulation. <b>It is not a live ROS 2 stream.</b></p>
       <div class="actions">
         <button type="button" class="primary" data-action="bt" data-fault="false">Normal trace</button>
@@ -256,26 +267,34 @@
       <h2>About this installation</h2>
       <div id="about-info" class="skeleton">Loading…</div>
     </div>
-    <div class="card wide">
-      <div class="card-head"><h2>AI providers</h2><span class="muted" id="ai-config-file"></span></div>
-      <p class="muted">Local Ollama works offline and needs no key. Link an API key to use Claude, ChatGPT, Gemini or any OpenAI-compatible service (Groq, OpenRouter, Mistral, LM Studio…). Keys are stored only on this server, in a file only your user can read, and are never shown again. Cloud providers receive only the finding codes and summaries, your question and documentation excerpts — never snapshots, hostnames or IP addresses.</p>
-      <div id="ai-providers" class="skeleton">Loading…</div>
-    </div>
     <div class="card">
       <h2>Security</h2>
       <ul class="muted">
         <li>All checks are read-only; nothing is restarted or reconfigured.</li>
         <li>Keep the dashboard on <code>127.0.0.1</code>. To reach it from another PC, use an SSH tunnel or set <code>AUTODIAG_UI_TOKEN</code>.</li>
-        <li>Snapshots contain hostnames, IPs and paths. Use “Export snapshot” with redaction before sharing.</li>
+        <li>Snapshots contain hostnames, IPs and paths. Keep “Redact exported snapshots” on before you share one from “Export”.</li>
         <li>Docker access is privileged; the dashboard only runs <code>docker ps</code>.</li>
       </ul>
       <div class="actions"><label class="check"><input type="checkbox" id="redact-export" checked> Redact exported snapshots</label></div>
       <form method="post" action="/logout" id="logout-form" hidden><button type="submit">Sign out</button></form>
     </div>
+    <div class="card wide">
+      <div class="card-head"><h2>AI providers</h2><span class="muted" id="ai-config-file"></span></div>
+      <p class="muted">Local Ollama works offline and needs no key. Link an API key to use Claude, ChatGPT, Gemini or any OpenAI-compatible service (Groq, OpenRouter, Mistral, LM Studio…). Keys are stored only on this server, in a file only your user can read, and are never shown again. Cloud providers receive only the finding codes and summaries, your question and documentation excerpts — never snapshots, hostnames or IP addresses.</p>
+      <div id="ai-providers" class="skeleton">Loading…</div>
+    </div>
   </section>
 
-  <footer>DDS AutoDiag · read-only diagnostics · <a href="/api/docs">REST API</a> · <a href="/legacy">Previous interface</a></footer>
+  <footer>DDS AutoDiag · read-only diagnostics: never changes your ROS 2 or DDS configuration · <a href="/api/docs">REST API</a> · <a href="/legacy">Previous interface</a></footer>
 </main>
+
+<section class="events" id="events-strip" aria-label="Event log">
+  <div class="events-head">
+    <span>Event log</span><span class="muted" id="events-count"></span><span class="spacer"></span>
+    <button type="button" class="link" data-action="toggle-events" id="events-toggle" aria-expanded="true" aria-controls="events">Hide</button>
+  </div>
+  <div class="events-list" id="events"><div class="ev empty">Checks you run appear here, newest first.</div></div>
+</section>
 </div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 </body>

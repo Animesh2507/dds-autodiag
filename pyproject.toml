@@ -39,7 +39,7 @@ version = {attr = "autodiag.__version__"}
 include = ["autodiag*"]
 
 [tool.setuptools.package-data]
-autodiag = ["index.html", "index_legacy.html", "kb/*.json", "static/*"]
+autodiag = ["index.html", "index_legacy.html", "kb/*.json", "static/*", "static/fonts/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

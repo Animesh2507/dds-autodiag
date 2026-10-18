@@ -81,7 +81,7 @@ def version():
 
 LOGIN_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DDS AutoDiag · Sign in</title><link rel="stylesheet" href="/static/app.css"></head>
-<body class="login"><form class="card login-card" method="post" action="/login"><div class="brand"><b>◇</b> DDS AutoDiag</div>
+<body class="login"><form class="card login-card" method="post" action="/login"><div class="wordmark"><i class="health"></i>dds-autodiag</div>
 <h1>Sign in</h1><p class="muted">This dashboard is protected by a token (AUTODIAG_UI_TOKEN).</p>{error}
 <label class="field"><span>Access token</span><input name="token" type="password" autocomplete="current-password" autofocus required></label>
 <button class="primary" type="submit">Sign in</button></form></body></html>"""

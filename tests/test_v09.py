@@ -18,6 +18,6 @@ class TestV09(unittest.TestCase):
         for path in ('/','/legacy','/api/v09/overview','/api/v09/shm','/api/v09/ollama','/api/v09/environments'):
             self.assertEqual(c.get(path).status_code,200,path)
         html=c.get('/').text
-        self.assertIn('Unified diagnostic assistant',html)
+        self.assertIn('Diagnostic assistant',html)
         self.assertIn('Local Docker environments',html)
         self.assertIn('NOT VERIFIED',html)

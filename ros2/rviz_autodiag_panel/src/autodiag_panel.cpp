@@ -331,13 +331,13 @@ void AutoDiagPanel::connectToServer()
           return;
         }
         connect_attempts_ = 0;
-        setConnection(errorText(reply), QStringLiteral("#c2304a"));
+        setConnection(errorText(reply), QStringLiteral("#d23a31"));
         return;
       }
       connect_attempts_ = 0;
       const QJsonObject info = parseObject(reply->readAll());
       setConnection(tr("Connected to AutoDiag %1").arg(info.value(QStringLiteral("version")).toString()),
-                    QStringLiteral("#0f8a64"));
+                    QStringLiteral("#11895a"));
       refreshHealth();
       refreshTopics();
       loadProviders();
@@ -358,8 +358,8 @@ void AutoDiagPanel::refreshHealth()
       const QJsonObject health = data.value(QStringLiteral("health")).toObject();
       const QJsonObject summary = data.value(QStringLiteral("summary")).toObject();
       const QString status = health.value(QStringLiteral("status")).toString();
-      const QString color = status == QLatin1String("issue_detected") ? QStringLiteral("#c2304a") :
-        (status == QLatin1String("healthy") ? QStringLiteral("#0f8a64") : QStringLiteral("#a86400"));
+      const QString color = status == QLatin1String("issue_detected") ? QStringLiteral("#d23a31") :
+        (status == QLatin1String("healthy") ? QStringLiteral("#11895a") : QStringLiteral("#a26b00"));
       health_label_->setText(
         QStringLiteral("<b style='color:%1'>%2</b><br><small>%3 · ROS %4 · domain %5 · %6 nodes · %7 topics</small>")
         .arg(color, health.value(QStringLiteral("summary")).toString().toHtmlEscaped(),
@@ -501,11 +501,11 @@ void AutoDiagPanel::inspectTopic()
         .arg(data.value(QStringLiteral("subscriber_count")).toInt());
       const QJsonArray findings = data.value(QStringLiteral("findings")).toArray();
       if (findings.isEmpty()) {
-        html += tr("<p style='color:#0f8a64'>Advertised QoS is compatible. Delivery is not verified.</p>");
+        html += tr("<p style='color:#11895a'>Advertised QoS is compatible. Delivery is not verified.</p>");
       }
       for (const QJsonValue & value : findings) {
         const QJsonObject f = value.toObject();
-        html += QStringLiteral("<p style='color:#c2304a'><b>%1 %2</b><br>%3<br><i>%4</i></p>").arg(
+        html += QStringLiteral("<p style='color:#d23a31'><b>%1 %2</b><br>%3<br><i>%4</i></p>").arg(
           severityMark(f.value(QStringLiteral("severity")).toString()),
           f.value(QStringLiteral("code")).toString().toHtmlEscaped(),
           f.value(QStringLiteral("summary")).toString().toHtmlEscaped(),
@@ -686,7 +686,7 @@ void AutoDiagPanel::handleStreamEvent(const QJsonObject & event)
       .arg(event.value(QStringLiteral("first_token_seconds")).toDouble(), 0, 'f', 1)
       .arg(event.value(QStringLiteral("seconds")).toDouble(), 0, 'f', 1));
   } else if (type == QLatin1String("error")) {
-    answer_status_->setText(QStringLiteral("<span style='color:#c2304a'>%1</span>")
+    answer_status_->setText(QStringLiteral("<span style='color:#d23a31'>%1</span>")
       .arg(event.value(QStringLiteral("message")).toString().toHtmlEscaped()));
   }
 }
@@ -750,7 +750,7 @@ void AutoDiagPanel::onStreamFinished()
     answer_status_->setText(stream_timer_.elapsed() >= kStreamTimeoutMs - 1000 ?
       tr("The model took too long and was stopped.") : tr("Stopped."));
   } else if (reply->error() != QNetworkReply::NoError) {
-    answer_status_->setText(QStringLiteral("<span style='color:#c2304a'>%1</span>")
+    answer_status_->setText(QStringLiteral("<span style='color:#d23a31'>%1</span>")
       .arg(errorText(reply).toHtmlEscaped()));
   }
 }

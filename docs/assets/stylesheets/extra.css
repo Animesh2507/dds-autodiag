@@ -1,22 +1,46 @@
-/* DDS AutoDiag documentation theme. */
+/* DDS AutoDiag documentation theme: the dashboard's console look. Ink chrome, green only as the accent for health. */
 
 :root {
-  --md-primary-fg-color: #0b7fab;
-  --md-primary-fg-color--light: #2b9cc6;
-  --md-primary-fg-color--dark: #08627f;
-  --md-accent-fg-color: #0ea5a4;
-  --md-accent-fg-color--transparent: rgba(14, 165, 164, 0.14);
+  --md-primary-fg-color: #12151b;
+  --md-primary-fg-color--light: #2a2f3a;
+  --md-primary-fg-color--dark: #000000;
+  --md-primary-bg-color: #f3f4f6;
+  --md-accent-fg-color: #11895a;
+  --md-accent-fg-color--transparent: rgba(17, 137, 90, 0.12);
+  --md-typeset-a-color: #12151b;
 }
 
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #4cc3ec;
-  --md-primary-fg-color--light: #7ad4f2;
-  --md-primary-fg-color--dark: #2b9cc6;
-  --md-primary-bg-color: #06121f;
-  --md-accent-fg-color: #4fd6ae;
-  --md-accent-fg-color--transparent: rgba(79, 214, 174, 0.16);
-  --md-default-bg-color: #0d1624;
-  --md-code-bg-color: #111c2e;
+  --md-primary-fg-color: #151820;
+  --md-primary-fg-color--light: #262b37;
+  --md-primary-fg-color--dark: #0f1115;
+  --md-primary-bg-color: #e7e9ee;
+  --md-accent-fg-color: #3ccf8e;
+  --md-accent-fg-color--transparent: rgba(60, 207, 142, 0.14);
+  --md-default-bg-color: #0f1115;
+  --md-code-bg-color: #151820;
+  --md-typeset-a-color: #e7e9ee;
+}
+
+/* Links are ink, like the dashboard, so they carry an underline to stay recognisable. */
+.md-typeset a {
+  text-decoration: underline;
+  text-decoration-color: var(--md-default-fg-color--lighter);
+  text-underline-offset: 0.2em;
+}
+
+.md-typeset a:hover {
+  text-decoration-color: var(--md-accent-fg-color);
+}
+
+.md-typeset .md-button,
+.md-typeset .grid.cards a,
+.md-typeset .headerlink {
+  text-decoration: none;
+}
+
+.md-typeset .md-button {
+  border-radius: 0.15rem;
 }
 
 /* ---------- Home page hero ---------- */
@@ -55,7 +79,7 @@
   font-size: 0.68rem;
   font-weight: 600;
   padding: 0.15rem 0.6rem;
-  border-radius: 1rem;
+  border-radius: 0.15rem;
   border: 1px solid var(--md-default-fg-color--lightest);
   color: var(--md-default-fg-color--light);
 }
@@ -68,7 +92,7 @@
 /* ---------- Feature cards (Material grid cards) ---------- */
 
 .md-typeset .grid.cards > ul > li {
-  border-radius: 0.6rem;
+  border-radius: 0.2rem;
   transition: border-color 0.2s, transform 0.2s;
 }
 

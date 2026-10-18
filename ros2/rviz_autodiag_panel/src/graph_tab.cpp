@@ -41,10 +41,11 @@ constexpr int kGraphTimeoutMs = 60000;  // inspects every visible topic
 
 QColor statusColor(const QString & status)
 {
-  if (status == QLatin1String("error")) {return QColor(0xd2, 0x3f, 0x5a);}
-  if (status == QLatin1String("warning")) {return QColor(0xe0, 0x93, 0x1f);}
-  if (status == QLatin1String("waiting")) {return QColor(0x8f, 0x99, 0xa8);}
-  return QColor(0x2a, 0xa7, 0x84);
+  // Same health colours as the dashboard's light theme (RViz panels sit on light Qt widgets by default).
+  if (status == QLatin1String("error")) {return QColor(0xd2, 0x3a, 0x31);}
+  if (status == QLatin1String("warning")) {return QColor(0xa2, 0x6b, 0x00);}
+  if (status == QLatin1String("waiting")) {return QColor(0x6d, 0x75, 0x86);}
+  return QColor(0x11, 0x89, 0x5a);
 }
 
 int statusRank(const QString & status)
@@ -513,14 +514,14 @@ void AutoDiagPanel::showEdgeDetails(const QJsonObject & edge)
         qosLine(t.value(QStringLiteral("subscriber_qos")).toObject())).toHtmlEscaped());
     const QJsonArray findings = t.value(QStringLiteral("findings")).toArray();
     if (findings.isEmpty()) {
-      html += tr("<p style='color:#0f8a64'>QoS and message types are compatible. That does not prove that messages "
+      html += tr("<p style='color:#11895a'>QoS and message types are compatible. That does not prove that messages "
           "arrive.</p>");
     }
     for (const QJsonValue & f_value : findings) {
       const QJsonObject f = f_value.toObject();
       const QString severity = f.value(QStringLiteral("severity")).toString();
       html += QStringLiteral("<p style='color:%1'><b>%2 %3</b> %4</p><p><b>%5</b> %6</p>").arg(
-        severity == QLatin1String("error") ? QStringLiteral("#c2304a") : QStringLiteral("#a86400"),
+        severity == QLatin1String("error") ? QStringLiteral("#d23a31") : QStringLiteral("#a26b00"),
         severityMark(severity), f.value(QStringLiteral("code")).toString().toHtmlEscaped(),
         f.value(QStringLiteral("summary")).toString().toHtmlEscaped(), tr("Next step:"),
         f.value(QStringLiteral("recommended_action")).toString().toHtmlEscaped());
@@ -547,7 +548,7 @@ void AutoDiagPanel::showWaitingDetails(const QJsonObject & waiting)
   const QString topic = waiting.value(QStringLiteral("topic")).toString().toHtmlEscaped();
   const QString type = waiting.value(QStringLiteral("type")).toString();
   graph_details_->setHtml(
-    tr("<p style='color:#a86400'><b>▲ Waiting</b> <code>%1</code></p><p>%2 subscribe%3 to <code>%1</code>%4, but no "
+    tr("<p style='color:#a26b00'><b>▲ Waiting</b> <code>%1</code></p><p>%2 subscribe%3 to <code>%1</code>%4, but no "
     "publisher is visible from this machine.</p><p><b>Next step:</b> Start the node that publishes it, check the "
     "topic name and remapping, or compare hosts if it runs on another machine or container (domain ID, discovery "
     "range, RMW).</p><p><a href='inspect:%1'>Inspect topic</a></p>")
