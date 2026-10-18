@@ -1,6 +1,7 @@
 import tempfile
 import unittest
 from unittest.mock import patch
+from autodiag import llm
 from autodiag.rag import answer, documents, hybrid_retrieve, retrieve, retrieve_for, terms, _ollama_post
 
 class TestLocalRAG(unittest.TestCase):
@@ -69,6 +70,12 @@ class TestLocalRAG(unittest.TestCase):
         with tempfile.TemporaryDirectory() as cache:
             result=hybrid_retrieve('query',docs,semantic=True,embedder=lambda t:vectors[t],cache_dir=cache)
         self.assertEqual([d['id'] for d in result['sources']],['near'])
+    def test_whole_pages_reach_the_model(self):
+        # A cut-off excerpt makes the model say the documentation is incomplete.
+        longest=max(documents(),key=lambda d:len(d['text']))
+        self.assertLessEqual(len(longest['text']),llm.EXCERPT_CHARS,longest['id'])
+        hit=next(d for d in retrieve(longest['title'],limit=8) if d['id']==longest['id'])
+        self.assertIn(longest['text'],llm.build_prompt([],'q',[hit]))
     def test_knowledge_base_is_consistent(self):
         docs=documents()
         self.assertEqual(len({d['id'] for d in docs}),len(docs))

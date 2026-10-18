@@ -262,11 +262,15 @@ def list_providers() -> dict:
 
 # ---------------------------------------------------------------- prompt
 
+# Long enough for every knowledge base page (a test keeps it that way), so the model never sees a page cut off.
+EXCERPT_CHARS = 1200
+
+
 def build_prompt(findings: list, question: str, sources: list) -> str:
     safe = [{'code': str(f.get('code', ''))[:80], 'severity': str(f.get('severity', ''))[:20],
              'summary': str(f.get('summary', ''))[:240]} for f in findings[:12]]
     # No URLs: small models garble them. The UI turns [id] citations into the real, curated links.
-    docs = '\n'.join(f"[{s['id']}] {s['title']}: {str(s.get('excerpt', s.get('text', '')))[:600]}"
+    docs = '\n'.join(f"[{s['id']}] {s['title']}: {str(s.get('excerpt', s.get('text', '')))[:EXCERPT_CHARS]}"
                      for s in sources[:3])
     return ('FINDINGS (from deterministic rules):\n' + (json.dumps(safe) if safe else 'none - no rule matched') +
             '\n\nQUESTION: ' + (question.strip()[:600] or 'Explain these findings and what to check next.') +
