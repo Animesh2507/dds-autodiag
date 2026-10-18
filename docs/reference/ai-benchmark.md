@@ -15,6 +15,14 @@ reproducible benchmark: eight fixed scenarios, scored the same way for every mod
 Configure-RViz benchmark · DDS AutoDiag 0.1.0 · 2026-10-17 · AMD Ryzen AI 5 PRO 340 (6 cores), 23 GB RAM, Ollama
 0.34 on the **CPU only** (no GPU), Ubuntu 24.04 · one run per scenario · default prompt (retrieval, see below).
 
+**Median time per plan**, and how many of the 23 checks each model's plans passed:
+
+--8<-- "assets/benchmarks/charts/median-time.svg"
+
+Every chart on this page is drawn from the raw data ([`2026-10-17.json`](../assets/benchmarks/2026-10-17.json)) by
+`tools/bench_charts.py`. Hover a mark for its exact numbers; the tables below hold the same values.
+{ .ad-chart-note }
+
 | Model | Scenarios fully right | Checks passed | Median time per plan | Prompt / output tokens |
 |---|---|---|---|---|
 | Claude `claude-opus-5-5` | 8/8 | 23/23 | 4.8 s | 2447 / 313 |
@@ -22,6 +30,10 @@ Configure-RViz benchmark · DDS AutoDiag 0.1.0 · 2026-10-17 · AMD Ryzen AI 5 P
 | Claude `claude-haiku-5-5` | 8/8 | 23/23 | **2.1 s** | 2447 / 377 |
 | Ollama `qwen3:4b-instruct` (local) | 8/8 | 23/23 | 32.1 s | 1200 / 433 |
 | Ollama `qwen2.5:3b` (local) | 6/8 | 18/23 | 19.8 s | 1200 / 315 |
+
+**Time per plan in each scenario.** The bar spans the three Claude models; a ring marks a plan that failed a check:
+
+--8<-- "assets/benchmarks/charts/per-scenario.svg"
 
 | Scenario | Opus 5.5 | Sonnet 5.5 | Haiku 5.5 | qwen3:4b-instruct | qwen2.5:3b |
 |---|---|---|---|---|---|
@@ -65,6 +77,8 @@ The answer (a JSON plan) is usually the larger part of the wait.
 The planner now **retrieves** only what a request needs: the display types it mentions ("cloud" → PointCloud2,
 "costmap" → Map, "footprint" → Polygon…), matching topics, and full settings only for the displays it touches. If
 nothing matches, the full catalog is used as before. Same scenarios, same model (`qwen3:4b-instruct`, CPU):
+
+--8<-- "assets/benchmarks/charts/retrieval.svg"
 
 | Prompt | Scenarios fully right | Checks | Median per plan | Mean prompt tokens |
 |---|---|---|---|---|
