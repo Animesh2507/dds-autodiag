@@ -67,5 +67,7 @@ is reserved for future positive checks. That's intentional: see
 Every rule has at least one synthetic fixture in `validation.py` (27 fixtures for 23 rules): one or two snapshots run
 through `transport_diagnose()`, or a list of `endpoints` run through `_qos_findings()`, that must trigger it. Two
 negative fixtures (matching domains, compatible QoS) must not report a mismatch. `run_all()` powers
-`dds-autodiag selftest`, `/api/selftest` and the dashboard's self-test, so any installation can prove its rules work
-without a robot. `rules_doc.py` runs the same fixtures to generate the rules page; a test fails if the page drifts.
+`dds-autodiag selftest`, `/api/selftest` and the dashboard **Tool check**, so any installation can prove its rules work
+without a robot. `live_rule_check()` / `POST /api/live-rules` (dashboard **Live rule check**) applies the same
+published codes to this host, an optional peer snapshot and this host’s live graph. `rules_doc.py` runs the fixtures
+to generate the rules page; a test fails if the page drifts.

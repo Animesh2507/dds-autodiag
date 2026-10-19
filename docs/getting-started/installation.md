@@ -14,7 +14,7 @@ Python package; add the rest when you need it.
 | OS | Linux | Tested on Ubuntu 24.04 |
 | Python | 3.10+ | Tested on 3.12 |
 | `python3-venv` | Required | `sudo apt install python3-venv`; Ubuntu and ROS 2 don't install it by default |
-| ROS 2 | For live inspection | Tested on **Jazzy**. Without ROS 2, snapshot comparison, reports and the rule self-test still work |
+| ROS 2 | For live inspection | Tested on **Jazzy**. Without ROS 2, snapshot comparison, reports and the tool check (synthetic self-test) still work |
 | `iproute2` | Recommended | Network interface checks (`ip -j addr`) |
 | Docker CLI | Optional | Lists local containers |
 | Ollama | Optional | Local, offline AI explanations |

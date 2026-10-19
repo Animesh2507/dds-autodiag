@@ -36,8 +36,8 @@ The landing page answers "is this machine set up correctly?":
 2. Click a topic to see every publisher and subscriber with reliability, durability and history.
    Incompatible pairs appear as findings.
 3. **Read one sample** waits up to 3–15 s for a real message, using *Auto*, *Best effort* or *Reliable*. Tick
-   **Repeat every 3 s** to watch a topic. A received message proves delivery to the probe; a timeout tells you
-   where to look next.
+   **Repeat every 3 s** to watch a topic. The sample is AutoDiag’s own `ros2 topic echo`, not a subscriber you
+   selected on the topic. A received message proves delivery to that probe; a timeout tells you where to look next.
 
 ## Graph
 
@@ -63,34 +63,54 @@ they are compatible, not that messages are delivered.
 
 ## Hosts
 
+**This host** is always the AutoDiag process whose dashboard you have open (`dds-autodiag serve`). A **peer** is a
+snapshot you load or another `serve` you connect to (a collector). The same binary; the UI you opened is this host.
+
 Compare this machine with another PC, robot or container: load a snapshot file, paste JSON, or connect to a live,
-token-protected collector. A side-by-side table highlights domain, RMW, distro and discovery differences. See
+token-protected collector (`http://<ip>:<port>` plus that process’s `AUTODIAG_AGENT_TOKEN`). A side-by-side table
+highlights domain, RMW, distro and discovery differences.
+
+The **Local Docker environments** table runs `docker` **on this process**. It lists container name, network, IP and
+published or `AUTODIAG_PORT`, and a Connect URL when AutoDiag is listening. It cannot list your laptop (that is not a
+container). Inside a container without the Docker CLI you will see “Docker CLI not installed”; scan containers from
+the host dashboard, or type the other collector URL by hand. See
 [Compare hosts & containers](compare-hosts.md).
 
 ## Transport
 
-Pick the transport you expect your nodes to use (intra-process, DDS shared memory, UDP or TCP) and run the checks.
-For shared memory, AutoDiag also inspects `/dev/shm`, free space and the IPC namespace.
+The page names **this host vs the loaded peer** (hostname, domain, RMW, discovery, container). The dropdown is the
+transport you *expect* (`auto`, intra-process, DDS shared memory, UDP or TCP), not the one DDS selected. Run checks
+to get findings for that pair. Switching the peer under Hosts clears a previous Run checks table so two peers cannot
+appear on the same page.
+
+For shared memory, AutoDiag also inspects `/dev/shm`, free space and the IPC namespace **on this host**. Green
+prerequisites do not mean SHM is in use between the two sides.
 
 !!! warning "Not verified"
     Configuration checks can't tell which transport DDS actually selected at runtime. AutoDiag says so explicitly
-    instead of guessing.
+    instead of guessing. A received sample proves delivery to the probe, not which transport carried it.
 
 ## Assistant
 
 Ask in plain language. AutoDiag combines your current findings with the most relevant curated documentation and,
 if you choose, a streamed AI explanation. If your question names a live topic ("why does my map stay empty" →
 `/map`), its live endpoints and QoS findings are included too, and the answer says which topic it used. Follow-up
-questions keep the conversation. See
+questions keep the conversation. After the model finishes, every `dds-autodiag …` command in the answer is parsed
+against the real CLI; invented options (for example `--transport rmw`) are flagged and must not be run. Trust the
+findings first. See
 [AI providers](ai-providers.md) and [RAG & AI pipeline](../concepts/rag.md).
 
 ## Tools
 
-- **Rule self-test:** runs every rule against its synthetic faults (27 fixtures) and shows pass/fail per fixture.
+- **Tool check:** smoke-tests this AutoDiag install with fake snapshots. **Detected** means the rule engine works, not
+  that those systems can communicate.
+- **Live rule check:** runs every published rule on this host and the peer loaded under Hosts, plus QoS/type rules on
+  this host’s live graph. Each rule is **fault** (present), **pass** (not present), or **skipped** (needs a peer or a live graph).
+- **Live pair check:** pick a topic visible on this host, then one live publisher and one live subscriber, and run the
+  QoS/type rules on that pair. **Read one sample** is AutoDiag’s own `ros2 topic echo`, not the subscriber you picked;
+  a received message does not prove that subscriber is receiving.
 - **Endpoint QoS checker** *(experimental)*: describe a publisher/subscriber pair by hand (e.g. from a design doc)
   and check it, using the native C++ core when built, else the Python rules. Both report the same rule codes.
-- **Behavior Tree viewer** *(experimental)*: replays the diagnosis behavior tree (native BehaviorTree.CPP trace or a
-  labeled simulation).
 
 ## Settings
 

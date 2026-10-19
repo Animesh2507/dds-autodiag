@@ -6,7 +6,7 @@
 flowchart TB
     subgraph fast["Every change (CI)"]
         unit["Python unit tests<br/>pytest · 155 tests"]
-        fixtures["Rule self-test<br/>27 synthetic faults, all 23 rules"]
+        fixtures["Tool check<br/>27 synthetic faults, all 23 rules"]
         cpp["C++ core<br/>CTest"]
         docs["Docs build<br/>mkdocs --strict"]
     end
@@ -23,7 +23,8 @@ flowchart TB
 |---|---|---|
 | Unit | Rules, generated rules page in sync with the code, parsers, redaction, retrieval, provider request shapes, conversation building, planner validation | `pytest`, providers and subprocesses mocked |
 | API | Every endpoint, security middleware, streaming format | FastAPI `TestClient` |
-| Rule fixtures | Every rule triggers on its synthetic fault (27 fixtures, incl. 2 negative cases) | `dds-autodiag selftest` |
+| Rule fixtures | Every rule triggers on its synthetic fault (27 fixtures, incl. 2 negative cases) | `dds-autodiag selftest` (Tool check) |
+| Live rule check | Same codes on this host, an optional peer and this host’s graph (`fault` / `pass` / `skipped`) | `POST /api/live-rules` |
 | Native | Endpoint strategy, health state machine | CTest |
 | UI | Dashboard flows, no JavaScript errors, no horizontal scroll on mobile | Playwright, headless Chrome |
 | RViz | Panel loaded by real RViz2: plan, apply, retry, undo; follow-up conversations | Xvfb virtual display with OpenGL |

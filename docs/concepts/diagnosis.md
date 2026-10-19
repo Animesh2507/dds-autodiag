@@ -42,8 +42,10 @@ Each rule is a small, testable function that produces a finding:
 | **warning** | Likely to cause problems, or unsupported |
 | **info** (note) | Worth knowing; not a fault |
 
-`dds-autodiag selftest` runs every rule against its synthetic faults (27 fixtures covering all 23 rules), so you can
-verify the rules on any installation.
+`dds-autodiag selftest` (dashboard **Tool check**) runs every rule against its synthetic faults (27 fixtures covering
+all 23 rules), so you can verify the *installation*. That is not a live test of your robot. Dashboard **Live rule
+check** (`POST /api/live-rules`) runs the same rules on this host, the loaded peer and this host’s live graph: each
+rule is **fault**, **pass** or **skipped**.
 
 ## 4. Explain
 

@@ -13,7 +13,7 @@ dds-autodiag topics                          list topics visible in the ROS grap
 dds-autodiag inspect /topic                  endpoints, QoS and incompatibilities
 dds-autodiag sample  /topic [--timeout 1-15] [--reliability auto|best_effort|reliable]
 dds-autodiag demo    [--no-wait]             start two broken demo topics and diagnose them
-dds-autodiag selftest                        run every rule against its synthetic faults
+dds-autodiag selftest                        tool check: every rule against synthetic faults
 dds-autodiag bench   [--model PROVIDER[:MODEL]]... [--markdown]   benchmark AI models on Configure RViz
 dds-autodiag serve   [--host H] [--port P] [--open]   start the dashboard
                      [--log-level LEVEL] [--insecure-no-auth]
@@ -87,7 +87,8 @@ dds-autodiag check --peer robot.json --json > result.json || echo "Configuration
 
 ## Transport modes
 
-`--transport` tells the rules what you *expect*, which enables mode-specific checks:
+`--transport` tells the rules what you *expect*, which enables mode-specific checks. Only these values are valid
+(`rmw` and other invented flags are rejected):
 
 | Mode | Use when |
 |---|---|
@@ -95,6 +96,9 @@ dds-autodiag check --peer robot.json --json > result.json || echo "Configuration
 | `intra_process` | Publisher and subscriber should share one process |
 | `dds_shm` | DDS shared memory between processes or containers on one host |
 | `dds_udp` / `dds_tcp` | Network transport between hosts |
+
+The dashboard Transport tab uses the same list. Configuration checks cannot see which transport DDS selected at
+runtime. `sample` / **Read one sample** is AutoDiag’s own probe (`ros2 topic echo`), not a subscriber you picked.
 
 ## Starting the server
 

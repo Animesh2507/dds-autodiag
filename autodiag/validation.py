@@ -41,10 +41,10 @@ FIXTURES = {
     'localhost_only_deprecated': {'description': 'ROS_LOCALHOST_ONLY used on Jazzy',
                                   'a': _snap(ROS_DISTRO='jazzy', ROS_LOCALHOST_ONLY='1'), 'b': None,
                                   'expected': 'ROS_LOCALHOST_ONLY_DEPRECATED'},
-    'rmw_zenoh_vs_dds': {'description': 'Zenoh RMW peer talking to a DDS RMW peer',
+    'rmw_zenoh_vs_dds': {'description': 'Zenoh vs DDS: they cannot communicate (must be an error)',
                          'a': _snap(RMW_IMPLEMENTATION='rmw_zenoh_cpp'), 'b': _snap('host-b', RMW_IMPLEMENTATION='rmw_fastrtps_cpp'),
                          'expected': 'RMW_MISMATCH', 'expected_severity': 'error'},
-    'rmw_dds_vs_dds': {'description': 'Two different DDS RMWs (usually interoperable)',
+    'rmw_dds_vs_dds': {'description': 'Fast DDS vs Cyclone: usually interoperable (must be a warning)',
                        'a': _snap(RMW_IMPLEMENTATION='rmw_fastrtps_cpp'), 'b': _snap('host-b', RMW_IMPLEMENTATION='rmw_cyclonedds_cpp'),
                        'expected': 'RMW_MISMATCH', 'expected_severity': 'warning'},
     'distro_mismatch': {'description': 'Humble peer talking to a Jazzy peer',
@@ -114,8 +114,11 @@ def run_fixture(name):
     passed = expected in codes if expected else case.get('forbidden') not in codes
     if passed and case.get('expected_severity'):
         passed = any(x['code'] == expected and x['severity'] == case['expected_severity'] for x in issues)
+    findings = [{'code': x['code'], 'severity': x.get('severity', 'info'),
+                 'summary': x.get('summary') or x.get('conclusion') or ''} for x in issues]
     return {'fixture': name, 'description': case['description'], 'expected_code': expected,
-            'observed_codes': codes, 'passed': passed,
+            'expected_severity': case.get('expected_severity'),
+            'observed_codes': codes, 'findings': findings, 'passed': passed,
             'health': health(case.get('a') or {}, issues), 'synthetic': True,
             'limitation': 'No real ROS middleware, Docker namespace or network connectivity exercised.'}
 
@@ -124,3 +127,48 @@ def run_all():
     results = [run_fixture(name) for name in list_fixtures()]
     return {'passed': sum(r['passed'] for r in results), 'total': len(results),
             'ok': all(r['passed'] for r in results), 'results': results}
+
+
+_QOS = {'RELIABILITY_MISMATCH', 'DURABILITY_MISMATCH', 'LATCHED_DATA_VOLATILE_SUBSCRIBER', 'TYPE_MISMATCH'}
+_PEER = {'DOMAIN_MISMATCH', 'LOCALHOST_ONLY', 'DISCOVERY_RANGE_RESTRICTED', 'MULTICAST_CAPABILITY_ABSENT',
+         'RMW_MISMATCH', 'DISTRO_MISMATCH', 'SHM_IPC_NAMESPACE_DIFFERENCE', 'INTRA_PROCESS_SEPARATE_PROCESSES'}
+
+
+def live_rule_check(host_a, host_b=None, graph=None):
+    """Run every published rule on this host (and peer, if given) plus the live graph."""
+    from .rules_doc import RULES
+    from .collector import summarize
+    issues = transport_diagnose(host_a, host_b)
+    qos = []
+    graph_state = None
+    if graph is None:
+        graph_state = 'not_run'
+    elif graph.get('state') == 'ok':
+        graph_state = 'ok'
+        for edge in graph.get('edges') or []:
+            for topic in edge.get('topics') or []:
+                qos.extend(topic.get('findings') or [])
+    else:
+        graph_state = graph.get('state') or 'unavailable'
+    by_code = {}
+    for item in issues + qos:
+        by_code.setdefault(item['code'], []).append(item)
+    rows = []
+    for code, symptom, scope, _fixtures in RULES:
+        hits = by_code.get(code) or []
+        if code in _PEER and not host_b:
+            status, detail = 'skipped', 'Load a peer under Hosts to check this rule live.'
+        elif code in _QOS and graph_state != 'ok':
+            status, detail = 'skipped', 'Live graph is not available on this host.'
+        elif hits:
+            status, detail = 'fired', hits[0].get('summary') or ''
+        else:
+            status, detail = 'not_seen', 'Pass — this fault is not present on the live pair or graph.'
+        rows.append({'code': code, 'symptom': symptom, 'scope': scope, 'status': status, 'detail': detail,
+                     'count': len(hits), 'findings': hits[:8]})
+    return {'peer': bool(host_b), 'graph': graph_state,
+            'summary_a': summarize(host_a), 'summary_b': summarize(host_b) if host_b else None,
+            'fired': sum(1 for r in rows if r['status'] == 'fired'),
+            'skipped': sum(1 for r in rows if r['status'] == 'skipped'),
+            'not_seen': sum(1 for r in rows if r['status'] == 'not_seen'),
+            'rows': rows}

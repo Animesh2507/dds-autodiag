@@ -3,8 +3,10 @@
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
-const state = {local: null, peer: null, topics: [], selectedTopic: '', sampleTimer: null, sampling: false,
-  bt: {events: [], index: 0, timer: null, paused: false}};
+const state = {local: null, peer: null, peerLabel: '', peerSource: '', topics: [], selectedTopic: '', sampleTimer: null, sampling: false,
+  livePair: {topic: '', pubs: [], subs: [], inspect: null}};
+const MODE_LABEL = {auto: 'not specified', intra_process: 'ROS 2 intra-process (same process)',
+  dds_shm: 'DDS shared memory (same machine)', dds_udp: 'DDS UDP (network)', dds_tcp: 'DDS TCP'};
 
 const store = {
   get(k) { try { return localStorage.getItem('autodiag.' + k); } catch { return null; } },
@@ -147,6 +149,7 @@ function setStatusBar(o) {
   renderAlarms();
   $('alert-overview').hidden = !alarms.host.error;
   $('host-tag').innerHTML = esc(s.host || 'this host') + ' · checked <span id="checked-at">' + esc(new Date().toLocaleTimeString([], {hour12: false})) + '</span>';
+  renderComparePair();
 }
 
 // Problems found anywhere (host checks, the graph) add up in the status bar; each alarm opens where most of them are.
@@ -180,6 +183,7 @@ function showTab(tab) {
   });
   $('page-title').textContent = TITLES[tab];
   $('page-eyebrow').textContent = EYEBROWS[tab];
+  if (tab === 'diagnose') renderComparePair();
   if (location.hash.slice(1) !== tab) history.replaceState(null, '', '#' + tab);
   if (!loaded.has(tab)) {
     loaded.add(tab);
@@ -187,6 +191,7 @@ function showTab(tab) {
     if (tab === 'graph') loadGraph();
     if (tab === 'environments') loadDocker();
     if (tab === 'about') { loadAbout(); loadProviders(); }
+    if (tab === 'tools') discoverLivePair();
   }
   if (tab === 'assistant') loadOllama();
 }
@@ -331,24 +336,114 @@ async function loadDocker(button) {
     const d = await api('/api/v09/environments');
     if (d.state !== 'ok') { $('docker-results').innerHTML = '<div class="notice warning">' + esc(d.reason) + '</div>'; return; }
     if (!d.environments.length) { $('docker-results').innerHTML = '<p class="muted">No running containers.</p>'; return; }
-    $('docker-results').innerHTML = '<div class="table-wrap"><table><thead><tr><th>Container</th><th>Image</th><th>Network</th><th>Collect snapshot</th></tr></thead><tbody>'
-      + d.environments.map(c => '<tr><td><b>' + esc(c.name) + '</b><br><small>' + esc(c.status) + '</small></td><td class="mono"><small>' + esc(c.image) + '</small></td><td>' + esc(c.network) + '</td>'
-        + '<td><code>docker exec ' + esc(c.name) + ' bash -lc "dds-autodiag collect" &gt; ' + esc(c.name) + '.json</code></td></tr>').join('')
-      + '</tbody></table></div><p class="muted">' + esc(d.reason) + ' AutoDiag must be installed in the container for the collect command.</p>';
+    $('docker-results').innerHTML = '<div class="table-wrap"><table><thead><tr><th>Container</th><th>Image</th><th>Network</th><th>Address</th><th>Connect</th><th>Collect snapshot</th></tr></thead><tbody>'
+      + d.environments.map(c => {
+        const ips = (c.ips && c.ips.length) ? c.ips.join(', ') : (c.network_mode === 'host' ? 'host network' : '—');
+        const ports = (c.ports && c.ports.length) ? c.ports.join(', ') : '—';
+        const urls = c.connect_urls || [];
+        const connect = urls.length
+          ? urls.map(u => '<button type="button" class="link" data-action="use-collector" data-url="' + esc(u) + '">' + esc(u) + '</button>').join('<br>')
+          : '<span class="muted">No published AutoDiag port</span>';
+        return '<tr><td><b>' + esc(c.name) + '</b><br><small>' + esc(c.status) + '</small></td>'
+          + '<td class="mono"><small>' + esc(c.image) + '</small></td><td>' + esc(c.network || c.network_mode || '—') + '</td>'
+          + '<td class="mono"><small>' + esc(ips) + (ports !== '—' ? '<br>port ' + esc(ports) : '') + '</small></td>'
+          + '<td>' + connect + '</td>'
+          + '<td><code>docker exec ' + esc(c.name) + ' bash -lc "dds-autodiag collect" &gt; ' + esc(c.name) + '.json</code></td></tr>';
+      }).join('')
+      + '</tbody></table></div><p class="muted">' + esc(d.reason) + ' Click an address to fill the live collector URL. The container must be running <code>dds-autodiag serve</code>.</p>';
   });
 }
 
-function renderComparison(o, label) {
-  const a = o.summary_a || {}, b = o.summary_b || {};
+function snapFacts(snap) {
+  if (!snap) return null;
+  const env = snap.environment || {}, id = snap.identity || {}, ros = snap.ros || {};
+  const count = probe => {
+    if (!probe || probe.state !== 'ok') return null;
+    return (probe.stdout || '').split('\n').filter(l => l.trim()).length;
+  };
+  return {
+    host: id.host || 'unknown',
+    domain: env.ROS_DOMAIN_ID ?? '0',
+    rmw: env.RMW_IMPLEMENTATION || 'default',
+    distro: env.ROS_DISTRO || 'not sourced',
+    discovery: env.ROS_AUTOMATIC_DISCOVERY_RANGE || (env.ROS_LOCALHOST_ONLY === '1' ? 'LOCALHOST' : 'default (SUBNET)'),
+    container: !!(snap.container && snap.container.detected),
+    nodes: count(ros.graph),
+    topics: count(ros.topics),
+  };
+}
+
+function pairSide(facts, role, title) {
+  if (!facts) {
+    return '<div class="pair-side empty"><h3>' + esc(role) + '</h3><p class="muted">Not loaded. Open Hosts and add a snapshot or live collector.</p></div>';
+  }
+  const row = (k, v) => '<div><dt>' + esc(k) + '</dt><dd>' + esc(v ?? '—') + '</dd></div>';
+  return '<div class="pair-side"><h3>' + esc(role) + '</h3><p class="pair-host">' + esc(title || facts.host) + '</p><dl>'
+    + row('Domain', facts.domain) + row('RMW', facts.rmw) + row('Distro', facts.distro)
+    + row('Discovery', facts.discovery) + row('Container', facts.container ? 'yes' : 'no')
+    + row('Nodes / topics', (facts.nodes ?? '—') + ' / ' + (facts.topics ?? '—'))
+    + row('Live DDS transport', 'not verified')
+    + '</dl></div>';
+}
+
+function renderComparePair() {
+  const box = $('compare-pair'), lead = $('compare-pair-lead');
+  if (!box || !lead) return;
+  const local = snapFacts(state.local), peer = snapFacts(state.peer);
+  const asked = MODE_LABEL[$('mode').value] || $('mode').value;
+  const left = (local && local.host) || 'this host';
+  const right = state.peerLabel || (peer && peer.host) || 'peer';
+  lead.innerHTML = peer
+    ? 'Comparing <b>' + esc(left) + '</b> with <b>' + esc(right) + '</b>'
+      + (state.peerSource ? ' <span class="muted">(' + esc(state.peerSource) + ')</span>' : '') + '.'
+    : 'Only this host is loaded. Checks are single-sided until you add a peer under Hosts.';
+  lead.innerHTML += ' You asked to check <b>' + esc(asked) + '</b>. AutoDiag cannot see which DDS transport is actually running.';
+  box.innerHTML = pairSide(local, 'This host', left) + '<div class="pair-vs" aria-hidden="true">vs</div>'
+    + pairSide(peer, 'Peer', right);
+  const checked = ($('checked-at') && $('checked-at').textContent) || '—';
+  $('host-tag').innerHTML = (peer ? esc(left) + ' vs ' + esc(right) : esc(left))
+    + ' · checked <span id="checked-at">' + esc(checked) + '</span>';
+  if (document.querySelector('#diagnose.active')) {
+    $('page-eyebrow').textContent = peer ? left + ' vs ' + right : 'Transport · this host only';
+  }
+}
+
+function sideVal(sum, k) {
+  const v = sum[k] ?? (['rmw', 'discovery_range'].includes(k) ? 'default' : null);
+  return v === true ? 'yes' : v === false ? 'no' : (v ?? '—');
+}
+
+function compareTable(o, label, extraRows) {
+  const a = o.summary_a || {}, b = o.summary_b;
   const rows = [['Host', 'host'], ['ROS distro', 'ros_distro'], ['Domain ID', 'domain_id'], ['RMW', 'rmw'], ['Discovery range', 'discovery_range'],
     ['Container', 'container'], ['Nodes visible', 'node_count'], ['Topics visible', 'topic_count']];
-  const fmt = v => v === true ? 'yes' : v === false ? 'no' : (v ?? '—');
-  const val = (sum, k) => fmt(sum[k] ?? (['rmw', 'discovery_range'].includes(k) ? 'default' : null));
-  const table = '<div class="table-wrap"><table><thead><tr><th></th><th>This host</th><th>' + esc(label) + '</th></tr></thead><tbody>'
-    + rows.map(([l, k]) => '<tr' + (['domain_id', 'rmw', 'ros_distro', 'discovery_range'].includes(k) && String(val(a, k)) !== String(val(b, k)) ? ' class="diff"' : '') + '><td>' + esc(l) + '</td><td>' + esc(val(a, k)) + '</td><td>' + esc(val(b, k)) + '</td></tr>').join('')
-    + '</tbody></table></div>';
+  const peer = label || state.peerLabel || 'Peer';
+  let head = '<div class="table-wrap"><table><thead><tr><th></th><th>This host</th>' + (b ? '<th>' + esc(peer) + '</th>' : '') + '</tr></thead><tbody>';
+  head += rows.map(([l, k]) => {
+    const left = sideVal(a, k), right = b ? sideVal(b, k) : '';
+    const diff = b && ['domain_id', 'rmw', 'ros_distro', 'discovery_range'].includes(k) && String(left) !== String(right);
+    return '<tr' + (diff ? ' class="diff"' : '') + '><td>' + esc(l) + '</td><td>' + esc(left) + '</td>' + (b ? '<td>' + esc(right) + '</td>' : '') + '</tr>';
+  }).join('');
+  (extraRows || []).forEach(row => {
+    head += '<tr><td>' + esc(row[0]) + '</td><td>' + esc(row[1]) + '</td>' + (b ? '<td>' + esc(row[2] ?? row[1]) + '</td>' : '') + '</tr>';
+  });
+  return head + '</tbody></table></div>';
+}
+
+function renderComparison(o, label) {
+  state.peerLabel = label || '';
   $('remote-results').className = '';
-  $('remote-results').innerHTML = table + '<h3>Findings</h3>' + findingsHTML(o.issues);
+  $('remote-results').innerHTML = compareTable(o, label) + '<h3>Findings</h3>' + findingsHTML(o.issues);
+  resetTransportResults();
+}
+
+function resetTransportResults() {
+  const box = $('diagnostic-results');
+  if (!box) return;
+  box.className = 'muted';
+  box.textContent = state.peer
+    ? 'Peer is now ' + (state.peerLabel || 'loaded') + '. Run checks to compare this pair.'
+    : 'Choose an expected transport and run checks.';
 }
 
 async function compareWith(peer, label, button) {
@@ -356,7 +451,10 @@ async function compareWith(peer, label, button) {
   await busy(button, async () => {
     const o = await post('/api/compare', {host_a: withMode(state.local), host_b: peer});
     state.peer = peer;
+    state.peerLabel = label;
+    state.peerSource = state.peerSource || 'snapshot';
     renderComparison(o, label);
+    renderComparePair();
     toast('Comparison updated', 'ok');
   });
 }
@@ -374,6 +472,7 @@ async function compareSnapshot(button) {
     const text = file ? await file.text() : $('snapshot-input').value;
     if (!text.trim()) return toast('Choose a snapshot file or paste JSON', 'error');
     const peer = parseSnapshot(text);
+    state.peerSource = file ? 'snapshot ' + file.name : 'pasted snapshot';
     await compareWith(peer, (peer.identity && peer.identity.host) || 'Peer snapshot', button);
   } catch (e) { toast(e.message, 'error'); }
 }
@@ -386,7 +485,10 @@ async function compareRemote(button) {
   await busy(button, async () => {
     const o = await post('/api/remote-compare', {url, token: $('remoteToken').value, host_a: withMode(state.local)});
     state.peer = o.remote;
-    renderComparison(o, (o.remote.identity && o.remote.identity.host) || 'Remote');
+    state.peerLabel = (o.remote.identity && o.remote.identity.host) || 'Remote';
+    state.peerSource = 'live collector ' + url;
+    renderComparison(o, state.peerLabel);
+    renderComparePair();
     toast('Connected to remote collector', 'ok');
   });
 }
@@ -397,7 +499,14 @@ async function runDiagnostic(button) {
   $('diagnostic-results').innerHTML = loading('Running checks…');
   await busy(button, async () => {
     const o = await post('/api/compare', {host_a: withMode(state.local), host_b: state.peer});
-    let html = '<p class="muted">' + (state.peer ? 'Compared with the loaded peer.' : 'Single-host checks only. Load a peer in “Compare hosts” for cross-host rules.') + '</p>' + findingsHTML(o.issues);
+    const asked = MODE_LABEL[$('mode').value] || $('mode').value;
+    renderComparePair();
+    let html = compareTable(o, state.peerLabel, [
+        ['You asked to check', asked, asked],
+        ['Actual DDS transport in use', 'not verified', 'not verified'],
+      ])
+      + '<p class="muted">The pair above is who you are comparing. The table repeats it after the check. Live DDS transport stays unverified.</p>'
+      + '<h3>Findings</h3>' + findingsHTML(o.issues);
     if ($('mode').value === 'dds_shm') {
       const shm = await api('/api/v09/shm');
       html += '<h3>Shared-memory prerequisites (this host)</h3><table><tbody>' + shm.observations.map(x => '<tr><td>' + esc(x.name) + '</td><td><span class="badge ' + (x.result === 'pass' ? 'ok' : x.result === 'warning' ? 'warning' : 'neutral') + '">' + esc(x.result) + '</span></td><td>' + esc(x.detail) + '</td></tr>').join('') + '</tbody></table>'
@@ -659,12 +768,47 @@ async function removeKey(button) {
 }
 
 // ---------- tools ----------
+async function liveRules(button) {
+  if (!state.local) return toast('Wait for the overview to finish loading', 'error');
+  $('live-rules-results').innerHTML = loading('Running every rule on this host' + (state.peer ? ' and the loaded peer' : '') + '…');
+  await busy(button, async () => {
+    const o = await post('/api/live-rules', {host_a: withMode(state.local), host_b: state.peer});
+    const a = (o.summary_a && o.summary_a.host) || 'this host';
+    const b = o.summary_b ? (o.summary_b.host || state.peerLabel || 'peer') : null;
+    const who = b ? 'This host <b>' + esc(a) + '</b> vs peer <b>' + esc(b) + '</b>.'
+      : 'This host <b>' + esc(a) + '</b> only. Load a collector under Hosts for two-sided rules.';
+    const mark = {fired: 'error', not_seen: 'ok', skipped: 'neutral'};
+    const label = {fired: 'fault', not_seen: 'pass', skipped: 'skipped'};
+    $('live-rules-results').className = '';
+    $('live-rules-results').innerHTML = '<p>' + who + ' <span class="muted">' + o.fired + ' fault(s) · ' + o.not_seen + ' passed · ' + o.skipped + ' skipped'
+      + (o.graph === 'ok' ? '' : ' · live graph ' + esc(o.graph || 'unavailable')) + '</span></p>'
+      + '<div class="table-wrap"><table><thead><tr><th>Rule</th><th>Live result</th><th>Detail</th></tr></thead><tbody>'
+      + o.rows.map(r => {
+        const extra = r.status === 'fired' && r.count > 1 ? ' <span class="muted">×' + r.count + '</span>' : '';
+        return '<tr' + (r.status === 'fired' ? ' class="diff"' : '') + '><td><span class="code">' + esc(r.code) + '</span>'
+          + '<p class="muted">' + esc(r.symptom) + '</p></td>'
+          + '<td><span class="badge ' + (mark[r.status] || 'neutral') + '">' + (label[r.status] || r.status) + '</span>' + extra + '</td>'
+          + '<td>' + esc(r.detail || '') + '</td></tr>';
+      }).join('')
+      + '</tbody></table></div>';
+  });
+}
+
 async function selftest(button) {
   await busy(button, async () => {
     const o = await api('/api/selftest');
-    $('selftest-results').innerHTML = '<div class="notice ' + (o.ok ? 'ok' : 'error') + '"><b>' + o.passed + ' of ' + o.total + ' rules passed.</b></div>'
-      + '<div class="table-wrap"><table><thead><tr><th>Scenario</th><th>Expected rule</th><th>Result</th></tr></thead><tbody>'
-      + o.results.map(r => '<tr><td>' + esc(r.description) + '</td><td class="mono">' + esc(r.expected_code || '(none)') + '</td><td><span class="badge ' + (r.passed ? 'ok' : 'error') + '">' + (r.passed ? 'pass' : 'fail') + '</span></td></tr>').join('')
+    $('selftest-results').innerHTML = '<div class="notice ' + (o.ok ? 'ok' : 'error') + '"><b>' + o.passed + ' of ' + o.total + ' synthetic faults handled correctly.</b> Detected = the rule fired on fake data.</div>'
+      + '<div class="table-wrap"><table><thead><tr><th>Injected fault</th><th>What AutoDiag reports</th><th>Self-test</th></tr></thead><tbody>'
+      + o.results.map(r => {
+        const hit = (r.findings || []).find(f => f.code === r.expected_code) || (r.findings || [])[0];
+        const finding = r.expected_code
+          ? '<span class="badge ' + esc((hit && hit.severity) || 'neutral') + '">' + esc((hit && hit.severity) || 'finding') + '</span> '
+            + '<span class="code">' + esc(r.expected_code) + '</span>'
+            + (hit && hit.summary ? '<p class="muted">' + esc(hit.summary) + '</p>' : '')
+          : '<span class="muted">No finding (correct — this fixture must stay quiet)</span>';
+        const mark = r.expected_code ? (r.passed ? 'detected' : 'missed') : (r.passed ? 'quiet' : 'false alarm');
+        return '<tr><td>' + esc(r.description) + '</td><td>' + finding + '</td><td><span class="badge ' + (r.passed ? 'ok' : 'error') + '">' + mark + '</span></td></tr>';
+      }).join('')
       + '</tbody></table></div>';
   });
 }
@@ -683,37 +827,94 @@ async function endpointCheck(button) {
   });
 }
 
-function btClear() {
-  const bt = state.bt;
-  if (bt.timer) clearTimeout(bt.timer);
-  bt.timer = null; bt.index = 0; bt.paused = false;
-  $('btPause').textContent = 'Pause';
-  ['collect', 'qos', 'report'].forEach(x => { $('bt-' + x).className = 'bt-step'; $('bt-' + x).querySelector('small').textContent = 'IDLE'; });
-  $('log').textContent = '';
+function epLabel(e) {
+  const q = e.qos || {};
+  return (e.node || '?') + ' · ' + (q.reliability || '—') + ' / ' + (q.durability || '—');
 }
 
-async function runBT(button, fault) {
-  btClear();
+function fillEpSelect(id, list, empty) {
+  $(id).innerHTML = list.length
+    ? list.map((e, i) => '<option value="' + i + '">' + esc(epLabel(e)) + '</option>').join('')
+    : '<option value="">' + esc(empty) + '</option>';
+}
+
+async function discoverLivePair(button) {
   await busy(button, async () => {
-    const o = await api('/api/v08/bt/run?fault=' + fault, {method: 'POST'});
-    state.bt.events = o.events || [];
-    $('bt-origin').textContent = o.source === 'native' ? 'Native BehaviorTree.CPP trace on sample data (not live ROS 2)'
-      : o.source === 'simulated' ? 'Simulated trace — build the C++ core with BehaviorTree.CPP for a native run' : 'Runner error: ' + o.warning;
-    tickBT();
+    const o = await api('/api/topics');
+    const sel = $('live-pair-topic');
+    if (o.state !== 'ok') {
+      sel.innerHTML = '<option value="">Could not list topics</option>';
+      $('live-pair-results').innerHTML = '<div class="notice error">' + esc(o.error || o.state) + '</div>';
+      return;
+    }
+    state.topics = o.topics || [];
+    if (!state.topics.length) {
+      sel.innerHTML = '<option value="">No topics visible on this domain</option>';
+      $('live-pair-results').innerHTML = '<div class="notice warning">No topics discovered. Are your nodes running on this ROS_DOMAIN_ID?</div>';
+      return;
+    }
+    const keep = sel.value;
+    sel.innerHTML = state.topics.map(t => '<option value="' + esc(t.topic) + '">' + esc(t.topic) + ' · ' + esc(t.type) + '</option>').join('');
+    if (keep && state.topics.some(t => t.topic === keep)) sel.value = keep;
+    $('live-pair-results').textContent = state.topics.length + ' topic(s) visible. Pick one, then a publisher and a subscriber.';
+    await inspectLivePair();
   });
 }
 
-function tickBT() {
-  const bt = state.bt;
-  if (bt.paused || bt.index >= bt.events.length) return;
-  const e = bt.events[bt.index++];
-  if (e.event === 'bt_transition' && ['collect', 'qos', 'report'].includes(e.node)) {
-    $('bt-' + e.node).className = 'bt-step ' + e.status.toLowerCase();
-    $('bt-' + e.node).querySelector('small').textContent = e.status;
+async function inspectLivePair() {
+  const topic = $('live-pair-topic').value;
+  if (!topic) return;
+  $('live-pair-results').innerHTML = loading('Inspecting endpoints…');
+  const o = await api('/api/topic-inspect?topic=' + encodeURIComponent(topic));
+  if (o.state !== 'ok') {
+    fillEpSelect('live-pair-pub', [], 'Unavailable');
+    fillEpSelect('live-pair-sub', [], 'Unavailable');
+    state.livePair = {topic, pubs: [], subs: [], inspect: null};
+    $('live-pair-results').innerHTML = '<div class="notice error">' + esc(o.error || o.state) + '</div>';
+    return;
   }
-  if (e.event === 'diagnosis') $('bt-origin').textContent += ' · ' + e.issue_count + ' issue(s) found';
-  $('log').textContent += JSON.stringify(e) + '\n';
-  bt.timer = setTimeout(tickBT, Number($('btSpeed').value));
+  const pubs = o.endpoints.filter(e => e.kind === 'publisher');
+  const subs = o.endpoints.filter(e => e.kind === 'subscriber');
+  state.livePair = {topic, pubs, subs, inspect: o};
+  fillEpSelect('live-pair-pub', pubs, 'No publisher visible');
+  fillEpSelect('live-pair-sub', subs, 'No subscriber visible');
+  $('live-pair-results').innerHTML = '<p class="muted">' + pubs.length + ' publisher(s), ' + subs.length + ' subscriber(s) on <code>' + esc(topic) + '</code>. Pick both sides and check the pair.</p>'
+    + (pubs.length === 0 ? '<div class="notice warning">No publisher is visible on this topic from here.</div>' : '')
+    + (subs.length === 0 ? '<div class="notice warning">No subscriber is visible on this topic from here.</div>' : '');
+}
+
+function selectedLivePair() {
+  const pub = state.livePair.pubs[Number($('live-pair-pub').value)];
+  const sub = state.livePair.subs[Number($('live-pair-sub').value)];
+  return {topic: state.livePair.topic || $('live-pair-topic').value, pub, sub, inspect: state.livePair.inspect};
+}
+
+async function checkLivePair(button) {
+  const {topic, pub, sub, inspect} = selectedLivePair();
+  if (!topic || !inspect) return toast('Discover a topic first', 'error');
+  if (!pub || !sub) return toast('Pick a publisher and a subscriber', 'error');
+  await busy(button, async () => {
+    const findings = (inspect.findings || []).filter(f => {
+      const ev = f.evidence || {};
+      return !ev.publisher || !ev.subscriber || (ev.publisher === pub.node && ev.subscriber === sub.node);
+    });
+    $('live-pair-results').innerHTML = '<div class="route"><span>' + esc(pub.node) + '</span><span class="arrow">──▶</span><span>' + esc(sub.node) + '</span></div>'
+      + '<p class="muted"><code>' + esc(topic) + '</code> · advertised QoS on this host. Delivery is not verified until you read a sample.</p>'
+      + qosTable({publisher_qos: pub.qos, subscriber_qos: sub.qos, findings})
+      + findingsHTML(findings, 'Advertised QoS and types match for this pair. Read a sample to confirm a message arrives.');
+  });
+}
+
+async function sampleLivePair(button) {
+  const topic = $('live-pair-topic').value;
+  if (!topic) return toast('Discover a topic first', 'error');
+  $('live-pair-sample').textContent = 'Waiting up to 8 s for one message on ' + topic + '…';
+  await busy(button, async () => {
+    const o = await api('/api/topic-sample?topic=' + encodeURIComponent(topic) + '&timeout=8&reliability=' + encodeURIComponent($('live-pair-probe').value));
+    $('live-pair-sample').textContent = o.state === 'ok'
+      ? '[' + new Date().toLocaleTimeString() + ']\n' + (o.raw || '(empty message)') + (o.truncated ? '\n[truncated]' : '')
+      : (o.state === 'timeout' ? 'No message within 8 s. The publisher may be idle, or QoS/transport may block delivery. Try the other reliability setting.' : 'No sample: ' + (o.error || o.state));
+  });
 }
 
 // ---------- about ----------
@@ -995,15 +1196,22 @@ const ACTIONS = {
   'load-topics': b => loadTopics(b), 'load-graph': b => loadGraph(b), 'inspect-topic': b => inspectTopic(b), sample: () => readSample(),
   'copy-sample': () => navigator.clipboard.writeText($('sample-result').textContent).then(() => toast('Copied', 'ok'), () => toast('Clipboard unavailable', 'error')),
   'load-docker': b => loadDocker(b), 'compare-snapshot': b => compareSnapshot(b), 'compare-remote': b => compareRemote(b),
-  'clear-peer': () => { state.peer = null; $('remote-results').className = 'muted'; $('remote-results').textContent = 'No peer loaded.'; $('snapshot-file').value = ''; toast('Peer cleared'); },
+  'use-collector': b => {
+    $('remoteUrl').value = b.dataset.url || '';
+    store.set('remoteUrl', $('remoteUrl').value);
+    $('remoteToken').focus();
+    toast('URL filled — enter the collector token', 'ok');
+  },
+  'clear-peer': () => { state.peer = null; state.peerLabel = ''; state.peerSource = ''; $('remote-results').className = 'muted'; $('remote-results').textContent = 'No peer loaded.'; $('snapshot-file').value = ''; renderComparePair(); resetTransportResults(); toast('Peer cleared'); },
   'run-diagnostic': b => runDiagnostic(b), ask: b => ask(b, b.dataset.ai === 'true'), selftest: b => selftest(b),
-  'endpoint-check': b => endpointCheck(b), bt: b => runBT(b, b.dataset.fault === 'true'),
-  'bt-pause': () => { const bt = state.bt; bt.paused = !bt.paused; $('btPause').textContent = bt.paused ? 'Resume' : 'Pause'; if (bt.paused) clearTimeout(bt.timer); else tickBT(); },
+  'live-rules': b => liveRules(b),
+  'endpoint-check': b => endpointCheck(b),
+  'live-pair-discover': b => discoverLivePair(b), 'live-pair-check': b => checkLivePair(b),
+  'live-pair-sample': b => sampleLivePair(b),
   'stop-ai': () => { if (aiAbort) aiAbort.abort(); },
   'prov-models': b => loadProviderModels(b.dataset.id, null, true),
   'prov-save': b => saveProvider(b), 'prov-default': b => saveProvider(b, {make_default: true}),
   'prov-test': b => testProvider(b), 'prov-remove': b => removeKey(b),
-  'bt-replay': () => { const events = state.bt.events; btClear(); state.bt.events = events; tickBT(); },
   'toggle-events': () => { eventLog.expanded = !eventLog.expanded; renderEvents(); },
   'goto-events': () => $('events-strip').scrollIntoView({block: 'end', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}),
 };
@@ -1054,6 +1262,8 @@ document.addEventListener('change', e => {
 $('redact-export').checked = store.get('redact') !== 'false';
 $('redact-export').addEventListener('change', () => store.set('redact', String($('redact-export').checked)));
 $('remoteUrl').value = store.get('remoteUrl') || '';
+$('mode').addEventListener('change', renderComparePair);
+$('live-pair-topic').addEventListener('change', () => inspectLivePair().catch(e => toast(e.message, 'error')));
 window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
 
 applyTheme(store.get('theme'));

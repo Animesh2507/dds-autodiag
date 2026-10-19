@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DDS AutoDiag</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%2312151b'/%3E%3Cpath d='M9.5 11.5C17 11.5 15 20.5 22.5 20.5' fill='none' stroke='%23e7e9ee' stroke-width='2.4'/%3E%3Ccircle cx='8' cy='11.5' r='3' fill='%23ff5a52'/%3E%3Ccircle cx='24' cy='20.5' r='3' fill='%233ccf8e'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/static/app.css">
-<script src="/static/app.js" defer></script>
+<link rel="stylesheet" href="/static/app.css?v=20261019f">
+<script src="/static/app.js?v=20261019f" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -141,7 +141,7 @@
   <section class="panel" id="environments">
     <div class="card wide">
       <div class="card-head"><h2>Local Docker environments</h2><button type="button" data-action="load-docker">Scan containers</button></div>
-      <p class="muted">Container metadata from the Docker CLI. To compare a container with this host, run the collector inside it and load the result below.</p>
+      <p class="muted">Container metadata from the Docker CLI, including IP and published or <code>AUTODIAG_PORT</code>. Click an address to fill the live collector URL, or collect a snapshot inside the container and load it below.</p>
       <div id="docker-results">Not scanned yet.</div>
     </div>
     <div class="card">
@@ -167,13 +167,18 @@
   <!-- Transport -->
   <section class="panel" id="diagnose">
     <div class="card wide">
+      <h2>What you are comparing</h2>
+      <p class="muted" id="compare-pair-lead">Waiting for this host’s snapshot…</p>
+      <div class="pair" id="compare-pair"></div>
+    </div>
+    <div class="card wide">
       <h2>Transport diagnosis</h2>
-      <p class="muted">Pick the transport you expect your nodes to use. Checks combine this host with the peer loaded in “Hosts”, if any.</p>
+      <p class="muted">The dropdown is the transport you <em>expect</em>, not the one DDS selected. AutoDiag cannot see UDP, TCP or shared memory in use. Load a peer under Hosts to name the other side.</p>
       <div class="actions">
-        <label class="field grow"><span>Transport to investigate</span><select id="mode"><option value="auto">Auto / not sure</option><option value="intra_process">ROS 2 intra-process (same process)</option><option value="dds_shm">DDS shared memory (same machine)</option><option value="dds_udp">DDS over UDP (network)</option><option value="dds_tcp">DDS over TCP</option></select></label>
+        <label class="field grow"><span>Expected transport (not detected)</span><select id="mode"><option value="auto">Auto / not sure</option><option value="intra_process">ROS 2 intra-process (same process)</option><option value="dds_shm">DDS shared memory (same machine)</option><option value="dds_udp">DDS over UDP (network)</option><option value="dds_tcp">DDS over TCP</option></select></label>
         <button type="button" class="primary" data-action="run-diagnostic">Run checks</button>
       </div>
-      <div id="diagnostic-results" class="muted">Choose a transport and run checks.</div>
+      <div id="diagnostic-results" class="muted">Choose an expected transport and run checks.</div>
     </div>
     <div class="card wide">
       <h2>What these checks can and cannot establish</h2>
@@ -209,9 +214,14 @@
   <!-- Tools -->
   <section class="panel" id="tools">
     <div class="card wide">
-      <div class="card-head"><h2>Rule self-test</h2><button type="button" class="primary" data-action="selftest">Run self-test</button></div>
-      <p class="muted">Runs every diagnostic rule against a synthetic fault to confirm this installation detects it. No ROS 2 traffic is involved.</p>
+      <div class="card-head"><h2>Tool check</h2><button type="button" data-action="selftest">Run tool check</button></div>
+      <p class="muted">Smoke-tests <b>this AutoDiag install</b> with fake snapshots. <b>Detected</b> means the rule engine still works. It does not inspect your robot or a collector.</p>
       <div id="selftest-results"></div>
+    </div>
+    <div class="card wide">
+      <div class="card-head"><h2>Live rule check</h2><button type="button" class="primary" data-action="live-rules">Check this host + peer</button></div>
+      <p class="muted">Runs every rule on <b>this host</b> and the peer loaded under Hosts, plus QoS/type rules on this host’s live graph. <b>Fault</b> = that problem is present. <b>Pass</b> = that problem is not present. <b>Skipped</b> = needs a peer or a live graph.</p>
+      <div id="live-rules-results" class="muted">Load a peer if you have one, then run the live check.</div>
     </div>
     <div class="card wide">
       <h2>Endpoint QoS checker <small class="tag">experimental</small></h2>
@@ -242,22 +252,23 @@
       <div id="endpoint-results"></div>
     </div>
     <div class="card wide">
-      <h2>Behavior Tree viewer <small class="tag">experimental</small></h2>
-      <p class="hint">Replays the diagnosis Behavior Tree. With BehaviorTree.CPP built, this is a native trace on sample data; otherwise it is a labelled simulation. <b>It is not a live ROS 2 stream.</b></p>
+      <h2>Live pair check</h2>
+      <p class="muted">Pick a topic visible on this host, then one publisher and one subscriber. This reads the live ROS graph. Advertised QoS is checked; delivery is not verified until you read a sample.</p>
       <div class="actions">
-        <button type="button" class="primary" data-action="bt" data-fault="false">Normal trace</button>
-        <button type="button" data-action="bt" data-fault="true">Inject QoS mismatch</button>
-        <button type="button" data-action="bt-pause" id="btPause">Pause</button>
-        <button type="button" data-action="bt-replay">Replay</button>
-        <label class="check">Speed <select id="btSpeed"><option value="650">Normal</option><option value="250">Fast</option><option value="1000">Slow</option></select></label>
+        <button type="button" data-action="live-pair-discover">Discover topics</button>
+        <label class="field grow"><span>Topic</span><select id="live-pair-topic" aria-label="Live topic"><option value="">Discover topics first</option></select></label>
       </div>
-      <p id="bt-origin" class="muted">Not started</p>
-      <div class="bt-steps">
-        <div class="bt-step" id="bt-collect">Collect evidence<br><small>IDLE</small></div>
-        <div class="bt-step" id="bt-qos">Diagnose QoS<br><small>IDLE</small></div>
-        <div class="bt-step" id="bt-report">Generate report<br><small>IDLE</small></div>
+      <div class="split">
+        <label class="field"><span>Publisher</span><select id="live-pair-pub" aria-label="Publisher"><option value="">Select a topic</option></select></label>
+        <label class="field"><span>Subscriber</span><select id="live-pair-sub" aria-label="Subscriber"><option value="">Select a topic</option></select></label>
       </div>
-      <details><summary>Transition events</summary><pre id="log">No trace.</pre></details>
+      <div class="actions">
+        <label class="field"><span>Sample reliability</span><select id="live-pair-probe"><option value="auto">Auto</option><option value="best_effort">Best effort</option><option value="reliable">Reliable</option></select></label>
+        <button type="button" class="primary" data-action="live-pair-check">Check this pair</button>
+        <button type="button" data-action="live-pair-sample">Read one sample</button>
+      </div>
+      <div id="live-pair-results" class="muted">Discover topics to start.</div>
+      <pre id="live-pair-sample">No sample requested.</pre>
     </div>
   </section>
 

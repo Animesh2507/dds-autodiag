@@ -1,3 +1,4 @@
+import json
 import unittest
 from unittest.mock import patch
 from fastapi.testclient import TestClient
@@ -13,6 +14,24 @@ class TestV09(unittest.TestCase):
     def test_docker_cli_unavailable(self):
         with patch('autodiag.enhanced.shutil.which',return_value=None):
             self.assertEqual(discover_local_containers()['state'],'unavailable')
+
+    def test_docker_lists_ip_and_connect_url(self):
+        ps = {'state': 'ok', 'stdout': json.dumps({
+            'ID': 'abc123def456', 'Names': 'lab-collector', 'Image': 'dds-autodiag:lab',
+            'Status': 'Up', 'Networks': 'host'}) + '\n'}
+        inspect = {'state': 'ok', 'stdout': json.dumps([{
+            'Id': 'abc123def4569999',
+            'HostConfig': {'NetworkMode': 'host'},
+            'NetworkSettings': {'Networks': {}, 'Ports': {}},
+            'Config': {'Env': ['AUTODIAG_PORT=18087', 'ROS_DOMAIN_ID=87']},
+        }])}
+        with patch('autodiag.enhanced.shutil.which', return_value='/usr/bin/docker'), \
+             patch('autodiag.enhanced.run', side_effect=[ps, inspect]):
+            out = discover_local_containers()
+        self.assertEqual(out['state'], 'ok')
+        row = out['environments'][0]
+        self.assertEqual(row['ports'], ['18087'])
+        self.assertIn('http://127.0.0.1:18087', row['connect_urls'])
     def test_ui_and_endpoints(self):
         c=TestClient(app)
         for path in ('/','/legacy','/api/v09/overview','/api/v09/shm','/api/v09/ollama','/api/v09/environments'):

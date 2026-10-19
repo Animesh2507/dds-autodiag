@@ -8,6 +8,18 @@ All notable changes to this project are documented here. The format follows
 
 Upcoming first public release, 0.1.0. Not tagged yet.
 
+### Changed
+
+- **Transport tab.** Names this host versus the loaded peer (domain, RMW, discovery). The dropdown is the expected
+  transport; live DDS selection stays unverified. Switching peers clears a stale Run checks table.
+- **Tools.** The synthetic fixture run is labelled **Tool check**. **Live rule check** (`POST /api/live-rules`) runs
+  every published rule on this host and the loaded peer plus this host’s graph (fault / pass / skipped). **Live pair
+  check** replaces the Behavior Tree demo: pick a live publisher and subscriber.
+- **Assistant.** Invented `dds-autodiag` commands are checked against the real CLI after generation (`--transport`
+  only accepts `auto`, `intra_process`, `dds_shm`, `dds_udp`, `dds_tcp`).
+- **Lab fleet.** Optional Zenoh collector on port 18093 (`rmw_zenoh_cpp` plus a router). Zenoh versus DDS is
+  `RMW_MISMATCH` as an error.
+
 ### Added
 
 - **Diagnostics.** 23 read-only diagnostic rules for ROS 2 / DDS: domain IDs, discovery range and localhost-only
@@ -16,7 +28,7 @@ Upcoming first public release, 0.1.0. Not tagged yet.
   an unsourced ROS environment. Every finding has evidence, a next step and official documentation where one
   applies.
 - **Self-test.** 27 synthetic fault fixtures covering every rule, plus a rule self-test (`dds-autodiag selftest`,
-  `/api/selftest`). The rule reference is generated from the same fixtures.
+  `/api/selftest`, dashboard **Tool check**). The rule reference is generated from the same fixtures.
 - **Collector.** ROS variables, network interfaces, container namespaces, and ROS graph queries that wait for DDS
   discovery (`AUTODIAG_DISCOVERY_SECONDS`). The dashboard overview also detects the effective RMW via
   `ros2 doctor --report`.

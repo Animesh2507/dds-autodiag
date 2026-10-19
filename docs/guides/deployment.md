@@ -44,6 +44,9 @@ docker run --rm --net=host --ipc=host ros2-dds-autodiag
 The image is based on `ros:jazzy-ros-base`, builds the native core and BehaviorTree.CPP runner, runs as a non-root
 user, and has a health check on `/api/healthz`.
 
+For a local multi-RMW fleet (Cyclone, Fast DDS, Zenoh, domain and QoS faults) see `examples/lab-fleet/`
+(`./run-lab.sh`). That lab uses host networking and domain **87**; it is not the production image.
+
 ## Remote access
 
 Keep the server on `127.0.0.1` and use an SSH tunnel:
@@ -52,8 +55,9 @@ Keep the server on `127.0.0.1` and use an SSH tunnel:
 ssh -L 8080:127.0.0.1:8080 robot
 ```
 
-To listen on the network instead, a token is mandatory (`serve` refuses to start without one unless you pass
-`--insecure-no-auth`, for isolated networks only):
+To listen on the network instead, a dashboard token is mandatory (`serve` refuses to start without one unless you pass
+`--insecure-no-auth`, for isolated networks only). Set `AUTODIAG_AGENT_TOKEN` as well if another AutoDiag should
+connect to this process under Hosts:
 
 ```bash
 AUTODIAG_UI_TOKEN=$(openssl rand -hex 24) \
@@ -69,4 +73,5 @@ AutoDiag has no TLS of its own; put a TLS reverse proxy in front of it for anyth
 |---|---|
 | `GET /api/healthz` | Liveness probe (no diagnostics run) |
 | `GET /api/version` | Version and enabled features |
-| `GET /api/selftest` | Every rule against its synthetic faults (27 fixtures) |
+| `GET /api/selftest` | Tool check: every rule against its synthetic faults (27 fixtures) |
+| `POST /api/live-rules` | Live rule check: every published rule on this host + optional peer + this host’s graph |
