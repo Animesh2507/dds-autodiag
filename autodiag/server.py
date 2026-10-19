@@ -26,7 +26,7 @@ from .remote import fetch_snapshot
 from .agent import evidence_report, optional_model_explanation
 from .redact import mask_for_cloud, node_labels, redact_snapshot
 from .report import markdown_report, sort_issues
-from .validation import run_fixture, list_fixtures, run_all
+from .validation import run_fixture, list_fixtures, run_all, live_rule_check
 
 HERE = Path(__file__).parent
 log = logging.getLogger('autodiag')
@@ -229,6 +229,13 @@ def report(data: Comparison):
 def selftest():
     """Run every diagnostic rule against its synthetic fault fixture."""
     return run_all()
+
+
+@app.post('/api/live-rules', tags=['diagnose'])
+def live_rules(data: Comparison):
+    """Every published rule on this host, the loaded peer, and this host's live graph."""
+    graph = build_graph()
+    return live_rule_check(data.host_a, data.host_b, graph)
 
 
 @app.post('/api/diagnose', tags=['legacy'])

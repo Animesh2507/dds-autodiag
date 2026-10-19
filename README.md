@@ -53,7 +53,7 @@ RViz panel: build `ros2/rviz_autodiag_panel` with colcon, then start the server 
 | Where | What |
 |---|---|
 | `dds-autodiag …` | CLI: `doctor`, `demo`, `check`, `topics`, `inspect`, `sample`, `collect`, `compare`, `selftest` |
-| http://127.0.0.1:8080 | Dashboard: health, topics, diagnosis graph, AI assistant, compare hosts |
+| http://127.0.0.1:8080 | Dashboard: health, topics, graph, hosts, transport, tools, AI assistant |
 | http://127.0.0.1:8080/api/docs | REST API (OpenAPI) |
 | RViz → Panels → AutoDiag | Health, topic QoS, diagnosis graph, AI and Configure RViz next to your displays |
 
@@ -67,7 +67,7 @@ RViz panel: build `ros2/rviz_autodiag_panel` with colcon, then start the server 
 | **AI add-ons** | **Assistant**: answers grounded in official ROS 2 / DDS docs, streamed, with follow-ups | Local Ollama or Claude, ChatGPT, Gemini |
 | | **Configure RViz**: describe the view; every change is validated against your live system, applied on confirmation, undoable | RViz panel |
 | **Extras** | Compare hosts and containers, Markdown reports, redacted snapshots, Docker image, systemd service | |
-| **Experimental** | Native C++ endpoint checker, BehaviorTree.CPP trace viewer, the previous UI at `/legacy` | May change or be removed before 1.0 |
+| **Experimental** | Native C++ endpoint checker, the previous UI at `/legacy` | May change or be removed before 1.0 |
 
 AI is optional: without it, diagnosis and documentation search still work fully offline.
 Which model to pick? See the [AI model benchmark](docs/reference/ai-benchmark.md) (cloud and local, with

@@ -105,7 +105,7 @@ DDS AutoDiag checks all of them in seconds, explains what it found, and tells yo
 | **Core** | Diagnosis (CLI and dashboard) · live topic QoS inspection · RViz2 panel |
 | **AI add-ons** (optional) | Grounded assistant · Configure RViz with AI |
 | **Extras** | Host and container comparison · reports · redacted snapshots · Docker and systemd |
-| **Experimental** | Native C++ endpoint checker · BehaviorTree.CPP trace viewer · previous UI at `/legacy` |
+| **Experimental** | Native C++ endpoint checker · previous UI at `/legacy` |
 
 Experimental features may change or be removed before 1.0.
 
@@ -127,7 +127,8 @@ Experimental features may change or be removed before 1.0.
     dds-autodiag serve --open        # http://127.0.0.1:8080
     ```
 
-    Overview, topics, host comparison, transport checks and the AI assistant in one place.
+    Overview, topics, hosts, transport (this host vs the loaded peer), tools (tool check, live rule check, live pair)
+    and the AI assistant in one place.
     [Dashboard guide](guides/dashboard.md)
 
 === "RViz2 panel"

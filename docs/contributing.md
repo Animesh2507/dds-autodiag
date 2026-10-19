@@ -26,7 +26,7 @@ pip install -e ".[dev,cloud,docs]"
 | Task | Command |
 |---|---|
 | Python tests | `python -m pytest -q` |
-| Rule self-test | `dds-autodiag selftest` |
+| Tool check (synthetic fixtures) | `dds-autodiag selftest` |
 | C++ core | `cmake -S cpp -B cpp/build && cmake --build cpp/build && ctest --test-dir cpp/build` |
 | RViz panel | `cd ros2 && colcon build --packages-select rviz_autodiag_panel` |
 | Documentation | `mkdocs serve` (preview), `mkdocs build --strict` (the docs check) |

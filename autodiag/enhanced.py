@@ -60,6 +60,90 @@ def inspect_shm(snapshot=None, rmw=None):
                              {'label':'Fast DDS in Docker','url':'https://fast-dds.docs.eprosima.com/en/stable/docker/shm_docker.html'}]}
 
 
+def _unique(values):
+    seen, out = set(), []
+    for value in values:
+        if value and value not in seen:
+            seen.add(value)
+            out.append(value)
+    return out
+
+
+def _env_port(info):
+    for item in (info.get('Config') or {}).get('Env') or []:
+        if item.startswith('AUTODIAG_PORT='):
+            return item.split('=', 1)[1].strip()
+    return None
+
+
+def _published_ports(info):
+    ports = []
+    bindings = (info.get('NetworkSettings') or {}).get('Ports') or {}
+    if isinstance(bindings, dict):
+        for spec, binds in bindings.items():
+            container_port = str(spec).split('/', 1)[0]
+            if binds:
+                for bind in binds:
+                    host = (bind or {}).get('HostPort')
+                    if host:
+                        ports.append(str(host))
+            elif container_port:
+                ports.append(container_port)
+    env_port = _env_port(info)
+    if env_port:
+        ports.append(env_port)
+    return _unique(ports)
+
+
+def _container_ips(info):
+    ips = []
+    networks = (info.get('NetworkSettings') or {}).get('Networks') or {}
+    if isinstance(networks, dict):
+        for cfg in networks.values():
+            ip = (cfg or {}).get('IPAddress')
+            if ip:
+                ips.append(ip)
+    fallback = (info.get('NetworkSettings') or {}).get('IPAddress')
+    if fallback:
+        ips.append(fallback)
+    return _unique(ips)
+
+
+def _connect_urls(ips, ports, network_mode):
+    host_net = (network_mode or '').split(':')[0] == 'host'
+    targets = ['127.0.0.1'] if host_net else ips
+    return [f'http://{ip}:{port}' for ip in targets for port in ports]
+
+
+def _annotate_containers(items):
+    ids = [c.get('id') for c in items if c.get('id')]
+    if not ids:
+        return items
+    result = run(['docker', 'inspect', *ids], timeout=8, max_output=400_000)
+    if result.get('state') != 'ok':
+        return items
+    try:
+        details = json.loads(result.get('stdout') or '[]')
+    except ValueError:
+        return items
+    by_id = {}
+    for info in details if isinstance(details, list) else []:
+        full = info.get('Id') or ''
+        short = full[:12]
+        by_id[full] = info
+        by_id[short] = info
+    for item in items:
+        info = by_id.get(item.get('id')) or by_id.get((item.get('id') or '')[:12])
+        if not info:
+            continue
+        mode = (info.get('HostConfig') or {}).get('NetworkMode') or item.get('network') or ''
+        ips = _container_ips(info)
+        ports = _published_ports(info)
+        item.update(ips=ips, ports=ports, network_mode=mode,
+                    connect_urls=_connect_urls(ips, ports, mode))
+    return items
+
+
 def discover_local_containers():
     if not shutil.which('docker'):
         return {'state':'unavailable','environments':[],'reason':'Docker CLI not installed or not on PATH. Docker is optional.'}
@@ -71,9 +155,11 @@ def discover_local_containers():
         try:
             o=json.loads(line)
             items.append({'id':o.get('ID'),'name':o.get('Names'),'image':o.get('Image'),'status':o.get('Status'),
-                          'network':o.get('Networks'),'scope':'container_metadata_only','rmw':'unknown','domain':'unknown'})
+                          'network':o.get('Networks'),'ips':[],'ports':[],'connect_urls':[],
+                          'scope':'container_metadata_only','rmw':'unknown','domain':'unknown'})
         except ValueError: pass
-    return {'state':'ok','environments':items,'reason':'Host-side Docker metadata only. Cannot infer each container process RMW, ROS domain, or actual DDS transport.'}
+    items = _annotate_containers(items)
+    return {'state':'ok','environments':items,'reason':'Host-side Docker metadata only: name, network, IP and published or AUTODIAG_PORT. Cannot infer each container process RMW, ROS domain, or actual DDS transport.'}
 
 
 def ollama_status():

@@ -4,5 +4,5 @@
   "url": "https://animesh2507.github.io/dds-autodiag/guides/cli/",
   "ros_distro": "general",
   "keywords": "autodiag transport shared memory shm dds_shm intra_process udp tcp --transport dev shm ipc container",
-  "text": "Tell AutoDiag which transport you expect with --transport (auto, intra_process, dds_shm, dds_udp or dds_tcp) or the dashboard Transport tab; that enables mode-specific rules. For shared memory it inspects /dev/shm, free space and the IPC namespace, for example dds-autodiag check --transport dds_shm, or compare two container snapshots with --transport dds_shm. AutoDiag says explicitly that it cannot see which transport DDS selected at runtime."
+  "text": "Tell AutoDiag which transport you expect with --transport (auto, intra_process, dds_shm, dds_udp or dds_tcp only — never rmw) or the dashboard Transport tab; that enables mode-specific rules. The tab names this host versus the peer loaded under Hosts. For shared memory it inspects /dev/shm, free space and the IPC namespace on this host, for example dds-autodiag check --transport dds_shm, or compare two container snapshots with --transport dds_shm. Green local SHM prerequisites do not mean SHM is in use between two sides. AutoDiag says explicitly that it cannot see which transport DDS selected at runtime."
 }

@@ -36,7 +36,7 @@ command output and internals never reach the client.
 | Group | Examples | Notes |
 |---|---|---|
 | Service | `/api/healthz`, `/api/version` | `healthz` is public for supervisors |
-| Snapshot & diagnosis | `/api/v09/overview`, `/api/compare`, `/api/report` | Overview runs collector and capability probes in parallel |
+| Snapshot & diagnosis | `/api/v09/overview`, `/api/compare`, `/api/report`, `/api/live-rules` | Overview runs collector and capability probes in parallel; live-rules scores every published rule on the pair plus this host’s graph |
 | Live graph | `/api/topics`, `/api/topic-inspect`, `/api/topic-sample`, `/api/graph` | Wrap `live.py`; `/api/graph` uses `graph.py` (one rclpy discovery pass, `ros2` CLI fallback) |
 | Endpoint check | `/api/endpoint-check` | Native C++ core when built, else the Python fallback in `core.py`; both emit the same codes ([Endpoint check](../../reference/rules.md#endpoint-check)) |
 | AI | `/api/assistant/stream`, `/api/rviz/plan`, `/api/ai/providers/*` | Streaming via `StreamingResponse` |

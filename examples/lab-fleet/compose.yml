@@ -1,0 +1,94 @@
+# Isolated AutoDiag lab. Host networking so Cyclone can discover; domain 87 so
+# we never join the host's ROS graph. Do not change ROS_DOMAIN_ID to 0.
+name: autodiag-lab
+
+x-lab: &lab
+  build: .
+  image: dds-autodiag:lab
+  network_mode: host
+  restart: "no"
+  volumes:
+    - ../../autodiag:/opt/autodiag/autodiag
+    - ./nodes:/lab/nodes:ro
+  environment: &lab-env
+    ROS_DISTRO: jazzy
+    ROS_DOMAIN_ID: "87"
+    ROS_AUTOMATIC_DISCOVERY_RANGE: SUBNET
+    PYTHONPATH: /opt/autodiag
+    AUTODIAG_AGENT_TOKEN: lab-collector-token
+
+services:
+  robot:
+    <<: *lab
+    container_name: autodiag-lab-robot
+    hostname: lab-host
+    environment:
+      <<: *lab-env
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      AUTODIAG_PORT: "18089"
+    command: ["bash", "/lab/nodes/robot.sh"]
+
+  stack:
+    <<: *lab
+    container_name: autodiag-lab-stack
+    hostname: stack
+    environment:
+      <<: *lab-env
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      AUTODIAG_PORT: "18090"
+    command: ["bash", "/lab/nodes/stack.sh"]
+
+  laptop:
+    <<: *lab
+    container_name: autodiag-lab-laptop
+    hostname: laptop
+    environment:
+      <<: *lab-env
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+      CYCLONEDDS_URI: file:///etc/missing-cyclone.xml
+      AUTODIAG_PORT: "18088"
+    command: ["dds-autodiag", "serve", "--host", "127.0.0.1", "--port", "18088", "--log-level", "warning"]
+
+  isolated:
+    <<: *lab
+    container_name: autodiag-lab-isolated
+    hostname: isolated
+    environment:
+      <<: *lab-env
+      ROS_DOMAIN_ID: "91"
+      ROS_AUTOMATIC_DISCOVERY_RANGE: LOCALHOST
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      CYCLONEDDS_URI: file:///etc/missing-cyclone.xml
+      AUTODIAG_PORT: "18091"
+    command: ["dds-autodiag", "serve", "--host", "127.0.0.1", "--port", "18091", "--log-level", "warning"]
+
+  shm-twin:
+    <<: *lab
+    container_name: autodiag-lab-shm-twin
+    hostname: lab-host
+    environment:
+      <<: *lab-env
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      AUTODIAG_PORT: "18092"
+    command: ["dds-autodiag", "serve", "--host", "127.0.0.1", "--port", "18092", "--log-level", "warning"]
+
+  zenoh:
+    <<: *lab
+    container_name: autodiag-lab-zenoh
+    hostname: zenoh
+    environment:
+      <<: *lab-env
+      RMW_IMPLEMENTATION: rmw_zenoh_cpp
+      AUTODIAG_PORT: "18093"
+    command: ["bash", "/lab/nodes/zenoh.sh"]
+
+  collector:
+    <<: *lab
+    container_name: autodiag-lab-collector
+    hostname: collector
+    environment:
+      <<: *lab-env
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      AUTODIAG_HOST: 127.0.0.1
+      AUTODIAG_PORT: "18087"
+    command: ["dds-autodiag", "serve", "--host", "127.0.0.1", "--port", "18087", "--log-level", "warning"]

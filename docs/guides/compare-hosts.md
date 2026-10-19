@@ -54,7 +54,12 @@ AUTODIAG_ALLOWED_HOSTS=<private-ip> dds-autodiag serve --host 0.0.0.0 --port 808
 ```
 
 In your dashboard, open **Hosts → Connect to a live collector** and enter `http://<private-ip>:8081` and the
-collector token. For security, the collector is only fetched from private or loopback IPs, without proxies or
+collector token. The dashboard you have open is always **this host**; the URL you enter is the peer. Opening the
+collector’s own UI flips the pair — you then type *this* laptop as `http://<laptop-LAN-IP>:8080` (the laptop `serve`
+must listen on `0.0.0.0` and have `AUTODIAG_AGENT_TOKEN` set). From a bridge-network container, `127.0.0.1` is the
+container, not the PC.
+
+For security, the collector is only fetched from private or loopback IPs, without proxies or
 redirects, and with a size limit.
 
 Over the internet, use an SSH tunnel instead. The peer can then stay on `127.0.0.1`
@@ -66,7 +71,10 @@ ssh -L 8081:127.0.0.1:8081 robot
 
 ## Docker containers
 
-The **Local Docker environments** card lists running containers and the command to collect a snapshot from each:
+The **Local Docker environments** card lists running containers (name, network, IP, published or `AUTODIAG_PORT`)
+and the command to collect a snapshot from each. It runs `docker` on **this** AutoDiag process, so a collector
+inside a container without the Docker CLI cannot list the host or siblings. Your laptop never appears as a Docker
+row. Use Connect + token, or a snapshot file:
 
 ```bash
 docker exec my-container bash -lc "dds-autodiag collect" > my-container.json
@@ -84,6 +92,11 @@ dds-autodiag compare a.json b.json --transport dds_shm
 
 The rule needs both snapshots detected as containers and the same host identity. Docker gives each container its own
 hostname, unless they share the UTS namespace (`--uts=host`) or you set the same `--hostname`.
+
+The repo ships an isolated multi-RMW fleet (Cyclone, Fast DDS, Zenoh, domain and QoS faults) in
+`examples/lab-fleet/` (`./run-lab.sh`). Domain **87** so it never joins a host graph on domain 0. Collector token:
+`lab-collector-token`. Your laptop `serve` at http://127.0.0.1:8080 stays **this host**; connect a lab URL under
+Hosts as the peer.
 
 ## What gets compared
 

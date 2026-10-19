@@ -90,7 +90,7 @@ Status: No confirmed critical issue; full-stack health NOT established
 
 -   :material-monitor-dashboard: [**Web dashboard**](../guides/dashboard.md): every tab explained
 -   :material-robot-outline: [**Configure RViz with AI**](../guides/configure-rviz.md): build views by describing them
--   :material-compare-horizontal: [**Compare hosts**](../guides/compare-hosts.md): robot vs. laptop, container vs. container
+-   :material-compare-horizontal: [**Compare hosts**](../guides/compare-hosts.md): robot vs. laptop, container vs. container (lab fleet in `examples/lab-fleet/`)
 -   :material-alert-circle-outline: [**Diagnostic rules**](../reference/rules.md): what each finding means
 
 </div>

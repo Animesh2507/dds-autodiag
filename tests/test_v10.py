@@ -15,7 +15,7 @@ from autodiag.redact import redact_snapshot
 from autodiag.report import markdown_report
 from autodiag.server import app
 from autodiag.transport import health, transport_diagnose
-from autodiag.validation import run_all
+from autodiag.validation import run_all, live_rule_check
 
 
 def snap(host='a', **env):
@@ -47,6 +47,16 @@ class RuleTests(unittest.TestCase):
     def test_rmw_default_vs_zenoh(self):
         self.assertIn('RMW_MISMATCH', codes(snap(), snap('b', RMW_IMPLEMENTATION='rmw_zenoh_cpp')))
         self.assertNotIn('RMW_MISMATCH', codes(snap(), snap('b', RMW_IMPLEMENTATION='rmw_fastrtps_cpp')))
+
+    def test_live_rule_check_marks_fired_and_skipped(self):
+        out = live_rule_check(snap(ROS_DOMAIN_ID='0'), snap('b', ROS_DOMAIN_ID='9', RMW_IMPLEMENTATION='rmw_zenoh_cpp'))
+        by = {r['code']: r for r in out['rows']}
+        self.assertEqual(by['DOMAIN_MISMATCH']['status'], 'fired')
+        self.assertEqual(by['RMW_MISMATCH']['status'], 'fired')
+        self.assertEqual(by['RELIABILITY_MISMATCH']['status'], 'skipped')
+        self.assertGreaterEqual(len(out['rows']), 20)
+        solo = live_rule_check(snap(ROS_DOMAIN_ID='0'))
+        self.assertEqual(next(r for r in solo['rows'] if r['code'] == 'DOMAIN_MISMATCH')['status'], 'skipped')
 
     def test_cross_vendor_dds_is_warning(self):
         issues = transport_diagnose(snap(RMW_IMPLEMENTATION='rmw_cyclonedds_cpp'), snap('b', RMW_IMPLEMENTATION='rmw_fastrtps_cpp'))
@@ -149,6 +159,18 @@ class ApiTests(unittest.TestCase):
 
     def test_selftest(self):
         self.assertTrue(self.client.get('/api/selftest').json()['ok'])
+
+    def test_live_rules(self):
+        with patch('autodiag.server.build_graph', return_value={'state': 'ok', 'edges': []}):
+            r = self.client.post('/api/live-rules', json={
+                'host_a': snap(ROS_DOMAIN_ID='0'),
+                'host_b': snap('zenoh', ROS_DOMAIN_ID='0', RMW_IMPLEMENTATION='rmw_zenoh_cpp'),
+            }).json()
+        self.assertGreaterEqual(r['fired'], 1)
+        row = next(x for x in r['rows'] if x['code'] == 'RMW_MISMATCH')
+        self.assertEqual(row['status'], 'fired')
+        qos = next(x for x in r['rows'] if x['code'] == 'RELIABILITY_MISMATCH')
+        self.assertEqual(qos['status'], 'not_seen')
 
     def test_report_download(self):
         r = self.client.post('/api/report', json={'host_a': snap(ROS_DOMAIN_ID='1'), 'host_b': snap('b', ROS_DOMAIN_ID='2')})

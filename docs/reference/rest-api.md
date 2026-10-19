@@ -28,7 +28,8 @@ instead and answers 403 unless `AUTODIAG_AGENT_TOKEN` is set on the server.
 | `POST` | `/api/remote-compare` | Fetch a live collector and compare |
 | `POST` | `/api/report` | Markdown report |
 | `POST` | `/api/endpoint-check` | Check a hand-described publisher/subscriber pair ([codes](rules.md#endpoint-check)) |
-| `GET` | `/api/selftest` | Run every rule against its synthetic faults (27 fixtures) |
+| `GET` | `/api/selftest` | Tool check: every rule against its synthetic faults (27 fixtures) |
+| `POST` | `/api/live-rules` | Live rule check: every published rule on `host_a` / optional `host_b` plus this host’s live graph. JSON statuses `fired` / `not_seen` / `skipped` are shown in the dashboard as **fault** / **pass** / **skipped** |
 | `GET` | `/api/agent/snapshot` | Collector endpoint for peers (requires `X-Autodiag-Token`; 403 unless `AUTODIAG_AGENT_TOKEN` is set) |
 
 ## Live ROS graph

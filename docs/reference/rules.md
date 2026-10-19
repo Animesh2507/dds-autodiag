@@ -1,6 +1,6 @@
 # Diagnostic rules
 
-DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step and, where one applies, official documentation. `dds-autodiag selftest` runs every rule against its synthetic faults (27 fixtures) on any installation.
+DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step and, where one applies, official documentation. `dds-autodiag selftest` (dashboard **Tool check**) runs every rule against its synthetic faults (27 fixtures) on any installation. That proves the engine, not your live graph. Dashboard **Live rule check** (`POST /api/live-rules`) runs the same codes on this host, an optional peer and this host’s graph: **fault**, **pass** or **skipped**.
 
 !!! info "Generated from the rule engine"
     Severity, summary, next step and documentation on this page are produced by running each rule's self-test
@@ -164,7 +164,7 @@ DDS AutoDiag has **23 rules**. Each finding includes its evidence, a next step a
 
 | | |
 |---|---|
-| Severity | :material-close-circle:{ style="color:#c2304a" } problem (confidence: high): Zenoh RMW peer talking to a DDS RMW peer<br>:material-alert:{ style="color:#a86400" } warning (confidence: medium): Two different DDS RMWs (usually interoperable) |
+| Severity | :material-close-circle:{ style="color:#c2304a" } problem (confidence: high): Zenoh vs DDS: they cannot communicate (must be an error)<br>:material-alert:{ style="color:#a86400" } warning (confidence: medium): Fast DDS vs Cyclone: usually interoperable (must be a warning) |
 | Symptom | Peers don't see each other at all (Zenoh vs DDS), or behave inconsistently across DDS vendors. |
 | Runs with | two snapshots |
 | Next step | Use the same RMW_IMPLEMENTATION on all peers.<br>Cross-vendor DDS interoperability usually works, but use the same RMW_IMPLEMENTATION where possible to rule it out. |

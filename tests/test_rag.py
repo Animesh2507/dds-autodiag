@@ -80,6 +80,10 @@ class TestLocalRAG(unittest.TestCase):
         self.assertNotIn('compare',note.split('commands are')[0])  # real commands are not flagged
         self.assertNotIn('`dds-autodiag inspect`',note)
         self.assertIn('is not a valid command',note)
+        self.assertIn('invented or mistyped',note)
+        rmw=llm.command_note('Run `dds-autodiag check --transport rmw`.')
+        self.assertIn('`--transport` only accepts',rmw)
+        self.assertNotIn('ros2 param',rmw)
         self.assertEqual(llm.command_note('Run `dds-autodiag inspect /scan`, then `dds-autodiag serve --open`.'),'')
         # inspect and sample take topics: a parameter name is flagged, a placeholder is not
         self.assertIn('needs a ROS topic',llm.command_note('`dds-autodiag inspect wheel_names`'))

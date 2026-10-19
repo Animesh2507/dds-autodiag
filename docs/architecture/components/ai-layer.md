@@ -80,7 +80,10 @@ stateDiagram-v2
     error --> [*]
 ```
 
-Answers are capped at 12,000 characters; `thinking` progress is throttled to one event per 150 characters.
+Answers are capped at 12,000 characters; `thinking` progress is throttled to one event per 150 characters. After the
+model finishes, `command_note()` parses every `dds-autodiag …` line against the real CLI. Invented commands or
+values (for example `--transport rmw`) are attached as a warning: do not run those lines. Retrieval does not lock
+generation; this check is the safety net.
 
 ## Conversation history
 

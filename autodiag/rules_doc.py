@@ -128,8 +128,10 @@ def _rule(code, symptom, runs_with, fixtures) -> list[str]:
 def render() -> str:
     out = ['# Diagnostic rules', '',
            f'DDS AutoDiag has **{len(RULES)} rules**. Each finding includes its evidence, a next step and, where one '
-           'applies, official documentation. `dds-autodiag selftest` runs every rule against its synthetic faults '
-           f'({len(FIXTURES)} fixtures) on any installation.', '',
+           'applies, official documentation. `dds-autodiag selftest` (dashboard **Tool check**) runs every rule '
+           f'against its synthetic faults ({len(FIXTURES)} fixtures) on any installation. That proves the engine, '
+           'not your live graph. Dashboard **Live rule check** (`POST /api/live-rules`) runs the same codes on this '
+           'host, an optional peer and this host’s graph: **fault**, **pass** or **skipped**.', '',
            '!!! info "Generated from the rule engine"',
            '    Severity, summary, next step and documentation on this page are produced by running each rule\'s '
            'self-test',

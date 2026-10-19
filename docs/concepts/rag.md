@@ -78,11 +78,13 @@ first words appear within a second or two. Earlier turns of the conversation are
 `[id]` citations in the answer become links to the real documentation pages, and the retrieved sources are listed
 under the answer. The rule-based findings stay the source of truth; the answer is labeled as advice.
 
-**Commands are checked.** Small local models sometimes invent commands. Every `dds-autodiag …` command in an answer
-is parsed with the real command-line parser; an unknown command, option or value, or `inspect`/`sample` with
-something that isn't a topic, gets a visible note under the answer that lists the real commands. The instructions
-also tell the model not to carry parameter names over from a page about a different case, such as a differential
-drive when the question is about an omni or mecanum drive.
+**Commands are checked.** Retrieval puts the right pages in the prompt; it does not lock the model to them. Small
+local models still invent flags (for example `check --transport rmw`). Every `dds-autodiag …` command in an answer
+is parsed with the real command-line parser; an unknown command, option or value (including a `--transport` other
+than `auto`, `intra_process`, `dds_shm`, `dds_udp` or `dds_tcp`), or `inspect`/`sample` with something that isn't a
+topic, gets a visible note: the assistant invented or mistyped it — do not run those lines. Trust the findings first.
+The instructions also tell the model not to carry parameter names over from a page about a different case, such as a
+differential drive when the question is about an omni or mecanum drive.
 
 ## Configure RViz: grounding without documents
 
