@@ -1,7 +1,7 @@
 # Contributing
 
-Contributions are welcome, especially test reports from setups other than Jazzy with Fast DDS: Humble, Rolling,
-Cyclone DDS, Zenoh, multi-host networks, Docker and Kubernetes.
+Contributions are welcome, especially field reports beyond the Jazzy + Fast DDS host tests and the Humble container
+smoke test: Rolling, Cyclone DDS, Zenoh, multi-host networks, Docker and Kubernetes.
 
 ## Ways to help
 

@@ -51,7 +51,9 @@ Tests for the optional Claude SDK skip cleanly when it isn't installed.
 
 ## Known limitations
 
-- Tested on ROS 2 **Jazzy** with **Fast DDS**; Humble, Rolling, Cyclone DDS and Zenoh need more field testing.
+- Tested on ROS 2 **Jazzy** with **Fast DDS** on Ubuntu 24.04. Smoke-tested on **Humble** (`doctor`, 27 rule fixtures,
+  `demo`, `check`, `inspect` in `ros:humble-ros-base`). Rolling and more Humble / Cyclone / Zenoh field reports are
+  still welcome.
 - A snapshot describes the collector's own environment; nodes may override RMW or domain in their launch files.
 - The DDS transport selected at runtime and packet-level reachability aren't measured.
 - RViz planning covers `rviz_default_plugins` display types; plugin displays need catalog entries.
