@@ -60,7 +60,7 @@ AutoDiagPanel::AutoDiagPanel(QWidget * parent)
   token_edit_->setPlaceholderText(tr("token (only if AUTODIAG_UI_TOKEN is set)"));
   auto * connect_button = new QPushButton(tr("Connect"));
   auto * dashboard_button = new QPushButton(tr("Dashboard"));
-  dashboard_button->setToolTip(tr("Open the full AutoDiag dashboard in a browser"));
+  dashboard_button->setToolTip(tr("Open this view in the full AutoDiag dashboard (browser)"));
   connection_label_ = new QLabel(tr("Not connected"));
   connection_label_->setWordWrap(true);
 
@@ -94,6 +94,9 @@ AutoDiagPanel::AutoDiagPanel(QWidget * parent)
   topic_combo_ = new QComboBox;
   topic_combo_->setEditable(true);
   topic_combo_->setInsertPolicy(QComboBox::NoInsert);
+  // Long "topic  [type]" entries must not widen RViz's side dock.
+  topic_combo_->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+  topic_combo_->setMinimumContentsLength(12);
   topic_combo_->setToolTip(tr("Topics used by RViz displays are listed first (⚠ = display reports a problem)"));
   auto * topics_button = new QPushButton(tr("↻"));
   topics_button->setToolTip(tr("Reload topics"));
@@ -171,6 +174,8 @@ AutoDiagPanel::AutoDiagPanel(QWidget * parent)
   tabs_ = new QTabWidget;
   tabs_->addTab(health_tab, tr("Health"));
   tabs_->addTab(topic_tab, tr("Topic"));
+  QWidget * graph_tab = buildGraphTab();
+  tabs_->addTab(graph_tab, tr("Graph"));
   tabs_->addTab(ai_tab, tr("AI assistant"));
   tabs_->addTab(buildConfigureTab(), tr("Configure RViz"));
 
@@ -195,6 +200,12 @@ AutoDiagPanel::AutoDiagPanel(QWidget * parent)
   connect(question_edit_, &QLineEdit::returnPressed, this, &AutoDiagPanel::ask);
   connect(stop_button_, &QPushButton::clicked, this, &AutoDiagPanel::stopAsk);
   connect(new_chat_button_, &QPushButton::clicked, this, &AutoDiagPanel::newChat);
+  // Checking every topic takes a few seconds: only when the Graph tab is first opened, then on request.
+  connect(tabs_, &QTabWidget::currentChanged, this, [this, graph_tab]() {
+      if (tabs_->currentWidget() == graph_tab && !graph_loaded_) {
+        loadGraph();
+      }
+    });
   // Mark the RViz config as modified when settings that are saved change.
   connect(server_edit_, &QLineEdit::editingFinished, this, [this]() {Q_EMIT configChanged();});
   connect(model_combo_, &QComboBox::currentTextChanged, this, [this]() {Q_EMIT configChanged();});
@@ -320,13 +331,13 @@ void AutoDiagPanel::connectToServer()
           return;
         }
         connect_attempts_ = 0;
-        setConnection(errorText(reply), QStringLiteral("#c2304a"));
+        setConnection(errorText(reply), QStringLiteral("#d23a31"));
         return;
       }
       connect_attempts_ = 0;
       const QJsonObject info = parseObject(reply->readAll());
       setConnection(tr("Connected to AutoDiag %1").arg(info.value(QStringLiteral("version")).toString()),
-                    QStringLiteral("#0f8a64"));
+                    QStringLiteral("#11895a"));
       refreshHealth();
       refreshTopics();
       loadProviders();
@@ -347,8 +358,8 @@ void AutoDiagPanel::refreshHealth()
       const QJsonObject health = data.value(QStringLiteral("health")).toObject();
       const QJsonObject summary = data.value(QStringLiteral("summary")).toObject();
       const QString status = health.value(QStringLiteral("status")).toString();
-      const QString color = status == QLatin1String("issue_detected") ? QStringLiteral("#c2304a") :
-        (status == QLatin1String("healthy") ? QStringLiteral("#0f8a64") : QStringLiteral("#a86400"));
+      const QString color = status == QLatin1String("issue_detected") ? QStringLiteral("#d23a31") :
+        (status == QLatin1String("healthy") ? QStringLiteral("#11895a") : QStringLiteral("#a26b00"));
       health_label_->setText(
         QStringLiteral("<b style='color:%1'>%2</b><br><small>%3 · ROS %4 · domain %5 · %6 nodes · %7 topics</small>")
         .arg(color, health.value(QStringLiteral("summary")).toString().toHtmlEscaped(),
@@ -490,11 +501,11 @@ void AutoDiagPanel::inspectTopic()
         .arg(data.value(QStringLiteral("subscriber_count")).toInt());
       const QJsonArray findings = data.value(QStringLiteral("findings")).toArray();
       if (findings.isEmpty()) {
-        html += tr("<p style='color:#0f8a64'>Advertised QoS is compatible. Delivery is not verified.</p>");
+        html += tr("<p style='color:#11895a'>Advertised QoS is compatible. Delivery is not verified.</p>");
       }
       for (const QJsonValue & value : findings) {
         const QJsonObject f = value.toObject();
-        html += QStringLiteral("<p style='color:#c2304a'><b>%1 %2</b><br>%3<br><i>%4</i></p>").arg(
+        html += QStringLiteral("<p style='color:#d23a31'><b>%1 %2</b><br>%3<br><i>%4</i></p>").arg(
           severityMark(f.value(QStringLiteral("severity")).toString()),
           f.value(QStringLiteral("code")).toString().toHtmlEscaped(),
           f.value(QStringLiteral("summary")).toString().toHtmlEscaped(),
@@ -675,7 +686,7 @@ void AutoDiagPanel::handleStreamEvent(const QJsonObject & event)
       .arg(event.value(QStringLiteral("first_token_seconds")).toDouble(), 0, 'f', 1)
       .arg(event.value(QStringLiteral("seconds")).toDouble(), 0, 'f', 1));
   } else if (type == QLatin1String("error")) {
-    answer_status_->setText(QStringLiteral("<span style='color:#c2304a'>%1</span>")
+    answer_status_->setText(QStringLiteral("<span style='color:#d23a31'>%1</span>")
       .arg(event.value(QStringLiteral("message")).toString().toHtmlEscaped()));
   }
 }
@@ -739,14 +750,19 @@ void AutoDiagPanel::onStreamFinished()
     answer_status_->setText(stream_timer_.elapsed() >= kStreamTimeoutMs - 1000 ?
       tr("The model took too long and was stopped.") : tr("Stopped."));
   } else if (reply->error() != QNetworkReply::NoError) {
-    answer_status_->setText(QStringLiteral("<span style='color:#c2304a'>%1</span>")
+    answer_status_->setText(QStringLiteral("<span style='color:#d23a31'>%1</span>")
       .arg(errorText(reply).toHtmlEscaped()));
   }
 }
 
 void AutoDiagPanel::openDashboard()
 {
-  QDesktopServices::openUrl(QUrl(server_edit_->text().trimmed() + QStringLiteral("/#assistant")));
+  // The dashboard page that matches the current tab: Health, Topic, Graph, AI assistant, Configure RViz.
+  static const QStringList pages = {QStringLiteral("overview"), QStringLiteral("topics"), QStringLiteral("graph"),
+    QStringLiteral("assistant"), QStringLiteral("overview")};
+  const QString page = pages.value(tabs_->currentIndex(), QStringLiteral("overview"));
+  const QString base = server_edit_->text().trimmed().remove(QRegularExpression(QStringLiteral("/+$")));
+  QDesktopServices::openUrl(QUrl(base + QStringLiteral("/#") + page));
 }
 
 }  // namespace rviz_autodiag_panel

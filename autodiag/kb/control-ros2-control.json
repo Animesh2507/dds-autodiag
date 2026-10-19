@@ -1,0 +1,8 @@
+{
+  "id": "control-ros2-control",
+  "title": "ros2_control overview",
+  "url": "https://control.ros.org/jazzy/doc/getting_started/getting_started.html",
+  "ros_distro": "jazzy",
+  "keywords": "ros2_control controller_manager controller controllers hardware interface interfaces command state claimed urdf update_rate",
+  "text": "ros2_control connects controllers to hardware. The controller_manager runs a real-time loop at update_rate (100 Hz by default): it reads hardware states, updates every active controller and writes commands. Hardware components, described in the robot URDF's ros2_control tag, export command interfaces (for example a joint velocity) and state interfaces (position, velocity). A command interface can be claimed by only one active controller at a time, so activating a second controller that needs it fails. Joint or interface names that differ between the URDF and the controller YAML are a common reason a controller does not load."
+}

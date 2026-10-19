@@ -1,0 +1,8 @@
+{
+  "id": "ros-node-arguments",
+  "title": "Remapping, namespaces and node arguments",
+  "url": "https://docs.ros.org/en/jazzy/How-To-Guides/Node-arguments.html",
+  "ros_distro": "jazzy",
+  "keywords": "remap remapping namespace ns ros-args node name relative absolute argument",
+  "text": "ROS arguments follow --ros-args: -r old:=new remaps a topic or service, -r __ns:=/robot1 sets the namespace, -r __node:=name renames the node, -p name:=value sets a parameter and --params-file loads a YAML file. Relative names (without a leading slash) are resolved inside the node namespace; absolute names such as /scan are not. A subscriber that receives nothing often listens on /robot1/scan while the publisher uses /scan: compare the full names in ros2 topic list."
+}

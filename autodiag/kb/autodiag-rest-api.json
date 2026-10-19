@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-rest-api",
+  "title": "The AutoDiag REST API",
+  "url": "https://animesh2507.github.io/dds-autodiag/reference/rest-api/",
+  "ros_distro": "general",
+  "keywords": "autodiag rest api http endpoint endpoints openapi integrate integration script automation healthz json call script scripts program programmatically",
+  "text": "Everything the dashboard and the RViz panel do goes through a REST API, documented with OpenAPI at /api/docs. Useful endpoints: GET /api/healthz (liveness), /api/version, /api/topics, /api/topic-inspect?topic=/scan, /api/graph, POST /api/compare and /api/report, and the assistant stream at /api/assistant/stream. The API is read-only, listens on 127.0.0.1 by default and needs a token when exposed on the network."
+}

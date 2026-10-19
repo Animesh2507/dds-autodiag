@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-benchmark",
+  "title": "Choosing an AI model: the AutoDiag benchmark",
+  "url": "https://animesh2507.github.io/dds-autodiag/reference/ai-benchmark/",
+  "ros_distro": "general",
+  "keywords": "autodiag benchmark bench model models which model choose fast accurate local cloud qwen claude haiku",
+  "text": "dds-autodiag bench scores AI models on eight fixed Configure RViz scenarios (correct actions, invalid suggestions, time and tokens per plan) without a robot. In the published results, Claude Opus, Sonnet and Haiku 5.5 got every scenario right (Haiku fastest, about 2 s per plan), and the local qwen3:4b-instruct also got every scenario right at about 32 s per plan on a laptop CPU. Run it on your machine with --model provider:model."
+}

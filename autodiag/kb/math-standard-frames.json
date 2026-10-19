@@ -1,0 +1,8 @@
+{
+  "id": "math-standard-frames",
+  "title": "Standard frames map, odom and base_link (REP 105)",
+  "url": "https://www.ros.org/reps/rep-0105.html",
+  "ros_distro": "general",
+  "keywords": "frame frames map odom base_link earth localization amcl slam drift jump parent tree",
+  "text": "base_link is fixed to the robot. odom is a world-fixed frame in which the robot moves continuously but drifts over time, which suits local control. map is world-fixed and corrected by localization, so the robot pose in map does not drift but can jump. The tree is map -> odom -> base_link: localization (for example AMCL or SLAM) publishes map -> odom and odometry publishes odom -> base_link. Two nodes publishing the same transform, or a localization publishing map -> base_link directly, breaks the tree, because a frame can have only one parent."
+}

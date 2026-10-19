@@ -1,0 +1,8 @@
+{
+  "id": "ros-middleware",
+  "title": "ROS 2 middleware (RMW) implementations",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Different-Middleware-Vendors.html",
+  "ros_distro": "jazzy",
+  "keywords": "rmw middleware rmw_implementation fastrtps fastdds cyclonedds connext zenoh vendor dds",
+  "text": "ROS 2 communicates through an RMW implementation: Fast DDS (rmw_fastrtps_cpp, the default on Jazzy), Cyclone DDS (rmw_cyclonedds_cpp), Connext, or Zenoh (rmw_zenoh_cpp). RMW_IMPLEMENTATION selects it per process. Different DDS implementations can usually talk to each other, but shared memory, security and some QoS details differ, and Zenoh does not talk to DDS at all. Use the same RMW on every machine unless you have tested the combination."
+}

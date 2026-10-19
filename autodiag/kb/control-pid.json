@@ -1,0 +1,8 @@
+{
+  "id": "control-pid",
+  "title": "PID control and anti-windup",
+  "url": "https://control.ros.org/jazzy/doc/control_toolbox/doc/index.html",
+  "ros_distro": "jazzy",
+  "keywords": "pid controller gain gains proportional integral derivative windup anti-windup antiwindup saturation clamp tuning oscillation overshoot",
+  "text": "A PID controller computes command = P error + I sum(error dt) + D d(error)/dt, with error = desired - measured. P reacts to the current error (too high: overshoot and oscillation), I removes the remaining steady error (too high: windup and slow overshoot) and D damps motion but amplifies sensor noise. In control_toolbox, u_clamp bounds the output and antiwindup_strat (NONE, BACK_CALCULATION or CONDITIONAL_INTEGRATION) stops the integral from growing while the output is saturated. Tune P first, then D to damp, then a small I, at the real loop rate: a different rate changes how the same gains behave."
+}

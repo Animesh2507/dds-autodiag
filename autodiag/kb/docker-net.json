@@ -4,5 +4,5 @@
   "url": "https://docs.docker.com/engine/network/",
   "text": "Docker containers can use host, bridge or other network modes. Bridge mode alters visibility of multicast and network interfaces. Check container network namespace and firewall rules without assuming cause.",
   "ros_distro": "Docker",
-  "keywords": "DDS ROS2 discovery multicast containers interfaces QoS troubleshooting"
+  "keywords": "docker container containers network net=host host bridge multicast firewall see each other discovery"
 }

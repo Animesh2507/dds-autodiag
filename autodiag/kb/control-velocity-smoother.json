@@ -1,0 +1,8 @@
+{
+  "id": "control-velocity-smoother",
+  "title": "Nav2 velocity smoother",
+  "url": "https://docs.nav2.org/jazzy/configuration_and_development/configuration_guide/core_servers/configuring_velocity_smoother/",
+  "ros_distro": "jazzy",
+  "keywords": "velocity smoother nav2 acceleration limits max_velocity min_velocity max_accel max_decel deadband feedback open_loop closed_loop velocity_timeout enable_stamped_cmd_vel",
+  "text": "Nav2's velocity smoother limits velocities and accelerations before commands reach the base: max_velocity, min_velocity (negative values allow reversing), max_accel and max_decel per axis [x, y, theta], and deadband_velocity for speeds the motors cannot achieve. feedback OPEN_LOOP assumes the last command was reached; CLOSED_LOOP uses odometry from odom_topic. After velocity_timeout (1 s) without input it sends zero and stops publishing. In Jazzy it publishes Twist unless enable_stamped_cmd_vel is true, which matters for ros2_control controllers that expect TwistStamped."
+}

@@ -1,5 +1,5 @@
 site_name: DDS AutoDiag
-site_description: Tells you why your ROS 2 nodes can't talk to each other, and fixes your RViz view for you. Read-only ROS 2 / DDS diagnostics with a grounded AI assistant and AI-driven RViz configuration.
+site_description: "AI-powered diagnostics for ROS 2: find out why your nodes can't talk, see every broken connection, and let AI guide the fix. Read-only, with a grounded AI assistant and AI-driven RViz configuration."
 site_author: Animesh Gunaki
 repo_name: Animesh2507/dds-autodiag
 repo_url: https://github.com/Animesh2507/dds-autodiag
@@ -9,12 +9,12 @@ copyright: Copyright &copy; 2026 Animesh Gunaki · MIT License
 theme:
   name: material
   logo: assets/images/logo.svg
-  favicon: assets/images/logo.svg
+  favicon: assets/images/favicon.svg
   icon:
     repo: fontawesome/brands/github
   font:
-    text: Inter
-    code: JetBrains Mono
+    text: IBM Plex Sans
+    code: IBM Plex Mono
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -83,6 +83,7 @@ nav:
       - Quality & testing: architecture/quality.md
   - Reference:
       - Diagnostic rules: reference/rules.md
+      - AI model benchmark: reference/ai-benchmark.md
       - Configuration: reference/configuration.md
       - REST API: reference/rest-api.md
   - Troubleshooting: troubleshooting.md

@@ -2,6 +2,6 @@
   "id": "ros-discovery",
   "title": "ROS 2 discovery troubleshooting",
   "url": "https://docs.ros.org/en/jazzy/Tutorials/Advanced/Improved-Dynamic-Discovery.html",
-  "keywords": "discovery multicast peers subnet ROS_AUTOMATIC_DISCOVERY_RANGE ROS_STATIC_PEERS",
+  "keywords": "discovery multicast peers subnet ROS_AUTOMATIC_DISCOVERY_RANGE ROS_STATIC_PEERS see each other machine machines network firewall",
   "text": "ROS 2 discovery can be constrained by discovery-range and static-peer settings. Review localhost-only restrictions, networks, firewall policies, configured discovery peers, and ROS_DOMAIN_ID on both sides."
 }

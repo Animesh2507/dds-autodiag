@@ -6,7 +6,7 @@
 ![Version](https://img.shields.io/badge/version-0.1.0-0b7fab)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**Tells you why your ROS 2 nodes can't talk to each other, and fixes your RViz view for you.**
+**AI-powered diagnostics for ROS 2: find out why your nodes can't talk, see every broken connection, and let AI guide the fix.**
 
 ## The problem
 
@@ -23,11 +23,13 @@ The cause is usually one mismatched setting: QoS reliability or durability, `ROS
 links the official docs, and can fix your RViz view for you. It is **read-only**: it never touches your robot or
 ROS configuration.
 
-![Diagnosis graph: every connection checked; the red /scan link from lidar_driver to rviz2 carries no data](docs/assets/media/diagnosis-graph.png)
+![Diagnosis graph: every connection checked; the red /scan link from lidar_driver to rviz carries no data](docs/assets/media/diagnosis-graph.png)
 
 ## Quick start
 
 ```bash
+sudo apt install python3-venv  # once: Ubuntu doesn't ship it by default
+git clone https://github.com/Animesh2507/dds-autodiag.git && cd dds-autodiag
 source /opt/ros/jazzy/setup.bash
 python3 -m venv --system-site-packages .venv && source .venv/bin/activate
 pip install .
@@ -53,21 +55,23 @@ RViz panel: build `ros2/rviz_autodiag_panel` with colcon, then start the server 
 | `dds-autodiag …` | CLI: `doctor`, `demo`, `check`, `topics`, `inspect`, `sample`, `collect`, `compare`, `selftest` |
 | http://127.0.0.1:8080 | Dashboard: health, topics, diagnosis graph, AI assistant, compare hosts |
 | http://127.0.0.1:8080/api/docs | REST API (OpenAPI) |
-| RViz → Panels → AutoDiag | Health, topic QoS, AI and Configure RViz next to your displays |
+| RViz → Panels → AutoDiag | Health, topic QoS, diagnosis graph, AI and Configure RViz next to your displays |
 
 ## What's included
 
 | | Feature | |
 |---|---|---|
 | **Core** | **Diagnosis**: 23 rules with evidence, a next step and official docs where one applies; live topic QoS inspection; one-shot message sampling | CLI · dashboard |
-| | **Diagnosis graph**: every publisher → subscriber connection, broken ones in red, fix one click away | dashboard |
-| | **RViz2 panel**: health, topic QoS and AI, right next to your displays | `ros2/rviz_autodiag_panel` |
+| | **Diagnosis graph**: every publisher → subscriber connection, broken ones in red, fix one click away | dashboard · RViz panel |
+| | **RViz2 panel**: health, topic QoS, the diagnosis graph and AI, right next to your displays | `ros2/rviz_autodiag_panel` |
 | **AI add-ons** | **Assistant**: answers grounded in official ROS 2 / DDS docs, streamed, with follow-ups | Local Ollama or Claude, ChatGPT, Gemini |
 | | **Configure RViz**: describe the view; every change is validated against your live system, applied on confirmation, undoable | RViz panel |
 | **Extras** | Compare hosts and containers, Markdown reports, redacted snapshots, Docker image, systemd service | |
 | **Experimental** | Native C++ endpoint checker, BehaviorTree.CPP trace viewer, the previous UI at `/legacy` | May change or be removed before 1.0 |
 
 AI is optional: without it, diagnosis and documentation search still work fully offline.
+Which model to pick? See the [AI model benchmark](docs/reference/ai-benchmark.md) (cloud and local, with
+`dds-autodiag bench` to run it on your machine).
 
 ## Documentation
 

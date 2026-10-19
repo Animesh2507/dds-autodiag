@@ -76,5 +76,7 @@ Add an entry to `CATALOG` in `autodiag/rviz_agent.py`:
 ```
 
 `topic_prop` names the display's topic property; it defaults to `"Topic"` and is `None` for topic-less displays such
-as TF, Grid and Axes (which also have empty `types`). Use the exact class id and property names RViz shows. Optionally add a conventional topic to `DEFAULT_TOPICS`. Plugin
-display types only work when that plugin is installed.
+as TF, Grid and Axes (which also have empty `types`). Use the exact class id and property names RViz shows. Optionally add a conventional topic to `DEFAULT_TOPICS`, and
+add the words users would say for it to `TYPE_WORDS` (e.g. `'Imu': ('imu', 'orientation')`) so the slim prompt
+retrieves it. Plugin display types only work when that plugin is installed. Run `dds-autodiag bench` before and after
+to check plans did not get worse.

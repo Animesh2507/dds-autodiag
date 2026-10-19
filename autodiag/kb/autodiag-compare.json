@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-compare",
+  "title": "Comparing two robots, hosts or containers with AutoDiag",
+  "url": "https://animesh2507.github.io/dds-autodiag/guides/compare-hosts/",
+  "ros_distro": "general",
+  "keywords": "autodiag this tool compare comparison two robots robot hosts host machines laptop containers config configuration difference differences snapshot collect transfer salt redact peer",
+  "text": "To compare two robots (or a robot and a laptop, or two containers), save a snapshot on each and compare the files: run dds-autodiag collect --redact --salt team42 -o robot1.json on the first robot and the same with -o robot2.json on the second (same salt on both), copy the files to one machine and run dds-autodiag compare robot1.json robot2.json --report report.md. The dashboard does the same under Compare hosts: load a snapshot file, paste JSON or connect to a token-protected live collector. It compares the domain ID, RMW, ROS distro, discovery range, network interfaces and IPC namespace, and turns differences into findings. AutoDiag never copies configuration: use the comparison to see what differs, change the settings yourself, then compare again to confirm."
+}

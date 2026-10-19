@@ -9,7 +9,7 @@ hide:
 
 # DDS AutoDiag
 
-<p class="ad-tagline">Tells you why your ROS 2 nodes can't talk to each other, and fixes your RViz view for you. Every AI change is checked against your live system first.</p>
+<p class="ad-tagline">AI-powered diagnostics for ROS 2: find out why your nodes can't talk, see every broken connection, and let AI guide the fix. Every AI change is checked against your live system first.</p>
 
 [Get started :material-rocket-launch:](getting-started/installation.md){ .md-button .md-button--primary }
 [See how it works :material-graph:](architecture/index.md){ .md-button }
@@ -137,8 +137,8 @@ Experimental features may change or be removed before 1.0.
     source install/setup.bash && rviz2
     ```
 
-    Panels → Add New Panel → rviz_autodiag_panel → **AutoDiag**. Health, topic QoS, AI assistant and
-    Configure RViz, right next to your visualization. [RViz2 panel guide](guides/rviz-panel.md)
+    Panels → Add New Panel → rviz_autodiag_panel → **AutoDiag**. Health, topic QoS, the diagnosis graph, AI assistant
+    and Configure RViz, right next to your visualization. [RViz2 panel guide](guides/rviz-panel.md)
 
 ## How it fits together
 

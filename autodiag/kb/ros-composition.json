@@ -1,0 +1,8 @@
+{
+  "id": "ros-composition",
+  "title": "Composition (components in one process)",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Composition.html",
+  "ros_distro": "jazzy",
+  "keywords": "composition component components container composable intra-process load",
+  "text": "Composable nodes are components loaded into a container process, with ros2 component load or ComposableNode in a launch file. Nodes in the same container can use intra-process communication, which avoids serialization and copies. ros2 component list shows the containers and their components. Composition changes performance, not the topic API: a component still talks to other processes over the middleware as usual."
+}

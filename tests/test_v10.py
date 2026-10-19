@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 import tempfile
 import unittest
 from contextlib import redirect_stdout, redirect_stderr
@@ -110,6 +111,18 @@ class SecurityTests(unittest.TestCase):
         self.assertNotIn('<script>', html)
         self.assertNotIn('style="', html)
         self.assertEqual(self.client.get('/static/app.js').status_code, 200)
+
+    def test_ui_fonts_ship_with_the_package(self):
+        # The dashboard works offline: every font the stylesheet names is a local file, served same-origin.
+        css = self.client.get('/static/app.css').text
+        fonts = re.findall(r'url\("(fonts/[^"]+)"\)', css)
+        self.assertGreaterEqual(len(fonts), 6)
+        for font in fonts:
+            r = self.client.get('/static/' + font)
+            self.assertEqual(r.status_code, 200, font)
+            self.assertEqual(r.content[:4], b'wOF2', font)
+        self.assertNotIn('fonts.googleapis', css)
+        self.assertEqual(self.client.get('/static/fonts/OFL.txt').status_code, 200)
 
     def test_token_auth(self):
         with patch.dict(os.environ, {'AUTODIAG_UI_TOKEN': 'secret-token'}):

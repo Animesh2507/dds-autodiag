@@ -1,0 +1,8 @@
+{
+  "id": "ros-launch",
+  "title": "ROS 2 launch files",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Basic/About-Launch.html",
+  "ros_distro": "jazzy",
+  "keywords": "launch launch_file python xml yaml include argument remapping namespace ros2 launch",
+  "text": "Launch files start and configure many nodes at once, written in Python, XML or YAML. They set parameters, remappings, namespaces and environment variables per node and can include other launch files. ros2 launch pkg file.launch.py --show-args lists the arguments a launch file accepts. A node that behaves differently under launch than with ros2 run usually gets other parameters, remappings or a namespace from the launch file; compare with ros2 node info and ros2 param list."
+}

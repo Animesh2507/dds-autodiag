@@ -147,8 +147,24 @@ class PlanError(Exception):
 _topics_cache: dict = {'at': 0.0, 'value': None}
 
 
-def _live_topics() -> dict[str, str]:
+def _discover() -> dict | None:
+    """One discovery pass over the whole graph that waits until every node's endpoints are in (see graph.py).
+
+    Per-topic `ros2 topic info` calls can miss a publisher under load, which made plans skip QoS fixes."""
+    from .graph import discover_all
+    return discover_all()
+
+
+def _snapshot_inspector(snapshot: dict | None):
+    if snapshot is None:
+        return None
+    return lambda topic: {'state': 'ok', 'endpoints': snapshot.get(topic, [])}
+
+
+def _live_topics(snapshot: dict | None = None) -> dict[str, str]:
     """topic -> type, cached briefly (each query spins up a ROS node)."""
+    if snapshot is not None:
+        return {t: eps[0]['type'] for t, eps in snapshot.items() if eps and eps[0].get('type')}
     if _topics_cache['value'] is None or time.monotonic() - _topics_cache['at'] > 15:
         result = topic_list()
         _topics_cache.update(at=time.monotonic(),
@@ -171,27 +187,97 @@ def _short(msg_type: str) -> str:
     return msg_type.rsplit('/', 1)[-1]
 
 
-def _context(state: dict, topics: dict[str, str], qos: dict[str, dict]) -> str:
-    """Compact plain-text context: small local models read this far faster than JSON."""
+def _fixed_frame_fix(state: dict) -> str | None:
+    """A frame to switch to when the Fixed Frame is not in the TF tree (then RViz shows nothing at all)."""
+    frames, fixed = state.get('frames') or [], state.get('fixed_frame')
+    if not frames or not fixed or fixed in frames:
+        return None
+    return next((f for f in ('map', 'odom', 'world', 'base_link') if f in frames), frames[0])
+
+
+# Words in a request that point to display types (retrieval keys for the slim prompt).
+TYPE_WORDS = {
+    'PointCloud2': ('point cloud', 'pointcloud', 'cloud', '3d', 'lidar', 'velodyne', 'points', 'depth'),
+    'LaserScan': ('laser', 'scan', 'lidar', '2d'),
+    'Map': ('map', 'costmap', 'occupancy', 'grid map'),
+    'Path': ('path', 'plan', 'trajectory', 'route'),
+    'RobotModel': ('robot model', 'robot', 'urdf', 'model', 'mesh'),
+    'Image': ('image', 'camera', 'picture', 'video', 'rgb'),
+    'Camera': ('camera',),
+    'DepthCloud': ('depth',),
+    'Polygon': ('footprint', 'polygon', 'outline'),
+    'Pose': ('pose', 'goal'),
+    'PoseWithCovariance': ('amcl', 'localization', 'covariance'),
+    'PoseArray': ('particle', 'pose array'),
+    'Odometry': ('odom', 'odometry'),
+    'Marker': ('marker',), 'MarkerArray': ('marker', 'markers'),
+    'TF': ('tf', 'frame', 'frames', 'transform'),
+    'Grid': ('grid',), 'Axes': ('axes', 'axis frame'),
+    'Range': ('range', 'sonar', 'ultrasonic'), 'GridCells': ('grid cells', 'cells'),
+    'TwistStamped': ('twist', 'velocity', 'cmd_vel'), 'Wrench': ('wrench', 'force', 'torque'),
+}
+
+
+def _retrieve_types(request: str, state: dict, topics: dict[str, str]) -> set[str] | None:
+    """Display types relevant to this request; None when nothing matched (then the full catalog is used)."""
+    text = ' ' + re.sub(r'[^a-z0-9_/ ]+', ' ', request.lower()) + ' '
+    wanted = {name for name, words in TYPE_WORDS.items() if any(f' {w} ' in text or f' {w}s ' in text for w in words)}
+    for t, ty in topics.items():  # a topic named in the request brings its display types
+        if t.lower() in request.lower():
+            wanted |= {n for n, c in CATALOG.items() if ty in c['types']}
+    for d in state.get('displays', []):  # displays the request names (by name or type)
+        name, dtype = str(d.get('name', '')).lower(), display_type_name(d.get('type', '')) or ''
+        if name and (name in request.lower() or _loose(name) in _loose(request)):
+            wanted.add(dtype)
+    if not wanted:
+        return None
+    # Displays that show nothing are often what the user means ("nothing shows").
+    wanted |= {display_type_name(d.get('type', '')) or '' for d in state.get('displays', [])
+               if d.get('status') in ('Warn', 'Error')}
+    return {w for w in wanted if w in CATALOG}
+
+
+def _context(state: dict, topics: dict[str, str], qos: dict[str, dict], request: str | None = None) -> str:
+    """Compact plain-text context: small local models read this far faster than JSON.
+
+    With `request`, the context is slimmed by retrieval: only display types the request needs, full settings
+    only for displays it touches, and only matching topics. Prompt reading dominates on a CPU, so this is the
+    main speed lever for local models."""
+    focus = _retrieve_types(request, state, topics) if request else None
     lines = [f"Fixed frame: {state.get('fixed_frame') or 'unknown'}",
              'TF frames: ' + (', '.join(state.get('frames', [])[:60]) or 'unknown')]
+    better = _fixed_frame_fix(state)
+    if better:
+        lines.append(f'Diagnosed problem: the Fixed Frame "{state.get("fixed_frame")}" does not exist in the TF tree, so '
+                     f'RViz can show nothing -> set_fixed_frame to "{better}".')
     lines.append('Current displays:')
     used_types = set()
     for d in state.get('displays', [])[:40]:
         dtype = display_type_name(d.get('type', '')) or d.get('type', '?')
         used_types.add(dtype)
-        props = '; '.join(f'{k}={v}' for k, v in list((d.get('properties') or {}).items())[:25])
         fact = qos.get(d.get('name', ''), {}).get('fact', '')
+        detailed = focus is None or dtype in focus or bool(fact)
+        props = '; '.join(f'{k}={v}' for k, v in list((d.get('properties') or {}).items())[:25]) if detailed else ''
         lines.append(f'- "{d.get("name")}" ({dtype}) {"enabled" if d.get("enabled") else "disabled"}, '
                      f'status {d.get("status") or "?"}, topic {d.get("topic") or "-"}'
                      + (f'; {fact}' if fact else '') + (f'; {props}' if props else ''))
     if not state.get('displays'):
         lines.append('- (none)')
-    lines.append('Topics: ' + (', '.join(f'{t} [{_short(ty)}]' for t, ty in sorted(topics.items())[:150]) or 'none visible'))
+    if focus is None:
+        shown_topics = topics
+    else:
+        types = {t for name in focus for t in CATALOG[name]['types']}
+        shown_topics = {t: ty for t, ty in topics.items() if ty in types or t.lower() in (request or '').lower()}
+    lines.append('Topics: ' + (', '.join(f'{t} [{_short(ty)}]' for t, ty in sorted(shown_topics.items())[:150])
+                               or 'none visible'))
     present = {ty for ty in topics.values()}
     lines.append('Display types you may add or configure (message type; settable properties):')
     for name, c in CATALOG.items():
-        if name in used_types or name in COMMON_TYPES or not c['types'] or present.intersection(c['types']):
+        if focus is not None:
+            include = name in focus
+        else:
+            include = name in used_types or name in COMMON_TYPES or not c['types'] or present.intersection(c['types'])
+        if include:
             props = '; '.join(f'{k} ({v})' for k, v in c['props'].items())
             lines.append(f"- {name}: {', '.join(_short(t) for t in c['types']) or 'no topic'}; {props or 'no common settings'}")
     hints = [h['fact'] for h in qos.values() if h.get('fix')]
@@ -200,10 +286,31 @@ def _context(state: dict, topics: dict[str, str], qos: dict[str, dict]) -> str:
     return '\n'.join(lines)
 
 
-def _topic_qos(state: dict) -> dict[str, dict]:
+def _topic_prefix(display_type: str | None) -> str:
+    """QoS settings sit under the display's topic setting: "Topic/..." or, for a RobotModel, "Description Topic/..."."""
+    return CATALOG.get(display_type or '', {}).get('topic_prop') or 'Topic'
+
+
+def _required_qos(reliability: set, durability: set, prefix: str) -> list:
+    """What a display must request to get data from these publishers. A latched (Transient Local) sample only
+    reaches Reliable readers, although Best Effort is QoS-compatible."""
+    need = []
+    if any('BEST_EFFORT' in r for r in reliability):
+        need.append((f'{prefix}/Reliability Policy', 'Best Effort'))
+    elif all('TRANSIENT_LOCAL' in d for d in durability):
+        need.append((f'{prefix}/Reliability Policy', 'Reliable'))
+    if all('TRANSIENT_LOCAL' in d for d in durability):
+        need.append((f'{prefix}/Durability Policy', 'Transient Local'))
+    elif all('VOLATILE' in d for d in durability):
+        need.append((f'{prefix}/Durability Policy', 'Volatile'))
+    return need
+
+
+def _topic_qos(state: dict, inspect=None) -> dict[str, dict]:
     """Inspect the topics of current displays: offered publisher QoS vs. what the display requests."""
     from concurrent.futures import ThreadPoolExecutor
     from .live import inspect_topic
+    inspect_topic = inspect or inspect_topic
     targets = [d for d in state.get('displays', []) if str(d.get('topic', '')).startswith('/')][:6]
     if not targets:
         return {}
@@ -221,18 +328,57 @@ def _topic_qos(state: dict) -> dict[str, dict]:
         offered_rel = {str(e['qos'].get('reliability', '')).upper() for e in pubs}
         offered_dur = {str(e['qos'].get('durability', '')).upper() for e in pubs}
         fact = f"publishers on {d['topic']} offer {'/'.join(sorted(offered_rel))} reliability, {'/'.join(sorted(offered_dur))} durability"
+        prefix = _topic_prefix(display_type_name(d.get('type', '')))
+        rel, dur = f'{prefix}/Reliability Policy', f'{prefix}/Durability Policy'
+        latched = all('TRANSIENT_LOCAL' in r for r in offered_dur)
         fix = []
-        if any('BEST_EFFORT' in r for r in offered_rel) and str(props.get('Topic/Reliability Policy', '')).lower() == 'reliable':
-            fix.append(('Topic/Reliability Policy', 'Best Effort'))
-            fact += f'; "{name}" requests Reliable, so it receives nothing -> set Topic/Reliability Policy to Best Effort'
-        if all('VOLATILE' in r for r in offered_dur) and str(props.get('Topic/Durability Policy', '')).lower() == 'transient local':
-            fix.append(('Topic/Durability Policy', 'Volatile'))
-            fact += f'; "{name}" requests Transient Local from a Volatile publisher -> set Topic/Durability Policy to Volatile'
-        if all('TRANSIENT_LOCAL' in r for r in offered_dur) and str(props.get('Topic/Durability Policy', '')).lower() == 'volatile':
-            fix.append(('Topic/Durability Policy', 'Transient Local'))
+        if any('BEST_EFFORT' in r for r in offered_rel) and str(props.get(rel, '')).lower() == 'reliable':
+            fix.append((rel, 'Best Effort'))
+            fact += f'; "{name}" requests Reliable, so it receives nothing -> set {rel} to Best Effort'
+        if (latched and not any('BEST_EFFORT' in r for r in offered_rel)
+                and str(props.get(rel, '')).lower() == 'best effort'):
+            fix.append((rel, 'Reliable'))
+            fact += (f'; "{name}" requests Best Effort from a latched (Transient Local) publisher, so it never receives '
+                     f'the latched data -> set {rel} to Reliable')
+        if all('VOLATILE' in r for r in offered_dur) and str(props.get(dur, '')).lower() == 'transient local':
+            fix.append((dur, 'Volatile'))
+            fact += f'; "{name}" requests Transient Local from a Volatile publisher -> set {dur} to Volatile'
+        if latched and str(props.get(dur, '')).lower() == 'volatile':
+            fix.append((dur, 'Transient Local'))
             fact += (f'; "{name}" requests Volatile from a latched (Transient Local) publisher, so it misses data published '
-                     'before it started -> set Topic/Durability Policy to Transient Local')
-        out[name] = {'fact': fact, 'fix': fix}
+                     f'before it started -> set {dur} to Transient Local')
+        out[name] = {'fact': fact, 'fix': fix, 'require': _required_qos(offered_rel, offered_dur, prefix)}
+    return out
+
+
+def _added_display_qos(actions: list, inspect=None) -> dict[str, dict]:
+    """QoS fixes for displays added in this plan: RViz creates them Reliable and Volatile, which receives nothing
+    from a best-effort publisher (most lidar and camera drivers) and misses latched data such as a map."""
+    from concurrent.futures import ThreadPoolExecutor
+    from .live import inspect_topic
+    inspect_topic = inspect or inspect_topic
+    targets = [a for a in actions if a['action'] == 'add_display' and a.get('topic') and not a.get('not_publishing')
+               and a.get('topic_property', 'Topic')][:6]
+    if not targets:
+        return {}
+    with ThreadPoolExecutor(max_workers=len(targets)) as pool:
+        reports = list(pool.map(lambda a: inspect_topic(a['topic']), targets))
+    out = {}
+    for a, rep in zip(targets, reports):
+        pubs = [e for e in rep.get('endpoints', []) if e.get('kind') == 'publisher'] if rep.get('state') == 'ok' else []
+        if not pubs:
+            continue
+        reliability = {str(e['qos'].get('reliability', '')).upper() for e in pubs}
+        durability = {str(e['qos'].get('durability', '')).upper() for e in pubs}
+        prefix = a.get('topic_property', 'Topic')
+        fix = []
+        if any('BEST_EFFORT' in r for r in reliability):
+            fix.append((f'{prefix}/Reliability Policy', 'Best Effort'))
+        if all('TRANSIENT_LOCAL' in d for d in durability):
+            fix.append((f'{prefix}/Durability Policy', 'Transient Local'))
+        out[a['display']] = {'fact': f'publishers on {a["topic"]} offer {"/".join(sorted(reliability))} reliability, '
+                                     f'{"/".join(sorted(durability))} durability', 'fix': fix,
+                             'require': _required_qos(reliability, durability, prefix)}
     return out
 
 
@@ -329,6 +475,10 @@ def validate(raw: dict, state: dict, topics: dict[str, str]) -> dict:
                 continue
             known = (existing.get(target) or {}).get('properties') or {}
             catalog_props = CATALOG.get(target_type or '', {}).get('props', {})
+            # "Topic/Reliability Policy" on a RobotModel means its "Description Topic/Reliability Policy".
+            prefix = _topic_prefix(target_type)
+            if prefix != 'Topic' and a['property'].startswith('Topic/'):
+                a['property'] = prefix + a['property'][len('Topic'):]
             # Models sometimes nest a top-level setting ("Color Transformer/Axis" -> "Axis").
             if '/' in a['property'] and a['property'] not in catalog_props and a['property'] not in known:
                 leaf = a['property'].rsplit('/', 1)[-1].strip()
@@ -375,7 +525,16 @@ def _complete(result: dict, qos: dict, request: str = '', state: dict | None = N
         if needed and dtype in _CLOUD_TYPES and not has(a['display'], 'Color Transformer'):
             extra.append({**a, 'property': 'Color Transformer', 'value': needed, 'auto': True,
                           'description': f'Set Color Transformer of "{a["display"]}" to {needed} (needed for {a["property"]})'})
+    corrected = False
     for name, info in qos.items():
+        # The publishers decide: correct a model setting that would receive nothing.
+        for prop, value in (info.get('fix') or []) + (info.get('require') or []):
+            for a in actions:
+                if (a['action'] == 'set_property' and a['display'].lower() == name.lower() and a['property'] == prop
+                        and str(a['value']).lower() != value.lower()):
+                    a.update(value=value, auto=True,
+                             description=f'Set {prop} of "{a["display"]}" to {value} (AutoDiag QoS fix, from the publishers)')
+                    corrected = True
         for prop, value in info.get('fix') or []:
             if not has(name, prop):
                 extra.append({'action': 'set_property', 'display': name, 'display_type': '', 'topic': '', 'property': prop,
@@ -392,8 +551,16 @@ def _complete(result: dict, qos: dict, request: str = '', state: dict | None = N
             actions.insert(index, e)
         else:
             actions.append(e)
-    # A frame named in the request ("... in the base_link frame") that the model did not apply.
     state = state or {}
+    # A Fixed Frame missing from the TF tree blanks every display; fix it even if the model did not.
+    better = _fixed_frame_fix(state)
+    if better and not any(a['action'] == 'set_fixed_frame' and a['frame'] in state.get('frames', []) for a in actions):
+        actions[:] = [a for a in actions if a['action'] != 'set_fixed_frame']
+        actions.insert(0, {'action': 'set_fixed_frame', 'display': '', 'display_type': '', 'topic': '', 'property': '',
+                           'value': '', 'frame': better, 'auto': True,
+                           'description': f'Set Fixed Frame to {better} ("{state.get("fixed_frame")}" is not in the TF tree; '
+                                          'AutoDiag TF fix)'})
+    # A frame named in the request ("... in the base_link frame") that the model did not apply.
     if 'frame' in request.lower() and not any(a['action'] == 'set_fixed_frame' for a in actions):
         words = set(re.findall(r'[A-Za-z0-9_/]+', request))
         named = [f for f in state.get('frames', []) if f in words and f != state.get('fixed_frame')]
@@ -409,7 +576,7 @@ def _complete(result: dict, qos: dict, request: str = '', state: dict | None = N
             actions.remove(a)
         elif key:
             seen.add(key)
-    if any(info.get('fix') for info in qos.values()):
+    if corrected or any(info.get('fix') for info in qos.values()):
         result['notes'].insert(0, 'AutoDiag found QoS mismatches between your displays and their publishers; fixes are included.')
 
 
@@ -443,21 +610,44 @@ def plan(request: str, state: dict, provider: str | None = None, model: str | No
     started = time.monotonic()
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=2) as pool:
-        topics_job, qos_job = pool.submit(_live_topics), pool.submit(_topic_qos, state)
+        snapshot = _discover()
+        inspect = _snapshot_inspector(snapshot)
+        topics_job, qos_job = pool.submit(_live_topics, snapshot), pool.submit(_topic_qos, state, inspect)
         topics, qos = topics_job.result(), qos_job.result()
+    result = plan_with_context(request, state, topics, qos, provider, model, history, inspect)
+    result.update(seconds=round(time.monotonic() - started, 2))
+    return result
+
+
+def build_prompt(request: str, state: dict, topics: dict[str, str], qos: dict[str, dict],
+                 history: list | None = None, slim: bool = True) -> str:
     earlier = _history_text(history)
-    prompt = ('CONTEXT (current RViz state, already including any applied changes):\n' + _context(state, topics, qos)
-              + (f'\n\nEARLIER IN THIS CONVERSATION (oldest first):\n{earlier}' if earlier else '')
-              + '\n\nREQUEST: ' + request.strip()[:1000])
+    # Follow-ups ("make them bigger") name nothing; retrieve with the earlier requests too.
+    query = ' '.join([str(t.get('request', '')) for t in (history or [])[-2:] if isinstance(t, dict)] + [request])
+    context = _context(state, topics, qos, query if slim else None)
+    return ('CONTEXT (current RViz state, already including any applied changes):\n' + context
+            + (f'\n\nEARLIER IN THIS CONVERSATION (oldest first):\n{earlier}' if earlier else '')
+            + '\n\nREQUEST: ' + request.strip()[:1000])
+
+
+def plan_with_context(request: str, state: dict, topics: dict[str, str], qos: dict[str, dict],
+                      provider: str | None = None, model: str | None = None, history: list | None = None,
+                      inspect=None, slim: bool = True) -> dict:
+    """Plan from an already gathered ROS picture (topics, QoS facts). Used by plan() and the benchmark."""
+    provider = provider or llm.default_provider()
+    prompt = build_prompt(request, state, topics, qos, history, slim)
     if llm.is_cloud(provider):
         from .redact import mask_for_cloud
         prompt = mask_for_cloud(prompt)
+    started = time.monotonic()
     try:
         raw = llm.complete_json(provider, SYSTEM, prompt, PLAN_SCHEMA, model)
     except llm.ProviderError as exc:
         raise PlanError(str(exc)) from exc
+    model_seconds = time.monotonic() - started
     result = validate(raw, state, topics)
+    qos = {**qos, **_added_display_qos(result['actions'], inspect)}
     _complete(result, qos, request, state)
     result.update(provider=provider, model=model or llm.model_for(provider),
-                  seconds=round(time.monotonic() - started, 2))
+                  usage={**llm.last_usage(), 'model_seconds': round(model_seconds, 2), 'prompt_chars': len(prompt)})
     return result

@@ -1,0 +1,8 @@
+{
+  "id": "ros-interfaces",
+  "title": "ROS 2 interfaces (msg, srv, action)",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Basic/About-Interfaces.html",
+  "ros_distro": "jazzy",
+  "keywords": "interface interfaces msg srv action message type definition idl show",
+  "text": "Messages (.msg), services (.srv) and actions (.action) are interfaces, generated for every client library. A publisher and a subscriber must use the same type name and the same definition: a changed definition on one host, for example from another package version, breaks communication even when the name matches. ros2 interface show pkg/msg/Type prints a definition and ros2 interface list shows what is installed. Rebuild and source the workspace on every machine after changing an interface."
+}

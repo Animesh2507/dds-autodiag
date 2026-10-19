@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ros2-dds-autodiag"
 dynamic = ["version"]
-description = "Tells you why your ROS 2 nodes can't talk to each other, and fixes your RViz view for you"
+description = "AI-powered diagnostics for ROS 2: find out why your nodes can't talk, see every broken connection, and let AI guide the fix"
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.10"
@@ -39,7 +39,7 @@ version = {attr = "autodiag.__version__"}
 include = ["autodiag*"]
 
 [tool.setuptools.package-data]
-autodiag = ["index.html", "index_legacy.html", "kb/*.json", "static/*"]
+autodiag = ["index.html", "index_legacy.html", "kb/*.json", "static/*", "static/fonts/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,0 +1,8 @@
+{
+  "id": "control-controller-cli",
+  "title": "Loading and activating controllers",
+  "url": "https://control.ros.org/jazzy/doc/ros2_control/ros2controlcli/doc/userdoc.html",
+  "ros_distro": "jazzy",
+  "keywords": "controller controllers spawner load configure activate inactive active unconfigured list_controllers switch_controllers list_hardware_interfaces",
+  "text": "Controllers are loaded, configured and activated, and only an active controller sends commands. The spawner (ros2 run controller_manager spawner <name>) does all three by default; --inactive stops after configuring and --load-only after loading. ros2 control list_controllers shows each controller and its state, ros2 control list_hardware_interfaces shows which interfaces are claimed, and ros2 control switch_controllers --activate a --deactivate b switches them. A robot that ignores commands is often driven by a controller that is inactive or failed to activate; the controller_manager log says why."
+}

@@ -137,6 +137,79 @@ class QosDiagnosisTests(unittest.TestCase):
         self.assertEqual(out['Map']['fix'], [('Topic/Durability Policy', 'Transient Local')])
 
 
+    def test_added_display_gets_publisher_qos(self):
+        actions = [{'action': 'add_display', 'display': 'Cloud', 'topic': '/points', 'topic_property': 'Topic'},
+                   {'action': 'add_display', 'display': 'Map', 'topic': '/map', 'topic_property': 'Topic'},
+                   {'action': 'add_display', 'display': 'Waiting', 'topic': '/later', 'not_publishing': True}]
+        reports = {'/points': {'state': 'ok', 'endpoints': [{'kind': 'publisher', 'node': 'camera',
+                                                             'qos': {'reliability': 'BEST_EFFORT', 'durability': 'VOLATILE'}}]},
+                   '/map': {'state': 'ok', 'endpoints': [{'kind': 'publisher', 'node': 'map_server',
+                                                          'qos': {'reliability': 'RELIABLE', 'durability': 'TRANSIENT_LOCAL'}}]}}
+        with patch('autodiag.live.inspect_topic', side_effect=lambda t: reports[t]):
+            out = rviz_agent._added_display_qos(actions)
+        self.assertEqual(out['Cloud']['fix'], [('Topic/Reliability Policy', 'Best Effort')])
+        self.assertEqual(out['Map']['fix'], [('Topic/Durability Policy', 'Transient Local')])
+        self.assertNotIn('Waiting', out)
+        r = {'actions': [dict(actions[0], display_type='PointCloud2')], 'notes': []}
+        rviz_agent._complete(r, {'Cloud': out['Cloud']})
+        fix = r['actions'][-1]
+        self.assertEqual((fix['display'], fix['property'], fix['value']), ('Cloud', 'Topic/Reliability Policy', 'Best Effort'))
+        self.assertTrue(fix['auto'])
+
+    def test_model_best_effort_on_latched_robot_description_is_corrected(self):
+        # A latched sample only reaches Reliable readers; the model's "Topic/..." means RobotModel's Description Topic.
+        r = rviz_agent.validate({'actions': [
+            act('add_display', display='RobotModel', display_type='RobotModel', topic='/robot_description'),
+            act('set_property', display='RobotModel', property='Topic/Reliability Policy', value='Best Effort')]},
+            STATE, {**TOPICS, '/robot_description': 'std_msgs/msg/String'})
+        self.assertEqual(r['actions'][1]['property'], 'Description Topic/Reliability Policy')
+        report = {'state': 'ok', 'endpoints': [{'kind': 'publisher', 'node': 'robot_state_publisher',
+                                                'qos': {'reliability': 'RELIABLE', 'durability': 'TRANSIENT_LOCAL'}}]}
+        with patch('autodiag.live.inspect_topic', return_value=report):
+            qos = rviz_agent._added_display_qos(r['actions'])
+        rviz_agent._complete(r, qos)
+        settings = {a['property']: a['value'] for a in r['actions'] if a['action'] == 'set_property'}
+        self.assertEqual(settings, {'Description Topic/Reliability Policy': 'Reliable',
+                                    'Description Topic/Durability Policy': 'Transient Local'})
+        self.assertTrue(all(a.get('auto') for a in r['actions'][1:]))
+
+    def test_best_effort_display_on_latched_topic_is_diagnosed(self):
+        state = {'displays': [{'name': 'Map', 'type': 'rviz_default_plugins/Map', 'topic': '/map',
+                               'properties': {'Topic/Reliability Policy': 'Best Effort',
+                                              'Topic/Durability Policy': 'Transient Local'}}]}
+        report = {'state': 'ok', 'endpoints': [{'kind': 'publisher', 'node': 'map_server',
+                                                'qos': {'reliability': 'RELIABLE', 'durability': 'TRANSIENT_LOCAL'}}]}
+        with patch('autodiag.live.inspect_topic', return_value=report):
+            out = rviz_agent._topic_qos(state)
+        self.assertEqual(out['Map']['fix'], [('Topic/Reliability Policy', 'Reliable')])
+        self.assertIn('never receives the latched data', out['Map']['fact'])
+
+
+    def test_planner_uses_one_discovery_snapshot(self):
+        snapshot = {'/scan': [{'kind': 'publisher', 'node': 'lidar', 'type': 'sensor_msgs/msg/LaserScan',
+                               'qos': {'reliability': 'BEST_EFFORT', 'durability': 'VOLATILE'}}]}
+        inspect = rviz_agent._snapshot_inspector(snapshot)
+        self.assertEqual(rviz_agent._live_topics(snapshot), {'/scan': 'sensor_msgs/msg/LaserScan'})
+        with patch('autodiag.live.inspect_topic', side_effect=AssertionError('per-topic CLI must not be used')):
+            out = rviz_agent._topic_qos(STATE, inspect)
+        self.assertEqual(out['LaserScan']['fix'], [('Topic/Reliability Policy', 'Best Effort')])
+        self.assertIsNone(rviz_agent._snapshot_inspector(None))
+
+
+    def test_missing_fixed_frame_is_diagnosed_and_fixed(self):
+        state = {'displays': [], 'fixed_frame': 'odom_combined', 'frames': ['base_link', 'map', 'odom']}
+        self.assertIn('does not exist in the TF tree', rviz_agent._context(state, {}, {}))
+        r = {'actions': [], 'notes': []}
+        rviz_agent._complete(r, {}, 'fix it', state)
+        self.assertEqual((r['actions'][0]['action'], r['actions'][0]['frame']), ('set_fixed_frame', 'map'))
+        wrong = {'actions': [act('set_fixed_frame', frame='odom_combined')], 'notes': []}
+        rviz_agent._complete(wrong, {}, 'fix the frames', state)
+        self.assertEqual([a['frame'] for a in wrong['actions'] if a['action'] == 'set_fixed_frame'], ['map'])
+        ok = {'actions': [], 'notes': []}
+        rviz_agent._complete(ok, {}, 'fix it', {**state, 'fixed_frame': 'map'})
+        self.assertEqual(ok['actions'], [])
+
+
 class EndpointTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
@@ -144,7 +217,8 @@ class EndpointTests(unittest.TestCase):
     def test_plan_endpoint(self):
         raw = {'summary': 'Show the cloud', 'notes': [],
                'actions': [act('add_display', display='Cloud', display_type='PointCloud2', topic='/lidar/points')]}
-        with patch('autodiag.rviz_agent._live_topics', return_value=TOPICS), \
+        with patch('autodiag.rviz_agent._discover', return_value=None), \
+             patch('autodiag.rviz_agent._live_topics', return_value=TOPICS), \
              patch('autodiag.rviz_agent._topic_qos', return_value={}), \
              patch('autodiag.llm.complete_json', return_value=raw) as complete:
             r = self.client.post('/api/rviz/plan', json={'request': 'show lidar', **STATE, 'provider': 'ollama'})
@@ -155,7 +229,8 @@ class EndpointTests(unittest.TestCase):
         self.assertIn('/lidar/points [PointCloud2]', prompt)
         self.assertIn('"LaserScan" (LaserScan)', prompt)
         self.assertNotIn('Wrench', prompt)  # only relevant display types are listed
-        self.assertIn('- Image:', prompt)    # common types are always offered
+        self.assertIn('- PointCloud2:', prompt)  # retrieved for "lidar"
+        self.assertNotIn('- Image:', prompt)     # slim prompt: unrelated types are left out
 
     def test_empty_request_rejected(self):
         self.assertEqual(self.client.post('/api/rviz/plan', json={'request': ' '}).status_code, 400)
@@ -221,7 +296,8 @@ class HistoryTests(unittest.TestCase):
         self.assertIn('Undo', text)
 
     def test_plan_prompt_includes_conversation(self):
-        with patch('autodiag.rviz_agent._live_topics', return_value=TOPICS), \
+        with patch('autodiag.rviz_agent._discover', return_value=None), \
+             patch('autodiag.rviz_agent._live_topics', return_value=TOPICS), \
              patch('autodiag.rviz_agent._topic_qos', return_value={}), \
              patch('autodiag.llm.complete_json', return_value={'summary': '', 'actions': [], 'notes': []}) as complete:
             rviz_agent.plan('make it bigger', STATE, 'ollama', history=[{'request': 'add a cloud', 'actions': []}])
@@ -229,3 +305,31 @@ class HistoryTests(unittest.TestCase):
         self.assertIn('EARLIER IN THIS CONVERSATION', prompt)
         self.assertIn('add a cloud', prompt)
         self.assertTrue(prompt.rstrip().endswith('REQUEST: make it bigger'))
+
+
+class SlimPromptTests(unittest.TestCase):
+    def test_retrieves_only_relevant_display_types(self):
+        types = rviz_agent._retrieve_types('Show the front camera image.', {'displays': []}, {})
+        self.assertEqual(types, {'Image', 'Camera'})
+        prompt = rviz_agent._context({'displays': []}, TOPICS, {}, 'Show the front camera image.')
+        self.assertIn('- Image:', prompt)
+        self.assertNotIn('- PointCloud2:', prompt)
+
+    def test_unclear_request_falls_back_to_the_full_catalog(self):
+        self.assertIsNone(rviz_agent._retrieve_types('Make it look nicer.', {'displays': []}, {}))
+        full = rviz_agent._context({'displays': []}, TOPICS, {}, 'Make it look nicer.')
+        self.assertIn('- PointCloud2:', full)
+        self.assertIn('- LaserScan:', full)
+
+    def test_follow_up_uses_earlier_requests_and_problem_displays_keep_details(self):
+        history = [{'request': 'Show the lidar point cloud colored by height.', 'actions': []}]
+        prompt = rviz_agent.build_prompt('Make the points bigger.', STATE, TOPICS, {}, history)
+        self.assertIn('- PointCloud2:', prompt)
+        broken = {**STATE['displays'][0], 'status': 'Error'}
+        prompt = rviz_agent.build_prompt('Show the camera.', {'displays': [broken]}, TOPICS, {})
+        self.assertIn(f'- {broken["type"].split("/")[-1]}:', prompt)
+
+    def test_slim_prompt_is_smaller(self):
+        full = rviz_agent.build_prompt('Show the camera image.', STATE, TOPICS, {}, slim=False)
+        slim = rviz_agent.build_prompt('Show the camera image.', STATE, TOPICS, {})
+        self.assertLess(len(slim), len(full) * 0.8)

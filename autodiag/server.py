@@ -4,6 +4,7 @@ import json
 import threading
 import logging
 import os
+import re
 import secrets
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -80,7 +81,7 @@ def version():
 
 LOGIN_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DDS AutoDiag · Sign in</title><link rel="stylesheet" href="/static/app.css"></head>
-<body class="login"><form class="card login-card" method="post" action="/login"><div class="brand"><b>◇</b> DDS AutoDiag</div>
+<body class="login"><form class="card login-card" method="post" action="/login"><div class="wordmark"><i class="health"></i>dds-autodiag</div>
 <h1>Sign in</h1><p class="muted">This dashboard is protected by a token (AUTODIAG_UI_TOKEN).</p>{error}
 <label class="field"><span>Access token</span><input name="token" type="password" autocomplete="current-password" autofocus required></label>
 <button class="primary" type="submit">Sign in</button></form></body></html>"""
@@ -300,7 +301,7 @@ def v06_explain(payload: EnhancedRAGRequest):
 
 # --- AI explanations (streaming) and provider management -------------------------------------
 
-from .rag import hybrid_retrieve
+from .rag import retrieve_for
 from . import llm
 
 
@@ -313,6 +314,25 @@ class StreamRequest(BaseModel):
     topic: str | None = Field(default=None, max_length=200)
     history: list[dict] = Field(default_factory=list, max_length=20)
     semantic_search: bool = False
+    topics_from_question: bool = False
+
+
+def _topics_named_in(question: str) -> list[str]:
+    """Live topics the question names ("why is my map empty" -> /map), at most two."""
+    from .rviz_agent import _live_topics
+    words = set(re.findall(r'[a-z0-9_/]+', question.lower()))
+    if not words:
+        return []
+    full, short = [], []
+    for topic in sorted(_live_topics()):
+        if topic in ('/rosout', '/parameter_events'):
+            continue
+        last = topic.rsplit('/', 1)[-1].lower()
+        if topic.lower() in words:
+            full.append(topic)
+        elif len(last) >= 3 and last in words:
+            short.append(topic)
+    return (full + short)[:2]
 
 
 def _topic_context(topic: str) -> tuple[list, dict]:
@@ -335,23 +355,29 @@ def _topic_context(topic: str) -> tuple[list, dict]:
 def assistant_stream(payload: StreamRequest):
     """NDJSON stream: one `context` event (findings + documentation), then `meta`, `token`… and `done`/`error`.
 
-    `host_a` defaults to a fresh local snapshot; `topic` adds that topic's live endpoints and QoS findings.
+    `host_a` defaults to a fresh local snapshot; `topic` adds that topic's live endpoints and QoS findings. Without a
+    `topic`, `topics_from_question` (set by the dashboard) adds up to two live topics the question names.
     Only sanitized findings, the question and documentation excerpts reach the model. For cloud providers node
     names, the hostname, IP addresses and home paths are masked first (the UI still sees the real values).
     """
     host_a = payload.host_a or collect()
     issues = sort_issues(transport_diagnose(host_a, payload.host_b))
-    labels = {}
+    labels, topics = {}, []
     if payload.topic:
-        topic_issues, labels = _topic_context(payload.topic)
+        topics = [payload.topic]
+    elif payload.topics_from_question:
+        topics = _topics_named_in(payload.question)
+    for topic in topics:
+        topic_issues, topic_labels = _topic_context(topic)
         issues = sort_issues(topic_issues) + issues
-    query = ' '.join([payload.question[:400]] + [f"{i.get('code', '')} {i.get('summary', '')}" for i in issues[:16]])
-    retrieved = hybrid_retrieve(query, semantic=payload.semantic_search)
+        labels.update(topic_labels)
+    findings_text = ' '.join(f"{i.get('code', '')} {i.get('summary', '')}" for i in issues[:16])
+    retrieved = retrieve_for(payload.question[:400], findings_text, semantic=payload.semantic_search)
     provider = payload.provider or llm.default_provider()
     for_model = mask_for_cloud(issues, labels) if llm.is_cloud(provider) else issues
 
     def events():
-        yield json.dumps({'type': 'context', 'issues': issues, 'sources': retrieved['sources'],
+        yield json.dumps({'type': 'context', 'issues': issues, 'sources': retrieved['sources'], 'topics': topics,
                           'retrieval_mode': retrieved['mode'], 'health': health(host_a, issues)}) + '\n'
         for event in llm.explain_events(provider, for_model, payload.question, retrieved['sources'], payload.model,
                                         payload.history):

@@ -1,0 +1,8 @@
+{
+  "id": "math-camera-intrinsics",
+  "title": "Camera intrinsics (CameraInfo)",
+  "url": "https://github.com/ros2/common_interfaces/blob/jazzy/sensor_msgs/msg/CameraInfo.msg",
+  "ros_distro": "jazzy",
+  "keywords": "camera camerainfo calibration intrinsic intrinsics focal length principal point distortion projection matrix k d r p pixel",
+  "text": "sensor_msgs/CameraInfo holds the calibration: K is the 3x3 intrinsic matrix [fx 0 cx; 0 fy cy; 0 0 1] in pixels, D the distortion coefficients (plumb_bob for most cameras), R the rectification rotation and P the 3x4 projection matrix of the rectified image. A point (X, Y, Z) in the optical frame (z forward) projects to u = fx X / Z + cx and v = fy Y / Z + cy. CameraInfo must match the image size and the camera frame_id; an uncalibrated camera leaves the matrices zero, which breaks depth and projection."
+}

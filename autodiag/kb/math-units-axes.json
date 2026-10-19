@@ -1,0 +1,8 @@
+{
+  "id": "math-units-axes",
+  "title": "Units and axis conventions (REP 103)",
+  "url": "https://www.ros.org/reps/rep-0103.html",
+  "ros_distro": "general",
+  "keywords": "unit units si metre meter radian radians degree degrees axis axes right-handed enu forward left up optical",
+  "text": "ROS uses SI units: metres, seconds, kilograms and radians, so velocities are m/s and rad/s. Body frames are right-handed with x forward, y left and z up; geographic frames use ENU (x east, y north, z up). Camera optical frames, whose names end in _optical, use z forward, x right and y down. A value that looks 57 times too large is usually degrees where radians are expected, and a robot that turns or drifts the wrong way often has a swapped or left-handed axis in a driver."
+}

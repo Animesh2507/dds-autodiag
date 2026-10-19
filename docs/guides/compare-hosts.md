@@ -38,7 +38,7 @@ side.
     sides, the same value always hashes to the same token and the comparison still works.
 
 !!! warning "Redacted file vs. the live host"
-    `dds-autodiag compare robot.json` (or loading `robot.json` in the dashboard under **Compare hosts**) compares the
+    `dds-autodiag compare robot.json` (or loading `robot.json` in the dashboard under **Hosts**) compares the
     file with this host's *unredacted* snapshot. Domain, RMW, distro and discovery rows still work, but the hashed
     hostname never equals the real one, so rules that check for the same host always see "different hosts". For
     containers on one host, collect without `--redact`, or redact both sides and compare the two files.
@@ -53,7 +53,7 @@ AUTODIAG_AGENT_TOKEN=<long-random-secret> AUTODIAG_UI_TOKEN=<another-secret> \
 AUTODIAG_ALLOWED_HOSTS=<private-ip> dds-autodiag serve --host 0.0.0.0 --port 8081
 ```
 
-In your dashboard, open **Compare hosts → Connect to a live collector** and enter `http://<private-ip>:8081` and the
+In your dashboard, open **Hosts → Connect to a live collector** and enter `http://<private-ip>:8081` and the
 collector token. For security, the collector is only fetched from private or loopback IPs, without proxies or
 redirects, and with a size limit.
 

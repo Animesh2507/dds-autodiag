@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-reports",
+  "title": "Reports and snapshots in AutoDiag",
+  "url": "https://animesh2507.github.io/dds-autodiag/guides/cli/",
+  "ros_distro": "general",
+  "keywords": "autodiag report reports markdown snapshot snapshots export share ticket redact redacted salt json",
+  "text": "dds-autodiag check --report report.md (or the dashboard button Download report) writes a Markdown report with the findings, for a ticket or a colleague. dds-autodiag collect -o host.json (dashboard: Export snapshot) saves the environment as JSON; --redact replaces hostnames, IP addresses and home paths with short hashes, and the same --salt on both machines keeps redacted snapshots comparable."
+}

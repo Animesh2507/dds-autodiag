@@ -1,0 +1,8 @@
+{
+  "id": "ros-nodes",
+  "title": "ROS 2 nodes",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Basic/About-Nodes.html",
+  "ros_distro": "jazzy",
+  "keywords": "node nodes ros2 node list info name unique graph participant process",
+  "text": "A node is one participant in the ROS graph; a process can hold one or more nodes. Nodes talk through topics, services, actions and parameters. ros2 node list shows the running nodes and ros2 node info /name lists a node's publishers, subscribers, services and actions. Node names must be unique: two nodes with the same name cause warnings and confuse tools. A node missing from ros2 node list usually runs with a different ROS_DOMAIN_ID or RMW, or discovery cannot reach it."
+}

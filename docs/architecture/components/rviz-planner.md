@@ -43,9 +43,13 @@ A flat schema is easy for small local models to follow and works with every prov
 ## Display catalog
 
 `CATALOG` maps 24 RViz2 display types to their `rviz_default_plugins` class id, accepted message types, topic
-property, and the settable properties with allowed values. Only types that matter for the current system are put into
-the prompt: types already in use, common ones, those matching visible topics, and topic-less types (TF, Grid, Axes).
-This keeps prompts small, which matters for local models. For cloud providers the finished prompt is passed through
+property, and the settable properties with allowed values. The prompt is slimmed by retrieval
+(`_retrieve_types`): words in the request (and in the last two requests, for follow-ups) select the display types it
+needs (`TYPE_WORDS`: "cloud" → PointCloud2, "costmap" → Map, "footprint" → Polygon…), plus topics named in the request,
+displays it names, and displays that currently show a warning or error. Only those types, their topics and their
+displays' full settings go into the prompt; other displays get one line. If nothing matches, the full catalog is used
+as before. On the [benchmark](../../reference/ai-benchmark.md) this cut prompt tokens by ~44% and plan time by ~35% for
+a local 4B model, with no loss in accuracy. For cloud providers the finished prompt is passed through
 `redact.mask_for_cloud()`, which replaces this machine's hostname, IP addresses and home paths with tokens.
 
 ## Validation
@@ -67,7 +71,11 @@ After validation, `_complete()` adds what the model tends to miss, each marked a
 - **Dependencies:** `Axis` needs `Color Transformer: AxisColor`; `Color` needs `FlatColor`.
 - **Diagnosed QoS fixes:** if a display requests Reliable from a Best Effort publisher (or Transient Local from a
   Volatile one), the fix is added, and a model-proposed "disable this display" is unchecked. A Volatile display on a
-  latched (Transient Local) publisher, which misses data published before it started, gets Transient Local.
+  latched (Transient Local) publisher, which misses data published before it started, gets Transient Local; a Best
+  Effort one gets Reliable, because the latched sample only reaches Reliable readers.
+- **Publisher QoS wins:** `_required_qos()` derives what a display must request from its publishers. A model setting
+  that conflicts (e.g. Best Effort on the latched `/robot_description`) is corrected in place. The settings use the
+  display's topic property, so `Topic/...` on a RobotModel becomes `Description Topic/...`.
 - **Requested frame:** if the request mentions "frame" and exactly one TF frame name from the tree appears in it,
   that frame is applied when the model skipped it.
 - **Deduplication:** repeated settings of the same property keep the first.

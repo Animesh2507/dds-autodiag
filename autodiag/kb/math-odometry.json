@@ -1,0 +1,8 @@
+{
+  "id": "math-odometry",
+  "title": "Odometry message frames",
+  "url": "https://github.com/ros2/common_interfaces/blob/jazzy/nav_msgs/msg/Odometry.msg",
+  "ros_distro": "jazzy",
+  "keywords": "odometry odom twist pose child_frame_id frame_id velocity wheel publish_tf jump",
+  "text": "nav_msgs/Odometry gives the pose in header.frame_id (usually odom) and the twist in child_frame_id (usually base_link), so forward speed is twist.linear.x in the robot's own frame. The same odom -> base_link transform is normally also published on /tf, by exactly one node. If both a wheel odometry node and a filter such as robot_localization publish it, the robot jumps between two poses: let only one of them publish the transform."
+}

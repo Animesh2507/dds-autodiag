@@ -394,14 +394,14 @@ void AutoDiagPanel::planRviz()
   plan_button_->setEnabled(false);
   const bool local = provider_combo_->currentData().toString() == QLatin1String("ollama");
   plan_status_->setText(local ?
-    tr("Planning with the local model (about a minute on CPU)…") : tr("Planning…"));
+    tr("Planning with the local model (about 1–2 minutes on a CPU)…") : tr("Planning…"));
 
   QNetworkReply * reply = post(QStringLiteral("/api/rviz/plan"), body, kPlanTimeoutMs);
   connect(reply, &QNetworkReply::finished, this, [this, reply, request_text]() {
       reply->deleteLater();
       plan_button_->setEnabled(true);
       if (reply->error() != QNetworkReply::NoError) {
-        plan_status_->setText(QStringLiteral("<span style='color:#c2304a'>%1</span>")
+        plan_status_->setText(QStringLiteral("<span style='color:#d23a31'>%1</span>")
           .arg(errorText(reply).toHtmlEscaped()));
         return;
       }
@@ -432,7 +432,7 @@ void AutoDiagPanel::planRviz()
       }
       const QJsonArray rejected = plan.value(QStringLiteral("rejected")).toArray();
       if (!rejected.isEmpty()) {
-        text += tr("<br><span style='color:#a86400'>Skipped %n invalid suggestion(s):</span>", "", rejected.size());
+        text += tr("<br><span style='color:#a26b00'>Skipped %n invalid suggestion(s):</span>", "", rejected.size());
         for (const QJsonValue & r : rejected) {
           text += QStringLiteral("<br>&nbsp;&nbsp;– ") + r.toObject().value(QStringLiteral("reason")).toString().toHtmlEscaped();
         }

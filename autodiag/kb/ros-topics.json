@@ -1,0 +1,8 @@
+{
+  "id": "ros-topics",
+  "title": "ROS 2 topics",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Basic/About-Topics.html",
+  "ros_distro": "jazzy",
+  "keywords": "topic topics publish subscribe publisher subscriber message echo hz bw latched",
+  "text": "Topics are named, typed, many-to-many publish/subscribe channels. A publisher and a subscriber connect only when the topic name, the message type and the QoS are compatible. Messages are not stored: a subscriber that starts later misses earlier messages unless both sides use transient-local durability, as latched topics such as /map and /robot_description do. ros2 topic echo, ros2 topic hz and ros2 topic info --verbose show the data, the rate and the QoS of every endpoint."
+}

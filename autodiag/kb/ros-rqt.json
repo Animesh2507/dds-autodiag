@@ -1,0 +1,8 @@
+{
+  "id": "ros-rqt",
+  "title": "rqt tools",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-RQt.html",
+  "ros_distro": "jazzy",
+  "keywords": "rqt rqt_graph rqt_console rqt_reconfigure gui plugin",
+  "text": "rqt hosts GUI tools as plugins: rqt_graph draws which nodes talk over which topics, rqt_console shows and filters log messages, and parameter and topic plugins inspect a running system. rqt_graph shows only connections that discovery has matched, so a missing line is a hint to check names, types, QoS and the domain."
+}

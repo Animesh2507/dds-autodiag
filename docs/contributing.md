@@ -14,6 +14,7 @@ Cyclone DDS, Zenoh, multi-host networks, Docker and Kubernetes.
 ## Development setup
 
 ```bash
+sudo apt install python3-venv        # once
 git clone https://github.com/Animesh2507/dds-autodiag.git
 cd dds-autodiag
 source /opt/ros/jazzy/setup.bash

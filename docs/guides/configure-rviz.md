@@ -83,7 +83,12 @@ Small models in particular make mistakes. AutoDiag doesn't trust the plan blindl
 !!! success "Diagnosed"
     AutoDiag inspects the topics of up to six displays itself. If the publisher offers Best Effort but the display
     requests Reliable, or durability doesn't match (including a Volatile display on a latched Transient Local
-    publisher), the QoS fix is added, regardless of what the model proposed.
+    publisher), the QoS fix is added, regardless of what the model proposed. A Best Effort display on a latched
+    topic gets Reliable: the latched sample only reaches Reliable readers. Displays the plan adds get the same
+    check, so a new point cloud on a best-effort lidar topic is not left empty, and a QoS setting the model proposes
+    that would receive nothing is corrected (a RobotModel's settings sit under its Description Topic). If the Fixed Frame does not exist in
+    the TF tree (RViz then shows nothing at all, e.g. an old `odom_combined` config), the plan switches it to `map`,
+    or `odom` when there is no map. QoS facts come from one complete discovery pass over the ROS graph.
 
 !!! success "Reversible"
     Every Apply takes a snapshot first. **Undo** restores all displays and the Fixed Frame from before the last

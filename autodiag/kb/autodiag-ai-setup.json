@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-ai-setup",
+  "title": "Setting up AI providers in AutoDiag",
+  "url": "https://animesh2507.github.io/dds-autodiag/guides/ai-providers/",
+  "ros_distro": "general",
+  "keywords": "autodiag ai provider providers api key keys claude chatgpt openai gemini ollama local model setup link settings semantic search privacy",
+  "text": "AI is optional; every diagnosis is rule-based. For offline AI, install Ollama and run ollama pull qwen3:4b-instruct. For a cloud model, open the dashboard > About & settings > AI providers, paste the API key (Claude needs pip install \".[cloud]\"), press Save and Test, then pick the provider and model in the Assistant tab or the RViz panel. Keys stay on the server (mode 0600) and are never sent to the browser. For cloud providers, node names, the hostname, IP addresses and home paths are masked before anything is sent. Semantic search (local embeddings with nomic-embed-text) is an optional switch in the Assistant tab."
+}

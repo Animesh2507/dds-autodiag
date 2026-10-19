@@ -1,0 +1,8 @@
+{
+  "id": "ros-environment",
+  "title": "Configuring the ROS 2 environment",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Beginner-CLI-Tools/Configuring-ROS2-Environment.html",
+  "ros_distro": "jazzy",
+  "keywords": "environment setup source setup_bash ros_distro ros_domain_id rmw_implementation printenv shell terminal terminals see each other",
+  "text": "Every shell must source /opt/ros/jazzy/setup.bash (and the install/setup.bash of any workspace) before using ros2. The variables that decide who talks to whom are ROS_DOMAIN_ID (0 to 101 is safe on every platform), ROS_AUTOMATIC_DISCOVERY_RANGE, ROS_STATIC_PEERS and RMW_IMPLEMENTATION. Two terminals that see different topics usually differ in one of them: compare with printenv | grep -i ros."
+}

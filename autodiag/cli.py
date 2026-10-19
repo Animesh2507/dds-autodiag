@@ -257,6 +257,39 @@ def cmd_selftest(args):
     return EXIT_OK if result['ok'] else EXIT_ISSUES
 
 
+def cmd_bench(args):
+    """Score AI models on fixed Configure-RViz scenarios: correctness and time per plan."""
+    from . import bench, llm
+    models = []
+    for spec in args.model or [llm.default_provider()]:
+        provider, _, model = spec.partition(':')
+        if provider not in llm.PROVIDERS:
+            print(f'Unknown provider "{provider}". Use one of: {", ".join(llm.PROVIDERS)}', file=sys.stderr)
+            return EXIT_USAGE
+        models.append((provider, model or None))
+    cloud = [p for p, _ in models if llm.is_cloud(p)]
+    if cloud and not args.json:
+        print(f'Note: cloud models ({", ".join(sorted(set(cloud)))}) are billed per request on your API key.',
+              file=sys.stderr)
+
+    def progress(provider, model, r):
+        if not args.json:
+            mark = _c('PASS', '32;1') if r['passed'] == r['total'] else _c('PART', '33;1') if r['passed'] else _c('FAIL', '31;1')
+            print(f"{mark}  {provider}:{model:<26} {r['scenario']:<14} {r['passed']}/{r['total']}  {r['seconds']:6.1f} s"
+                  + (f"  {r['error']}" if r.get('error') else ''), flush=True)
+
+    report = bench.run(models, args.scenario, args.repeat, progress, args.variant)
+    if args.json:
+        print(json.dumps(report, indent=2))
+    else:
+        print()
+        print(bench.markdown(report) if args.markdown else '\n'.join(
+            f"{r['provider']}:{r['model']}: {r['scenarios_passed']}/{r['scenarios']} scenarios, "
+            f"{r['checks_passed']}/{r['checks']} checks, median {r['median_seconds']} s per plan"
+            for r in report['results']))
+    return EXIT_OK
+
+
 def cmd_doctor(args):
     """Is this machine ready to run AutoDiag? Prints what is missing and how to fix it."""
     from .collector import run
@@ -346,7 +379,7 @@ def cmd_serve(args):
 # ---------- argument parsing ----------
 
 def build_parser():
-    ap = argparse.ArgumentParser(prog='dds-autodiag', description='Read-only ROS 2 / DDS communication diagnostics.',
+    ap = argparse.ArgumentParser(prog='dds-autodiag', description='AI-powered diagnostics for ROS 2: find out why your nodes can\'t talk, and how to fix it.',
                                  epilog='Run "dds-autodiag <command> -h" for command help. Start with "dds-autodiag doctor".')
     ap.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
     # Pre-1.0 interface, kept for scripts.
@@ -404,6 +437,16 @@ def build_parser():
     p.add_argument('--no-wait', action='store_true', help='exit after the diagnosis instead of keeping the topics running')
     p.add_argument('--timeout', type=int, default=20, help='seconds to wait for each demo topic to be discovered')
     p.set_defaults(func=cmd_demo)
+
+    p = common(sub.add_parser('bench', help='benchmark AI models on fixed Configure-RViz scenarios'))
+    p.add_argument('--model', action='append', metavar='PROVIDER[:MODEL]',
+                   help='e.g. ollama:qwen3:4b-instruct or anthropic:claude-sonnet-5-5 (repeatable; default: your default provider)')
+    p.add_argument('--scenario', action='append', help='run only these scenario ids (repeatable)')
+    p.add_argument('--repeat', type=int, default=1, help='runs per scenario (default 1)')
+    p.add_argument('--markdown', action='store_true', help='print the result tables as Markdown')
+    p.add_argument('--variant', choices=('default', 'full', 'slim'), default='default',
+                   help='prompt variant to compare: full = the whole catalog, slim = retrieval (default, what the panel uses)')
+    p.set_defaults(func=cmd_bench)
 
     p = common(sub.add_parser('doctor', help='check that this machine is ready to run AutoDiag'))
     p.set_defaults(func=cmd_doctor)

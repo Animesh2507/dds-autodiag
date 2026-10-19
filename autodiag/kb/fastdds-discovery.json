@@ -4,5 +4,5 @@
   "url": "https://fast-dds.docs.eprosima.com/en/latest/fastdds/discovery/discovery.html",
   "text": "Fast DDS participant discovery can use simple discovery or discovery servers. Verify selected discovery mode, initial peers, discovery server addresses and profiles on each host. Discovery success does not establish topic data delivery.",
   "ros_distro": "Fast DDS",
-  "keywords": "DDS ROS2 discovery multicast containers interfaces QoS troubleshooting"
+  "keywords": "fast dds fastdds fastrtps discovery server initial peers participant profile xml see each other"
 }

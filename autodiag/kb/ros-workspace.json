@@ -1,0 +1,8 @@
+{
+  "id": "ros-workspace",
+  "title": "Workspaces and building with colcon",
+  "url": "https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html",
+  "ros_distro": "jazzy",
+  "keywords": "colcon build workspace install setup source overlay underlay symlink-install package packages-select",
+  "text": "Packages are built with colcon in a workspace: src/ holds the packages, and build/, install/ and log/ are generated. After colcon build, source install/setup.bash in every new terminal (on top of /opt/ros/jazzy/setup.bash), otherwise the new packages, messages and plugins are not found. colcon build --packages-select pkg builds one package and --symlink-install avoids rebuilding Python and launch files. Shells sourced from different workspaces or distros are a common cause of \"package not found\" and type mismatch errors."
+}

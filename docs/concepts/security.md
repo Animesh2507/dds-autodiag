@@ -54,7 +54,7 @@ Local Ollama only accepts loopback URLs. AutoDiag sends the minimum needed:
 
 | Feature | Sent | Never sent |
 |---|---|---|
-| Assistant | Your question; earlier turns of the conversation (your questions and previous answers); code, severity and summary of each finding; the top three documentation excerpts; only with **Include the topic**: topic name, message type, endpoint counts and QoS | Snapshots, message contents, node names (to cloud providers), hostnames, IP addresses, home paths, API keys |
+| Assistant | Your question; earlier turns of the conversation (your questions and previous answers); code, severity and summary of each finding; the top three documentation excerpts; only with **Include the topic** (RViz panel) or for a live topic your question names (dashboard): topic name, message type, endpoint counts and QoS | Snapshots, message contents, node names (to cloud providers), hostnames, IP addresses, home paths, API keys |
 | Configure RViz | Your request; earlier turns; display names, types, topics, properties and status; Fixed Frame; TF frame names; live topic names and types; diagnosed QoS facts | Snapshots, message contents, node names, hostnames, IP addresses, home paths, API keys |
 
 For cloud providers, the text is masked first: node names become `publisher 1`, `subscriber 1`, …, and this machine's

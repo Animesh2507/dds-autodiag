@@ -1,0 +1,8 @@
+{
+  "id": "ros-executors",
+  "title": "Executors and callback groups",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Executors.html",
+  "ros_distro": "jazzy",
+  "keywords": "executor executors callback callbacks callback_group spin single_threaded multi_threaded deadlock timer blocked",
+  "text": "An executor runs a node's callbacks: subscriptions, timers, services and actions. The single-threaded executor runs one callback at a time, so a slow callback delays all the others, and waiting for a service response inside a callback can deadlock. The multi-threaded executor runs callbacks in parallel within callback groups: a mutually exclusive group never runs two of its callbacks at once, a reentrant group can. Data that arrives late or a timer that stops firing is often a blocked executor, not a network problem."
+}

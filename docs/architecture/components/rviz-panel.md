@@ -1,7 +1,7 @@
 # RViz panel
 
 **Package:** `ros2/rviz_autodiag_panel` · **Files:** `autodiag_panel.cpp` (connection, Health, Topic, AI
-assistant), `configure_tab.cpp` (Configure RViz)
+assistant), `graph_tab.cpp` (Graph), `configure_tab.cpp` (Configure RViz)
 
 The panel is an `rviz_common::Panel` plugin exported through pluginlib. It is deliberately **thin**: it collects RViz
 context, talks to the server, and applies validated plans. All diagnosis and AI logic stays on the server.
@@ -12,7 +12,7 @@ flowchart LR
         dt["Display tree<br/>DisplayGroup · Display · Property"]
         subgraph panel["AutoDiagPanel"]
             net["QNetworkAccessManager<br/>async, per-request timeouts"]
-            tabs["Tabs<br/>Health · Topic · AI · Configure"]
+            tabs["Tabs<br/>Health · Topic · Graph · AI · Configure"]
             undo[("Undo snapshot<br/>rviz_common::Config")]
         end
     end
@@ -24,6 +24,14 @@ flowchart LR
     dt -- "save()" --> undo
     undo -- "load()" --> dt
 ```
+
+## Graph tab
+
+`graph_tab.cpp` draws `GET /api/graph` in a `QGraphicsScene` with the dashboard's layout: nodes in columns by role
+(only publishes | both | only subscribes, "nobody publishes" placeholders on the left), ordered by two barycenter
+sweeps so lines cross less. Lines are cubic curves colored by status with a wide hit area; their labels move apart
+when they would overlap. The view scales down to the dock width (never up), and node text is drawn slightly larger
+than the panel font so it stays readable at that scale.
 
 ## Reading RViz state
 

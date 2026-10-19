@@ -1,0 +1,8 @@
+{
+  "id": "autodiag-install",
+  "title": "Installing and running DDS AutoDiag",
+  "url": "https://animesh2507.github.io/dds-autodiag/getting-started/installation/",
+  "ros_distro": "general",
+  "keywords": "autodiag install installation setup pip venv python3-venv docker image ghcr run start systemd service how to start",
+  "text": "Install from the repository: sudo apt install python3-venv, git clone the repository, source /opt/ros/jazzy/setup.bash, python3 -m venv --system-site-packages .venv, source .venv/bin/activate and pip install . (add \".[cloud]\" for Claude). Then dds-autodiag doctor checks the machine and dds-autodiag serve --open starts the dashboard at http://127.0.0.1:8080. Without installing, use Docker: docker run --rm --net=host --ipc=host ghcr.io/animesh2507/dds-autodiag:0.1.0 (dashboard) or append check for a one-shot check; --net=host and --ipc=host let it see the same ROS graph and shared memory as your nodes. A systemd user service is included under deploy/."
+}

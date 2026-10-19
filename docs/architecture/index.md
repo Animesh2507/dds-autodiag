@@ -39,7 +39,7 @@ flowchart TB
 | Docker | Running container metadata | Read only |
 | Peer collector | A snapshot, authenticated with a token | Read only |
 | Ollama | Prompts and embeddings, loopback only | Local |
-| Cloud AI | Assistant: question, earlier turns, rule code/severity/summary, top-3 doc excerpts, and only with "Include the topic" its name, type, endpoint counts and QoS. RViz planning: request, earlier turns, display names/types/topics/properties and status, Fixed Frame, TF frame names, live topic names and types, diagnosed QoS facts. Node names, hostname, IPs and home paths are masked; snapshots, message contents and keys never leave | Opt-in, outbound |
+| Cloud AI | Assistant: question, earlier turns, rule code/severity/summary, top-3 doc excerpts, and only with "Include the topic" (panel) or for a live topic the question names (dashboard) its name, type, endpoint counts and QoS. RViz planning: request, earlier turns, display names/types/topics/properties and status, Fixed Frame, TF frame names, live topic names and types, diagnosed QoS facts. Node names, hostname, IPs and home paths are masked; snapshots, message contents and keys never leave | Opt-in, outbound |
 
 ## Quality goals
 

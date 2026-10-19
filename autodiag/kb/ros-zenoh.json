@@ -1,0 +1,8 @@
+{
+  "id": "ros-zenoh",
+  "title": "Working with Zenoh (rmw_zenoh)",
+  "url": "https://docs.ros.org/en/jazzy/Installation/RMW-Implementations/Non-DDS-Implementations/Working-with-Zenoh.html",
+  "ros_distro": "jazzy",
+  "keywords": "zenoh rmw_zenoh rmw_zenoh_cpp router rmw_zenohd",
+  "text": "rmw_zenoh_cpp uses Zenoh instead of DDS. Nodes discover each other through a Zenoh router (ros2 run rmw_zenoh_cpp rmw_zenohd) rather than multicast, which works well across networks and in containers. Every node must use rmw_zenoh_cpp: Zenoh nodes and DDS nodes never discover one another. If nothing is discovered, check that a router is running and reachable and that RMW_IMPLEMENTATION=rmw_zenoh_cpp is set in every shell."
+}

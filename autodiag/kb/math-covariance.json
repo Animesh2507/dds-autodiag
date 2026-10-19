@@ -1,0 +1,8 @@
+{
+  "id": "math-covariance",
+  "title": "Covariance matrices in messages",
+  "url": "https://github.com/ros2/common_interfaces/blob/jazzy/geometry_msgs/msg/PoseWithCovariance.msg",
+  "ros_distro": "jazzy",
+  "keywords": "covariance variance uncertainty matrix 6x6 3x3 row-major diagonal standard deviation ekf robot_localization fusion",
+  "text": "PoseWithCovariance and TwistWithCovariance carry a 6x6 covariance as 36 numbers in row-major order for (x, y, z, rotation about X, rotation about Y, rotation about Z). Diagonal entries are variances, the standard deviation squared (m^2, rad^2). Filters treat a zero variance in a pose or twist as near-perfect certainty, so give an axis a sensor cannot measure a large variance, not zero. Sensor messages such as Imu use 3x3 matrices with their own convention: all zeros means unknown, and -1 in the first element means the value is not provided."
+}

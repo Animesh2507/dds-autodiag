@@ -71,6 +71,8 @@ rclpy.shutdown()
 
 # Present on every ROS 2 system; they would only clutter the picture.
 HIDDEN_TOPICS = ('/rosout', '/parameter_events')
+# Optional companion topics that RViz always subscribes to; nobody publishing them is normal, not a problem.
+OPTIONAL_SUFFIXES = ('_updates',)
 MAX_TOPICS = 60
 _RANK = {'ok': 0, 'warning': 1, 'error': 2}
 
@@ -130,7 +132,7 @@ def build_graph(max_topics: int = 40, include_hidden: bool = False, lister=None,
         subs = [e for e in endpoints if e['kind'] == 'subscriber']
         for e in endpoints:
             node(e['node'], e['kind'], topic)
-        if subs and not pubs:
+        if subs and not pubs and not topic.endswith(OPTIONAL_SUFFIXES):
             waiting.append({'topic': topic, 'subscribers': sorted({s['node'] for s in subs}),
                             'type': next((s.get('type') for s in subs if s.get('type')), '')})
         for p in pubs:
@@ -146,7 +148,8 @@ def build_graph(max_topics: int = 40, include_hidden: bool = False, lister=None,
                     link = {'topic': topic, 'type': p.get('type') or s.get('type') or '', 'status': 'ok', 'findings': [],
                             'publisher_qos': p.get('qos', {}), 'subscriber_qos': s.get('qos', {})}
                     edge['topics'].append(link)
-                link['findings'].extend(findings)
+                # A node can hold several endpoints on one topic (RViz does); report each problem once.
+                link['findings'].extend(f for f in findings if f not in link['findings'])
                 link['status'] = _status(link['findings'])
                 if _RANK[link['status']] > _RANK[edge['status']]:
                     edge['status'] = link['status']

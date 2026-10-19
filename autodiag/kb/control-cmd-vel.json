@@ -1,0 +1,8 @@
+{
+  "id": "control-cmd-vel",
+  "title": "Velocity commands on cmd_vel",
+  "url": "https://github.com/ros2/teleop_twist_keyboard",
+  "ros_distro": "general",
+  "keywords": "cmd_vel velocity command twist twiststamped teleop teleop_twist_keyboard stamped linear angular turn wrong direction not moving",
+  "text": "Mobile bases take velocity commands on cmd_vel: linear.x is the forward speed in m/s, linear.y the sideways speed (holonomic bases only) and angular.z the turn rate in rad/s, positive counter-clockwise (to the left), all in the robot frame. Twist and TwistStamped are different types, and a Twist publisher never connects to a TwistStamped subscriber. teleop_twist_keyboard publishes Twist unless started with --ros-args -p stamped:=true. A robot that turns the wrong way usually has a swapped wheel or a flipped sign in its driver, not a wrong command."
+}

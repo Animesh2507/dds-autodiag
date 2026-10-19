@@ -12,11 +12,13 @@ def ep(kind, node, reliability='RELIABLE', durability='VOLATILE', type_='sensor_
 
 
 GRAPH = {
-    '/scan': [ep('publisher', 'lidar', reliability='BEST_EFFORT'), ep('subscriber', 'rviz'), ep('subscriber', 'slam',
+    '/scan': [ep('publisher', 'lidar', reliability='BEST_EFFORT'), ep('subscriber', 'rviz'), ep('subscriber', 'rviz'),
+              ep('subscriber', 'slam',
               reliability='BEST_EFFORT')],
     '/map': [ep('publisher', 'map_server', durability='TRANSIENT_LOCAL', type_='nav_msgs/msg/OccupancyGrid'),
              ep('subscriber', 'rviz', type_='nav_msgs/msg/OccupancyGrid')],
     '/cmd_vel': [ep('subscriber', 'base_driver', type_='geometry_msgs/msg/Twist')],
+    '/map_updates': [ep('subscriber', 'rviz', type_='map_msgs/msg/OccupancyGridUpdate')],
     '/rosout': [ep('publisher', 'lidar'), ep('subscriber', '_ros2cli_123')],
 }
 
@@ -36,7 +38,7 @@ class GraphTests(unittest.TestCase):
 
     def test_each_connection_is_coloured_by_its_own_rules(self):
         self.assertEqual(self.edges['lidar->rviz']['status'], 'error')
-        self.assertEqual(self.edges['lidar->rviz']['topics'][0]['findings'][0]['code'], 'RELIABILITY_MISMATCH')
+        self.assertEqual([f['code'] for f in self.edges['lidar->rviz']['topics'][0]['findings']], ['RELIABILITY_MISMATCH'])
         self.assertEqual(self.edges['lidar->slam']['status'], 'ok')
         self.assertEqual(self.edges['map_server->rviz']['topics'][0]['findings'][0]['code'],
                          'LATCHED_DATA_VOLATILE_SUBSCRIBER')
@@ -52,7 +54,7 @@ class GraphTests(unittest.TestCase):
         self.assertNotIn('_ros2cli_123', ids)  # only on /rosout, which is hidden
         self.assertNotIn('/rosout', {t['topic'] for e in self.g['edges'] for t in e['topics']})
         shown = build_graph(include_hidden=True, lister=lister, inspector=inspector)
-        self.assertEqual(shown['topics_total'], 4)
+        self.assertEqual(shown['topics_total'], 5)
 
     def test_topic_limit(self):
         g = build_graph(max_topics=1, lister=lister, inspector=inspector)

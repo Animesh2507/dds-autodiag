@@ -22,25 +22,37 @@ Upcoming first public release, 0.1.0. Not tagged yet.
   `ros2 doctor --report`.
 - **Live topics.** Topic inspection (endpoints and QoS) and one-shot message sampling, including a warning when a
   subscriber requests Volatile from latched (Transient Local) data, such as an RViz Map display that stays empty.
-- **Diagnosis graph.** A dashboard tab that draws every publisher → subscriber connection, colored by the QoS/type
-  rules (red: no data gets through, orange: warning, green: compatible, dashed: nobody publishes), with the finding
-  and fix one click away (`/api/graph`).
+- **AI model benchmark.** `dds-autodiag bench` scores models on eight fixed Configure RViz scenarios (correct
+  actions, invalid suggestions, time and tokens per plan); results for one machine are in the docs, with charts drawn
+  from the raw data by `tools/bench_charts.py`.
+- **Faster local planning.** The Configure RViz prompt is slimmed by retrieval (only the display types, topics and
+  settings a request needs): about 44% fewer prompt tokens and 35% less time per plan with a local 4B model.
+- **Diagnosis graph.** A dashboard tab and an RViz panel tab that draw every publisher → subscriber connection, colored by the QoS/type
+  rules (red with a break mark: no data gets through, amber: warning, green: compatible, dashed: nobody publishes).
+  Every link has its own ports, and the worst one opens in an inspector with offered and requested QoS side by side,
+  the finding and the fix (`/api/graph`).
 - **Demo.** `dds-autodiag demo`: two deliberately broken demo topics, diagnosed in about a minute without a robot.
 - **Comparison.** Host and container comparison from redacted snapshot files or a token-protected live collector.
 - **Sharing.** Markdown reports and snapshot redaction (random salt unless `--salt` is given).
 - **CLI.** `doctor`, `check`, `collect`, `compare`, `topics`, `inspect`, `sample`, `selftest`, `demo`, `serve`, with
   `--json` and exit codes 0/1/2.
-- **Web dashboard.** Overview, topics, host comparison, transport checks, assistant, tools and settings; light/dark
-  themes and a mobile layout.
-- **RViz2 panel** (`ros2/rviz_autodiag_panel`) with Health, Topic, AI assistant and Configure RViz tabs, and a launch
+- **Web dashboard.** A console layout: a status bar with domain, RMW, distro, counts and the problems found so far,
+  a section rail, and an event log of every check at the end of each page. Overview, topics, graph, host comparison, transport checks,
+  assistant, tools and settings; dark and light themes, bundled IBM Plex fonts (SIL OFL) so it looks the same
+  offline, and a mobile layout.
+- **RViz2 panel** (`ros2/rviz_autodiag_panel`) with Health, Topic, Graph, AI assistant and Configure RViz tabs, and a launch
   file that starts the server and RViz with the panel together.
 - **REST API** with OpenAPI docs at `/api/docs`.
-- **AI assistant.** Retrieval over a curated knowledge base of official ROS 2, DDS and Docker documentation (BM25,
-  optional local embeddings), cited answers, streamed responses and conversation memory.
+- **AI assistant.** Retrieval over a curated knowledge base of about 80 pages on DDS AutoDiag itself, core ROS 2
+  concepts, communication troubleshooting, robotics maths and control, each linking the official documentation (BM25 with a relevance cutoff, optional
+  local embeddings; the question first, plus the current findings), cited answers, a check of every dds-autodiag
+  command an answer mentions, streamed responses and conversation memory. The dashboard includes the
+  live QoS findings of a topic the question names.
 - **AI providers.** Local Ollama (offline), Claude (`[cloud]` extra), ChatGPT, Gemini and any OpenAI-compatible API,
   with live model lists. Keys are stored server-side (mode 0600) and never returned to the browser.
 - **Configure RViz with AI.** Plans display changes, validates them against live topics, message types, TF frames
-  and a display catalog, adds diagnosed QoS fixes, and applies only confirmed items, with Undo.
+  and a display catalog, adds diagnosed QoS fixes, corrects model QoS settings that would receive nothing (such as
+  Best Effort on a latched topic), and applies only confirmed items, with Undo.
 - **Native.** C++20 diagnostic core with CTest, and a BehaviorTree.CPP trace viewer.
 - **Deployment.** Docker image (published to `ghcr.io` on release tags), systemd user service and GitHub Actions CI.
 - **Project.** Issue and pull request templates, a security policy, and a documentation site (MkDocs Material) with

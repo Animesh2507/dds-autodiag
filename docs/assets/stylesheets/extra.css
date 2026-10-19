@@ -1,22 +1,61 @@
-/* DDS AutoDiag documentation theme. */
+/* DDS AutoDiag documentation theme: the dashboard's console look. Ink chrome, green only as the accent for health. */
 
 :root {
-  --md-primary-fg-color: #0b7fab;
-  --md-primary-fg-color--light: #2b9cc6;
-  --md-primary-fg-color--dark: #08627f;
-  --md-accent-fg-color: #0ea5a4;
-  --md-accent-fg-color--transparent: rgba(14, 165, 164, 0.14);
+  --md-primary-fg-color: #12151b;
+  --md-primary-fg-color--light: #2a2f3a;
+  --md-primary-fg-color--dark: #000000;
+  --md-primary-bg-color: #f3f4f6;
+  --md-accent-fg-color: #11895a;
+  --md-accent-fg-color--transparent: rgba(17, 137, 90, 0.12);
+  --md-typeset-a-color: #12151b;
+  /* Ink for buttons, badges and highlighted diagram boxes. The header keeps --md-primary-fg-color, which is
+     near-black in the dark theme, so content accents must not use it. */
+  --ad-ink: #12151b;
+  --ad-ink-on: #f3f4f6;
 }
 
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #4cc3ec;
-  --md-primary-fg-color--light: #7ad4f2;
-  --md-primary-fg-color--dark: #2b9cc6;
-  --md-primary-bg-color: #06121f;
-  --md-accent-fg-color: #4fd6ae;
-  --md-accent-fg-color--transparent: rgba(79, 214, 174, 0.16);
-  --md-default-bg-color: #0d1624;
-  --md-code-bg-color: #111c2e;
+  --md-primary-fg-color: #151820;
+  --md-primary-fg-color--light: #262b37;
+  --md-primary-fg-color--dark: #0f1115;
+  --md-primary-bg-color: #e7e9ee;
+  --md-accent-fg-color: #3ccf8e;
+  --md-accent-fg-color--transparent: rgba(60, 207, 142, 0.14);
+  --md-default-bg-color: #0f1115;
+  --md-code-bg-color: #151820;
+  --md-typeset-a-color: #e7e9ee;
+  --md-accent-bg-color: #0f1115;
+  --ad-ink: #e7e9ee;
+  --ad-ink-on: #0f1115;
+}
+
+/* Links are ink, like the dashboard, so they carry an underline to stay recognisable. */
+.md-typeset a {
+  text-decoration: underline;
+  text-decoration-color: var(--md-default-fg-color--lighter);
+  text-underline-offset: 0.2em;
+}
+
+.md-typeset a:hover {
+  text-decoration-color: var(--md-accent-fg-color);
+}
+
+.md-typeset .md-button,
+.md-typeset .grid.cards a,
+.md-typeset .headerlink {
+  text-decoration: none;
+}
+
+.md-typeset .md-button {
+  border-radius: 0.15rem;
+  color: var(--ad-ink);
+  border-color: var(--ad-ink);
+}
+
+.md-typeset .md-button--primary {
+  background-color: var(--ad-ink);
+  border-color: var(--ad-ink);
+  color: var(--ad-ink-on);
 }
 
 /* ---------- Home page hero ---------- */
@@ -55,20 +94,20 @@
   font-size: 0.68rem;
   font-weight: 600;
   padding: 0.15rem 0.6rem;
-  border-radius: 1rem;
+  border-radius: 0.15rem;
   border: 1px solid var(--md-default-fg-color--lightest);
   color: var(--md-default-fg-color--light);
 }
 
 .ad-badge--version {
-  color: var(--md-primary-fg-color);
-  border-color: var(--md-primary-fg-color);
+  color: var(--ad-ink);
+  border-color: var(--ad-ink);
 }
 
 /* ---------- Feature cards (Material grid cards) ---------- */
 
 .md-typeset .grid.cards > ul > li {
-  border-radius: 0.6rem;
+  border-radius: 0.2rem;
   transition: border-color 0.2s, transform 0.2s;
 }
 
@@ -99,7 +138,7 @@
 
 .ad-box--primary {
   fill: var(--md-code-bg-color);
-  stroke: var(--md-primary-fg-color);
+  stroke: var(--ad-ink);
   stroke-width: 2;
 }
 
@@ -169,4 +208,56 @@
 
 .md-typeset .ad-muted {
   color: var(--md-default-fg-color--light);
+}
+
+/* ---------- Benchmark charts (inline SVG from tools/bench_charts.py, theme-aware) ---------- */
+/* Series colours follow the model: slot 1 Claude, slot 2 qwen3:4b-instruct, slot 3 qwen2.5:3b. Validated as a set,
+   all pairs, against both doc surfaces (white and #0f1115); text stays in the theme's text colours. */
+
+.ad-chart {
+  --c-s1: #2a78d6;
+  --c-s2: #eb6834;
+  --c-s3: #1baf7a;
+  --c-de: #a3a29b;
+  --c-surface: var(--md-default-bg-color);
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.2rem 0 0.3rem;
+  overflow: visible;
+  font-family: var(--md-text-font-family);
+}
+
+[data-md-color-scheme="slate"] .ad-chart {
+  --c-s1: #3987e5;
+  --c-s2: #d95926;
+  --c-s3: #199e70;
+  --c-de: #5b5a55;
+}
+
+.ad-chart text { font-size: 13px; }
+.ad-chart .small { font-size: 11.5px; }
+.ad-chart .caps { letter-spacing: 0.08em; }
+.ad-chart .strong { font-weight: 600; }
+.ad-chart .num { font-variant-numeric: tabular-nums; }
+.ad-chart .t1 { fill: var(--md-default-fg-color); }
+.ad-chart .t2 { fill: var(--md-default-fg-color--light); }
+.ad-chart .t3 { fill: var(--md-default-fg-color--lighter); }
+.ad-chart .grid { stroke: var(--md-default-fg-color--lightest); stroke-width: 1; }
+.ad-chart .base { stroke: var(--md-default-fg-color--lighter); stroke-width: 1; }
+.ad-chart .s1 { fill: var(--c-s1); }
+.ad-chart .s2 { fill: var(--c-s2); }
+.ad-chart .s3 { fill: var(--c-s3); }
+.ad-chart .de { fill: var(--c-de); }
+.ad-chart .ring { stroke: var(--c-surface); stroke-width: 2; }
+.ad-chart .failed { fill: var(--c-surface); stroke-width: 2; }
+.ad-chart .k2 { stroke: var(--c-s2); }
+.ad-chart .k3 { stroke: var(--c-s3); }
+.ad-chart .hit { fill: transparent; }
+.ad-chart g.m:hover .mark { opacity: 0.8; }
+
+.md-typeset .ad-chart-note {
+  font-size: 0.68rem;
+  color: var(--md-default-fg-color--light);
+  margin-top: 0;
 }

@@ -74,8 +74,10 @@ instead and answers 403 unless `AUTODIAG_AGENT_TOKEN` is set on the server.
 `thinking` events (`{"type": "thinking", "chars": 450}`) report progress of reasoning models, and `error` replaces
 `done` on failure.
 
-Request body fields, all optional: `question`, `provider`, `model`, `topic`, `host_a`, `host_b`, `history` and
-`semantic_search`. `host_a` defaults to a fresh local snapshot; `topic` adds that topic's live endpoints and QoS.
+Request body fields, all optional: `question`, `provider`, `model`, `topic`, `host_a`, `host_b`, `history`,
+`semantic_search` and `topics_from_question`. `host_a` defaults to a fresh local snapshot; `topic` adds that topic's
+live endpoints and QoS. Without a `topic`, `topics_from_question: true` (the dashboard sets it) adds up to two live
+topics the question names, e.g. "map" → `/map`; the `context` event lists them in `topics`.
 `history` carries earlier turns (`[{"role": "user"|"assistant", "content": "..."}]`).
 
 ```bash title="Example"

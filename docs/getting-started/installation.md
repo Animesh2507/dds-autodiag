@@ -13,6 +13,7 @@ Python package; add the rest when you need it.
 |---|---|---|
 | OS | Linux | Tested on Ubuntu 24.04 |
 | Python | 3.10+ | Tested on 3.12 |
+| `python3-venv` | Required | `sudo apt install python3-venv`; Ubuntu and ROS 2 don't install it by default |
 | ROS 2 | For live inspection | Tested on **Jazzy**. Without ROS 2, snapshot comparison, reports and the rule self-test still work |
 | `iproute2` | Recommended | Network interface checks (`ip -j addr`) |
 | Docker CLI | Optional | Lists local containers |
@@ -23,6 +24,7 @@ Python package; add the rest when you need it.
 ROS 2 must be **sourced in the same shell** that creates the virtual environment and later runs AutoDiag.
 
 ```bash
+sudo apt install python3-venv        # once
 source /opt/ros/jazzy/setup.bash
 git clone https://github.com/Animesh2507/dds-autodiag.git
 cd dds-autodiag

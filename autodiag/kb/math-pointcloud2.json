@@ -1,0 +1,8 @@
+{
+  "id": "math-pointcloud2",
+  "title": "PointCloud2 layout",
+  "url": "https://github.com/ros2/common_interfaces/blob/jazzy/sensor_msgs/msg/PointCloud2.msg",
+  "ros_distro": "jazzy",
+  "keywords": "pointcloud2 point cloud fields offset datatype point_step row_step width height is_dense is_bigendian intensity garbled",
+  "text": "A PointCloud2 is a binary buffer described by its fields (name, offset, datatype, count): point_step bytes per point, row_step bytes per row, height rows (1 for an unordered cloud) and width points per row. is_bigendian gives the byte order, and is_dense is false when invalid (NaN) points may be present. RViz's color options only work with fields that exist, such as intensity or z. Garbled or empty clouds usually come from a wrong offset, point_step or datatype in the publisher."
+}

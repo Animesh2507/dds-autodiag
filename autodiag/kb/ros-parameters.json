@@ -1,0 +1,8 @@
+{
+  "id": "ros-parameters",
+  "title": "ROS 2 parameters",
+  "url": "https://docs.ros.org/en/jazzy/How-To-Guides/Using-ros2-param.html",
+  "ros_distro": "jazzy",
+  "keywords": "parameter parameters param yaml params-file declare get set dump ros__parameters",
+  "text": "Parameters are per-node settings (bool, int, double, string and arrays) that a node declares and can change at runtime. ros2 param list, ros2 param get /node name, ros2 param set and ros2 param dump /node inspect them; --ros-args --params-file params.yaml loads a file at startup. In the YAML file the top-level key is the node name (or /** for every node) followed by ros__parameters. A parameter that seems to do nothing is often set on the wrong node name or namespace, or never declared by the node."
+}

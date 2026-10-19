@@ -1,0 +1,8 @@
+{
+  "id": "ros-logging",
+  "title": "ROS 2 logging",
+  "url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Logging.html",
+  "ros_distro": "jazzy",
+  "keywords": "log logging logger rosout debug info warn error fatal log-level console",
+  "text": "Every node logs at the levels DEBUG, INFO, WARN, ERROR and FATAL to the console, to the /rosout topic and to files under ~/.ros/log. --ros-args --log-level debug raises the detail for one run (a logger name can be given too). ros2 topic echo /rosout shows the logs of all nodes on the domain. Incompatible QoS between a publisher and a subscriber is reported as a warning in the logs of the nodes involved."
+}
