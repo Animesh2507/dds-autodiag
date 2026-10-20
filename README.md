@@ -25,6 +25,16 @@ ROS configuration.
 
 ![Diagnosis graph: every connection checked; the red /scan link from lidar_driver to rviz carries no data](docs/assets/media/diagnosis-graph.png)
 
+**New: RViz AI assistant.** Ask in plain language next to your displays. The answer cites official docs and the live topic’s QoS.
+
+![RViz AI assistant: why the map stays empty, answered from the live durability mismatch](docs/assets/media/rviz-ai-assistant.png)
+
+**Configure RViz with AI.** Describe the view. AutoDiag checks every change against your live topics and QoS, then you Apply.
+
+![Configure RViz: a checked plan that fixes map and LaserScan QoS, adds the robot model, and a height-colored cloud](docs/assets/media/configure-rviz-plan.png)
+
+![After Apply: the robot, the scan, and the point cloud — the view you asked for](docs/assets/media/configure-rviz-result.png)
+
 ## Quick start
 
 ```bash
