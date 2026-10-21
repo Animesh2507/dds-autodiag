@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-Upcoming first public release, 0.1.0. Not tagged yet.
+## [0.1.0] - 2026-10-21
 
 ### Changed
 
@@ -86,4 +86,5 @@ cross-host snapshot comparison and the live QoS inspector; the deterministic dia
 documentation retrieval with optional local AI; hybrid retrieval and synthetic fault fixtures; the C++ core; the
 Behavior Tree viewer; and the task-oriented dashboard. Their notes are kept in `docs/archive/`.
 
-[Unreleased]: https://github.com/Animesh2507/dds-autodiag/commits/main
+[Unreleased]: https://github.com/Animesh2507/dds-autodiag/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Animesh2507/dds-autodiag/releases/tag/v0.1.0
