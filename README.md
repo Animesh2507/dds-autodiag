@@ -97,7 +97,7 @@ Good starting points: [Quick start](docs/getting-started/quickstart.md) ·
 
 ## Status
 
-Version **0.1.0** (unreleased). Tested on ROS 2 Jazzy with Fast DDS on Ubuntu 24.04. Smoke-tested on Humble
+Version **0.1.0**. Tested on ROS 2 Jazzy with Fast DDS on Ubuntu 24.04. Smoke-tested on Humble
 (`doctor`, rule self-test, `demo`, `check`, `inspect` in `ros:humble-ros-base`). Reports from other distros,
 RMWs and setups are very welcome; see [Contributing](docs/contributing.md).
 
