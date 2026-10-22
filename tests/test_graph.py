@@ -4,6 +4,7 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from autodiag.graph import build_graph
+from autodiag.live import _parse_verbose
 from autodiag.server import app
 
 
@@ -64,6 +65,46 @@ class GraphTests(unittest.TestCase):
     def test_discovery_failure_is_reported(self):
         g = build_graph(lister=lambda: {'state': 'unavailable', 'error': 'ros2 CLI is not on PATH.', 'topics': []})
         self.assertEqual(g['state'], 'unavailable')
+        self.assertEqual(g['edges'], [])
+
+    def test_namespaced_cli_endpoints_are_not_merged(self):
+        stdout = """Publisher count: 1
+Node name: sensor
+Node namespace: /robot1
+Topic type: sensor_msgs/msg/LaserScan
+Reliability: BEST_EFFORT
+Durability: VOLATILE
+Subscription count: 1
+Node name: sensor
+Node namespace: /robot2
+Topic type: sensor_msgs/msg/LaserScan
+Reliability: RELIABLE
+Durability: VOLATILE
+"""
+        endpoints = _parse_verbose(stdout)
+        g = build_graph(lister=lambda: {'state': 'ok', 'topics': [{'topic': '/scan'}]},
+                        inspector=lambda _t: {'state': 'ok', 'endpoints': endpoints})
+        self.assertEqual({n['id'] for n in g['nodes']}, {'robot1/sensor', 'robot2/sensor'})
+        self.assertEqual(len(g['edges']), 1)
+        self.assertEqual(g['edges'][0]['id'], 'robot1/sensor->robot2/sensor')
+        self.assertEqual(g['edges'][0]['status'], 'error')
+        self.assertEqual(g['edges'][0]['topics'][0]['findings'][0]['code'], 'RELIABILITY_MISMATCH')
+
+    def test_same_namespaced_node_is_still_skipped(self):
+        stdout = """Publisher count: 1
+Node name: sensor
+Node namespace: /robot1
+Topic type: sensor_msgs/msg/LaserScan
+Reliability: BEST_EFFORT
+Subscription count: 1
+Node name: sensor
+Node namespace: /robot1
+Topic type: sensor_msgs/msg/LaserScan
+Reliability: RELIABLE
+"""
+        endpoints = _parse_verbose(stdout)
+        g = build_graph(lister=lambda: {'state': 'ok', 'topics': [{'topic': '/scan'}]},
+                        inspector=lambda _t: {'state': 'ok', 'endpoints': endpoints})
         self.assertEqual(g['edges'], [])
 
     def test_api(self):

@@ -20,6 +20,31 @@ Durability: VOLATILE
   e=_parse_verbose(s)
   self.assertEqual(len(e),2)
   self.assertEqual(_qos_findings(e)[0]['code'],'RELIABILITY_MISMATCH')
+ def test_parse_keeps_node_namespace(self):
+  s="""Publisher count: 1
+Node name: sensor
+Node namespace: /robot1
+Topic type: sensor_msgs/msg/LaserScan
+Reliability: BEST_EFFORT
+Durability: VOLATILE
+Subscription count: 1
+Node name: sensor
+Node namespace: /robot2
+Topic type: sensor_msgs/msg/LaserScan
+Reliability: RELIABLE
+Durability: VOLATILE
+"""
+  e=_parse_verbose(s)
+  self.assertEqual([x['node'] for x in e],['robot1/sensor','robot2/sensor'])
+  self.assertEqual(_qos_findings(e)[0]['code'],'RELIABILITY_MISMATCH')
+ def test_parse_root_namespace_is_bare_name(self):
+  s="""Publisher count: 1
+Node name: talker
+Node namespace: /
+Topic type: std_msgs/msg/String
+Reliability: RELIABLE
+"""
+  self.assertEqual(_parse_verbose(s)[0]['node'],'talker')
  def test_compatible(self):
   e=[{'kind':'publisher','node':'p','qos':{'reliability':'RELIABLE','durability':'TRANSIENT_LOCAL'}},{'kind':'subscriber','node':'s','qos':{'reliability':'BEST_EFFORT','durability':'VOLATILE'}}]
   # QoS-compatible (no errors); only the late-joiner warning for latched data remains.

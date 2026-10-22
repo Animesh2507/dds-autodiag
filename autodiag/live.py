@@ -43,6 +43,10 @@ def _parse_verbose(text):
             current={'kind':kind,'node':s.split(':',1)[1].strip(),'qos':{}}
             endpoints.append(current)
         elif current is not None:
+            if s.startswith('Node namespace:'):
+                ns = s.split(':', 1)[1].strip().strip('/')
+                name = current['node'].rsplit('/', 1)[-1]
+                current['node'] = (ns + '/' if ns else '') + name
             for key,field in [('Topic type:','type'),('Endpoint type:','endpoint_type'),('GID:','gid')]:
                 if s.startswith(key):current[field]=s.split(':',1)[1].strip()
             for key,field in [('Reliability:','reliability'),('Durability:','durability'),('History (Depth):','history'),('Deadline:','deadline'),('Lifespan:','lifespan'),('Liveliness:','liveliness')]:
